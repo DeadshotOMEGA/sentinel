@@ -123,7 +123,7 @@ export const networkSettingsRouter = s.router(networkSettingContract, {
   },
 
   hostHotspotRecovery: async ({ req }) => {
-    const auth = requireAdmin(req)
+    const auth = requireMember(req)
     if (auth) {
       return auth
     }

@@ -49,22 +49,22 @@ describe('networkSettingsRouter', () => {
     }
   })
 
-  it('requires admin access for host hotspot recovery', async () => {
-    const app = createTestApp(1)
+  it('requires authentication for host hotspot recovery', async () => {
+    const app = createTestApp()
     const response = await request(app).post('/api/network-settings/host-hotspot-recovery')
 
-    expect(response.status).toBe(403)
+    expect(response.status).toBe(401)
     expect(response.body).toMatchObject({
-      error: 'FORBIDDEN',
+      error: 'UNAUTHORIZED',
     })
   })
 
-  it('queues a host hotspot recovery request for admins', async () => {
+  it('queues a host hotspot recovery request for any authenticated member', async () => {
     const rootDir = await mkdtemp(join(tmpdir(), 'sentinel-hotspot-recovery-'))
     const requestDir = join(rootDir, 'requests')
     process.env.HOST_HOTSPOT_RECOVERY_REQUEST_DIR = requestDir
 
-    const app = createTestApp(5)
+    const app = createTestApp(1)
     const response = await request(app)
       .post('/api/network-settings/host-hotspot-recovery')
       .set('user-agent', 'vitest')

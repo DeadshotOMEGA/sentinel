@@ -533,15 +533,13 @@ export function SystemUpdatePanel() {
               tone="warning"
               heading="Hotspot profile needs attention"
               actions={
-                canStartUpdates ? (
-                  <button
-                    type="button"
-                    className="btn btn-xs btn-warning"
-                    onClick={() => setHotspotRepairOpen(true)}
-                  >
-                    Repair hotspot
-                  </button>
-                ) : null
+                <button
+                  type="button"
+                  className="btn btn-xs btn-warning"
+                  onClick={() => setHotspotRepairOpen(true)}
+                >
+                  Repair hotspot
+                </button>
               }
             >
               {systemStatus?.network.message ??
@@ -801,7 +799,6 @@ export function SystemUpdatePanel() {
                   type="button"
                   className="btn btn-sm btn-primary shadow-sm"
                   onClick={() => setHotspotRepairOpen(true)}
-                  disabled={!canStartUpdates}
                 >
                   <ShieldCheck className="mr-2 h-4 w-4" />
                   Repair hotspot

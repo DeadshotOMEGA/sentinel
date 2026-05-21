@@ -15,7 +15,7 @@ import { HelpButton } from '@/components/help/HelpButton'
 import { HostHotspotRepairDialog } from '@/components/network/host-hotspot-repair-dialog'
 import { useSystemStatus } from '@/hooks/use-system-status'
 import { TID } from '@/lib/test-ids'
-import { AccountLevel, useAuthStore } from '@/store/auth-store'
+import { useAuthStore } from '@/store/auth-store'
 import { getWirelessRecoveryState, resolveWikiBaseUrl } from './app-navbar.logic'
 
 const navLinks = [
@@ -36,7 +36,6 @@ const DEPLOYMENT_REMOTE_SYSTEM_CODE = 'deployment_laptop'
 export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
   const pathname = usePathname()
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
-  const member = useAuthStore((state) => state.member)
   const authSession = useAuthStore((state) => state.session)
   const [hostHotspotRepairOpen, setHostHotspotRepairOpen] = useState(false)
   const systemStatusQuery = useSystemStatus({ enabled: isAuthenticated })
@@ -106,12 +105,10 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
   const frontendTooltip = getFrontendTooltip(browserOrigin)
   const activeRemoteSessions = systemStatus?.remoteSystems.sessions ?? []
   const remoteSystemOverflowCount = systemStatus?.remoteSystems.overflowCount ?? 0
-  const hasAdminAccess = (member?.accountLevel ?? 0) >= AccountLevel.ADMIN
   const wirelessRecovery = getWirelessRecoveryState({
     systemStatus,
     isLoading: isStatusLoading,
     isError: systemStatusQuery.isError,
-    hasAdminAccess,
   })
   const currentVersion = normalizeVersionTag(systemStatus?.backend.version ?? null) ?? 'unknown'
   const latestVersion = null

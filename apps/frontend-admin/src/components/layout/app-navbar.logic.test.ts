@@ -88,7 +88,6 @@ describe('app-navbar logic', () => {
       }),
       isLoading: false,
       isError: false,
-      hasAdminAccess: false,
     })
 
     expect(result.showConnectLaptop).toBe(false)
@@ -106,31 +105,28 @@ describe('app-navbar logic', () => {
       }),
       isLoading: false,
       isError: false,
-      hasAdminAccess: false,
     })
 
     expect(result.showConnectLaptop).toBe(true)
     expect(result.connectLaptopHref).toBe('sentinel-hotspot://connect?ssid=GC%20Public')
   })
 
-  it('gates host hotspot repair to admin-capable users', () => {
+  it('shows host hotspot repair to all authenticated users once status is available', () => {
     expect(
       getWirelessRecoveryState({
         systemStatus: createSystemStatus(),
         isLoading: false,
         isError: false,
-        hasAdminAccess: false,
       }).showRepairHostHotspot
-    ).toBe(false)
+    ).toBe(true)
 
     expect(
       getWirelessRecoveryState({
         systemStatus: createSystemStatus(),
-        isLoading: false,
+        isLoading: true,
         isError: false,
-        hasAdminAccess: true,
       }).showRepairHostHotspot
-    ).toBe(true)
+    ).toBe(false)
   })
 
   it('keeps wireless recovery section visible when hotspot SSID is not visible from laptop Wi-Fi', () => {
@@ -144,11 +140,10 @@ describe('app-navbar logic', () => {
       }),
       isLoading: false,
       isError: false,
-      hasAdminAccess: false,
     })
 
     expect(result.showSection).toBe(true)
-    expect(result.showRepairHostHotspot).toBe(false)
+    expect(result.showRepairHostHotspot).toBe(true)
   })
 
   it('keeps wireless recovery section visible when the AP dongle is busy on internet Wi-Fi', () => {
@@ -164,10 +159,9 @@ describe('app-navbar logic', () => {
       }),
       isLoading: false,
       isError: false,
-      hasAdminAccess: false,
     })
 
     expect(result.showSection).toBe(true)
-    expect(result.showRepairHostHotspot).toBe(false)
+    expect(result.showRepairHostHotspot).toBe(true)
   })
 })
