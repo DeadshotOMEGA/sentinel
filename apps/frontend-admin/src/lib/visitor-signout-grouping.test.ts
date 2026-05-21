@@ -178,9 +178,19 @@ describe('buildVisitorSignoutGrouping', () => {
         checkInTime: '2026-05-04T09:00:00.000Z',
       }),
       createVisitor({
+        id: 'bbbbbbbb-2222-2222-2222-222222222222',
+        visitorGroupId: 'group-older',
+        checkInTime: '2026-05-04T09:05:00.000Z',
+      }),
+      createVisitor({
         id: 'cccccccc-1111-1111-1111-111111111111',
         visitorGroupId: 'group-newer',
         checkInTime: '2026-05-04T10:00:00.000Z',
+      }),
+      createVisitor({
+        id: 'cccccccc-2222-2222-2222-222222222222',
+        visitorGroupId: 'group-newer',
+        checkInTime: '2026-05-04T10:05:00.000Z',
       }),
     ]
 
@@ -191,9 +201,51 @@ describe('buildVisitorSignoutGrouping', () => {
     expect(second.groups.map((group) => group.groupCode)).toEqual(['G-01', 'G-02'])
     expect(first.groups[0]?.groupId).toBe('group-newer')
   })
+
+  it('treats one-person visitor groups as individual visitors for sign-out display', () => {
+    const grouping = buildVisitorSignoutGrouping([
+      createVisitor({
+        id: 'dddddddd-1111-1111-1111-111111111111',
+        visitorGroupId: 'legacy-single-person-group',
+        rankPrefix: 'MS',
+        firstName: null,
+        lastName: 'Sauk',
+        displayName: 'Sauk group',
+        visitType: 'military',
+      }),
+    ])
+
+    expect(grouping.groups).toHaveLength(0)
+    expect(grouping.ungroupedVisitors).toHaveLength(1)
+    expect(getPublicVisitorTitle(grouping.ungroupedVisitors[0] as VisitorResponse)).toBe('MS Sauk')
+  })
 })
 
 describe('public visitor kiosk display', () => {
+  it('formats individual visitor titles with rank and initials or last-name first-name order', () => {
+    expect(
+      getPublicVisitorTitle(
+        createVisitor({
+          visitType: 'military',
+          rankPrefix: 'MS',
+          firstName: null,
+          lastName: 'Sauk',
+          displayName: 'Sauk, CJW',
+        })
+      )
+    ).toBe('MS Sauk, CJW')
+
+    expect(
+      getPublicVisitorTitle(
+        createVisitor({
+          firstName: 'Alex',
+          lastName: 'Smith',
+          displayName: 'Smith, Alex',
+        })
+      )
+    ).toBe('Smith, Alex')
+  })
+
   it('uses company names as contractor primary titles without work descriptions', () => {
     const visitor = createVisitor({
       visitType: 'contractor',

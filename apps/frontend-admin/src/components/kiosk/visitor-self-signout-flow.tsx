@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Clock3, Layers3, UserRoundMinus, Users } from 'lucide-react'
 import {
   useActiveVisitors,
@@ -71,6 +71,8 @@ export function VisitorSelfSignoutFlow({
   const [selectedByGroup, setSelectedByGroup] = useState<Record<string, string[]>>({})
   const [expandedGroupId, setExpandedGroupId] = useState<string | null>(null)
   const [selectedEventTabId, setSelectedEventTabId] = useState<string | null>(null)
+  const listScrollRef = useRef<globalThis.HTMLDivElement | null>(null)
+  const groupRefs = useRef(new Map<string, globalThis.HTMLDetailsElement>())
 
   const activeVisitors = useMemo(() => data?.visitors ?? [], [data?.visitors])
   const eventTabs = useMemo(() => buildVisitorEventTabs(activeVisitors), [activeVisitors])
@@ -153,9 +155,43 @@ export function VisitorSelfSignoutFlow({
     }
   }
 
+  const scrollExpandedGroupIntoView = (groupId: string) => {
+    const container = listScrollRef.current
+    const groupElement = groupRefs.current.get(groupId)
+    if (!container || !groupElement) {
+      groupElement?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+      return
+    }
+
+    const containerRect = container.getBoundingClientRect()
+    const groupRect = groupElement.getBoundingClientRect()
+    const topOverflow = groupRect.top - containerRect.top
+    const bottomOverflow = groupRect.bottom - containerRect.bottom
+    const padding = 8
+    let nextScrollTop = container.scrollTop
+
+    if (groupRect.height > containerRect.height - padding * 2) {
+      nextScrollTop += topOverflow - padding
+    } else if (topOverflow < 0) {
+      nextScrollTop += topOverflow - padding
+    } else if (bottomOverflow > 0) {
+      nextScrollTop += bottomOverflow + padding
+    } else {
+      return
+    }
+
+    container.scrollTo({
+      top: Math.max(0, nextScrollTop),
+      behavior: 'smooth',
+    })
+  }
+
   const handleGroupToggle = (groupId: string, nextOpen: boolean) => {
     if (nextOpen) {
       setExpandedGroupId(groupId)
+      window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(() => scrollExpandedGroupIntoView(groupId))
+      })
       return
     }
 
@@ -193,7 +229,7 @@ export function VisitorSelfSignoutFlow({
 
   return (
     <div
-      className={`flex min-h-0 flex-col gap-(--space-4) ${isInline && !isEmbedded ? 'h-full' : ''}`}
+      className={`flex min-h-0 flex-col gap-(--space-3) ${isInline ? 'h-full' : ''} ${isEmbedded ? 'overflow-hidden' : ''}`}
     >
       {interactionDisabled ? (
         <div className="alert alert-warning">
@@ -201,16 +237,16 @@ export function VisitorSelfSignoutFlow({
         </div>
       ) : null}
 
-      <div className="rounded-box border border-base-300 bg-base-200/50 p-(--space-4)">
+      <div className="rounded-box border border-base-300 bg-base-200/50 p-(--space-3)">
         <div className="flex flex-wrap items-center justify-between gap-(--space-3)">
           <div>
             <p className="text-xs uppercase tracking-[0.18em] text-base-content/50">
               Visitor sign-out
             </p>
-            <p className="mt-(--space-1) text-lg font-semibold leading-tight">
+            <p className="mt-(--space-1) text-base font-semibold leading-tight">
               {activeVisitorCount} active visitor{activeVisitorCount === 1 ? '' : 's'}
             </p>
-            <div className="mt-(--space-2) flex flex-wrap gap-(--space-2)">
+            <div className="mt-(--space-1) flex flex-wrap gap-(--space-2)">
               <Chip variant="faded" color="secondary" size="sm">
                 <Layers3 className="h-3.5 w-3.5" />
                 {activeGroupCount} group{activeGroupCount === 1 ? '' : 's'}
@@ -247,9 +283,8 @@ export function VisitorSelfSignoutFlow({
         </div>
       ) : (
         <div
-          className={`min-h-0 space-y-(--space-4) overflow-y-auto pr-(--space-1) ${
-            isEmbedded ? 'max-h-[26rem]' : 'flex-1'
-          }`}
+          ref={listScrollRef}
+          className="min-h-0 flex-1 space-y-(--space-3) overflow-y-auto pr-(--space-1)"
         >
           {eventTabs.length > 0 ? (
             <div
@@ -285,11 +320,11 @@ export function VisitorSelfSignoutFlow({
           ) : null}
 
           {activeGroupCount > 0 && (
-            <section className="space-y-(--space-2)">
+            <section className="space-y-(--space-1)">
               <p className="text-xs uppercase tracking-[0.18em] text-base-content/55">
                 Visitor groups
               </p>
-              <div className="space-y-(--space-2)">
+              <div className="space-y-(--space-1)">
                 {filtered.groups.map((group) => {
                   const selectedIds = selectedByGroup[group.groupId] ?? []
                   const selectedCount = selectedIds.length
@@ -299,39 +334,45 @@ export function VisitorSelfSignoutFlow({
                   return (
                     <details
                       key={group.groupId}
+                      ref={(node) => {
+                        if (node) {
+                          groupRefs.current.set(group.groupId, node)
+                        } else {
+                          groupRefs.current.delete(group.groupId)
+                        }
+                      }}
                       open={isExpanded}
                       onToggle={(event) =>
                         handleGroupToggle(group.groupId, event.currentTarget.open)
                       }
                       className={`collapse collapse-arrow border border-base-300 bg-base-100 border-l-4 ${accent.border}`}
                     >
-                      <summary className="collapse-title pr-(--space-4)">
-                        <div className="flex flex-wrap items-start justify-between gap-(--space-3)">
+                      <summary className="collapse-title px-(--space-3) py-(--space-2) pr-(--space-4)">
+                        <div className="flex flex-wrap items-center justify-between gap-(--space-2)">
                           <div className="min-w-0">
                             <div className="flex flex-wrap items-center gap-(--space-2)">
                               <Chip variant="faded" color={accent.chipColor} size="sm">
                                 {group.groupCode}
                               </Chip>
-                              <p className="truncate text-lg font-semibold">
+                              <p className="truncate text-base font-semibold leading-tight">
                                 {group.identityTitle}
                               </p>
                             </div>
                             {group.contextLine ? (
-                              <p className="mt-(--space-1) truncate text-sm font-medium text-base-content/75">
+                              <p className="mt-0.5 truncate text-sm font-medium text-base-content/75">
                                 {compactText(group.contextLine)}
                               </p>
                             ) : null}
-                            <p className="mt-(--space-1) text-sm text-base-content/70">
-                              {group.identityDetail}
-                            </p>
-                            <p className="mt-(--space-1) flex items-center gap-(--space-1) text-xs text-base-content/55">
+                            <p className="mt-0.5 flex flex-wrap items-center gap-x-(--space-2) gap-y-0.5 text-xs text-base-content/60">
+                              <span>{group.identityDetail}</span>
+                              <span aria-hidden="true">|</span>
                               <Clock3 className="h-3 w-3" />
-                              Latest check-in {formatTime(group.mostRecentCheckInTime)}
+                              <span>Latest check-in {formatTime(group.mostRecentCheckInTime)}</span>
                             </p>
                           </div>
                           <button
                             type="button"
-                            className="btn btn-sm btn-error"
+                            className="btn btn-xs btn-error"
                             disabled={!canInteract}
                             onClick={(event) => {
                               event.preventDefault()
@@ -344,34 +385,26 @@ export function VisitorSelfSignoutFlow({
                         </div>
                       </summary>
 
-                      <div className="collapse-content border-t border-base-300 bg-base-200/35 pt-(--space-3)">
-                        <div className="mb-(--space-3) flex flex-wrap gap-(--space-2)">
+                      <div className="collapse-content border-t border-base-300 bg-base-200/35 px-(--space-3) pb-(--space-3) pt-(--space-2)">
+                        <div className="mb-(--space-2) flex flex-wrap gap-(--space-2)">
                           <button
                             type="button"
-                            className="btn btn-sm btn-outline"
+                            className="btn btn-sm btn-error"
                             disabled={!canInteract || selectedCount === 0}
                             onClick={() => void handleSignoutGroup(group, selectedIds)}
                           >
                             Sign out selected ({selectedCount})
                           </button>
-                          <button
-                            type="button"
-                            className="btn btn-sm btn-error"
-                            disabled={!canInteract}
-                            onClick={() => void handleSignoutGroup(group)}
-                          >
-                            Sign out full group
-                          </button>
                         </div>
 
-                        <div className="grid gap-(--space-2)">
+                        <div className="grid gap-(--space-1)">
                           {group.members.map((visitor) => {
                             const inputId = `group-${group.groupId}-${visitor.id}`
                             return (
                               <label
                                 key={visitor.id}
                                 htmlFor={inputId}
-                                className="flex items-start gap-(--space-3) rounded-box border border-base-300 bg-base-100 px-(--space-3) py-(--space-2)"
+                                className="flex items-start gap-(--space-2) rounded-box border border-base-300 bg-base-100 px-(--space-2) py-(--space-2)"
                               >
                                 <input
                                   id={inputId}
@@ -384,10 +417,10 @@ export function VisitorSelfSignoutFlow({
                                   disabled={!canInteract}
                                 />
                                 <div className="min-w-0">
-                                  <p className="font-semibold leading-tight">
+                                  <p className="text-sm font-semibold leading-tight">
                                     {displayName(visitor)}
                                   </p>
-                                  <p className="text-sm text-base-content/70">
+                                  <p className="text-xs text-base-content/70">
                                     Checked in {formatTime(visitor.checkInTime)}
                                   </p>
                                 </div>
@@ -404,19 +437,21 @@ export function VisitorSelfSignoutFlow({
           )}
 
           {activeUngroupedCount > 0 && (
-            <section className="space-y-(--space-2)">
+            <section className="space-y-(--space-1)">
               <p className="text-xs uppercase tracking-[0.18em] text-base-content/55">
                 Ungrouped visitors
               </p>
-              <div className="grid gap-(--space-2)">
+              <div className="grid gap-(--space-1)">
                 {filtered.ungroupedVisitors.map((visitor) => (
                   <div
                     key={visitor.id}
-                    className="flex flex-wrap items-center justify-between gap-(--space-3) rounded-box border border-base-300 bg-base-100 p-(--space-3)"
+                    className="flex flex-wrap items-center justify-between gap-(--space-2) rounded-box border border-base-300 bg-base-100 px-(--space-3) py-(--space-2)"
                   >
                     <div className="min-w-0">
-                      <p className="font-semibold">{getPublicVisitorTitle(visitor)}</p>
-                      <p className="text-sm text-base-content/70">
+                      <p className="text-sm font-semibold leading-tight">
+                        {getPublicVisitorTitle(visitor)}
+                      </p>
+                      <p className="text-xs text-base-content/70">
                         {[
                           getPublicVisitorContextLine(visitor),
                           `Checked in ${formatTime(visitor.checkInTime)}`,

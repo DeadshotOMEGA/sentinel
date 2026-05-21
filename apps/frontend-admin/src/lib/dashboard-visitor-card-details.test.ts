@@ -48,12 +48,23 @@ describe('getDashboardVisitorCardDetails', () => {
 
     expect(details.title).toBe('Jane Doe')
     expect(details.subtitle).toBe('Standing Court Martial')
-    expect(details.detail).toBe(
-      'Standing Court Martial • Gallery Attendee • hosted by Lt(N) Patel • Civilian • guest'
-    )
+    expect(details.detail).toBe('Gallery Attendee • Civilian • guest')
+    expect(details.detail).not.toContain(details.subtitle as string)
+    expect(details.detail).not.toContain('Lt(N) Patel')
     expect(details.detail).not.toContain('Reason:')
     expect(details.detail).not.toContain('Category:')
     expect(details.detail).not.toContain('Event option:')
+  })
+
+  it('keeps meeting host details when the structured host field is unavailable', () => {
+    const details = getDashboardVisitorCardDetails(
+      createVisitor({
+        visitReason: 'Reason: Meeting | Category: Civilian | Meeting with: Lt(N) Patel',
+      }),
+      'Doe, Jane'
+    )
+
+    expect(details.detail).toContain('hosted by Lt(N) Patel')
   })
 
   it('shows contractor company and work description for internal dashboard cards', () => {
@@ -71,9 +82,8 @@ describe('getDashboardVisitorCardDetails', () => {
     )
 
     expect(details.subtitle).toBe('Black & MacDonald')
-    expect(details.detail).toBe(
-      'Black & MacDonald • Panel inspection in mechanical space • Civilian • contractor'
-    )
+    expect(details.detail).toBe('Panel inspection in mechanical space • Civilian • contractor')
+    expect(details.detail).not.toContain(details.subtitle as string)
   })
 
   it('keeps military rank and unit cleanly available', () => {
@@ -89,6 +99,7 @@ describe('getDashboardVisitorCardDetails', () => {
     )
 
     expect(details.subtitle).toBe('PO2 • HMCS Example')
-    expect(details.detail).toBe('Military • PO2 • HMCS Example')
+    expect(details.detail).toBe('Military')
+    expect(details.detail).not.toContain(details.subtitle as string)
   })
 })
