@@ -265,6 +265,7 @@ export interface BuildReasonFirstVisitorPayloadInput {
 }
 
 export interface ReasonFirstGroupMemberInput {
+  branch?: SelfServiceVisitorBranch
   firstName?: string
   lastName?: string
   initials?: string
@@ -420,16 +421,22 @@ export function buildReasonFirstVisitorGroupPayload(
     throw new Error('At least one visitor is required')
   }
 
-  const visitType = resolveVisitType(input.reason, input.branch)
   const visitPurpose = resolveVisitPurpose(input.reason)
 
-  if (reasonRequiresBranch(input.reason) && !input.branch) {
+  if (
+    reasonRequiresBranch(input.reason) &&
+    !input.branch &&
+    input.members.some((member) => !member.branch)
+  ) {
     throw new Error('Select Military or Civilian to continue')
   }
 
-  const isMilitaryIdentity = input.reason !== 'recruitment' && input.branch === 'military'
   const organization = trimValue(input.organization)
   const workDescription = trimValue(input.workDescription)
+  const memberBranches = input.members
+    .map((member) => member.branch ?? input.branch)
+    .filter((branch): branch is SelfServiceVisitorBranch => Boolean(branch))
+  const sharedSummaryBranch = new Set(memberBranches).size === 1 ? memberBranches[0] : undefined
   const purposeDetailsForEvent =
     reasonRequiresEventSelection(input.reason) && trimValue(input.eventTitle)
       ? trimValue(input.eventDateLabel)
@@ -447,7 +454,7 @@ export function buildReasonFirstVisitorGroupPayload(
 
   const sharedVisitReason = buildReasonFirstVisitSummary({
     reason: input.reason,
-    branch: input.branch,
+    branch: sharedSummaryBranch,
     organization: input.organization,
     workDescription: input.workDescription,
     eventTitle: input.eventTitle,
@@ -457,6 +464,9 @@ export function buildReasonFirstVisitorGroupPayload(
   })
 
   const members = input.members.map((member) => {
+    const memberBranch = member.branch ?? input.branch
+    const memberVisitType = resolveVisitType(input.reason, memberBranch)
+    const isMilitaryIdentity = input.reason !== 'recruitment' && memberBranch === 'military'
     const rankPrefix = trimValue(member.rankPrefix)
     const unit = trimValue(member.unit)
     const firstName = isMilitaryIdentity
@@ -479,7 +489,7 @@ export function buildReasonFirstVisitorGroupPayload(
       name: [rankPrefix, firstName, lastName].filter(Boolean).join(' '),
       rankPrefix,
       unit,
-      visitType,
+      visitType: memberVisitType,
     }
 
     if (input.reason === 'recruitment') {

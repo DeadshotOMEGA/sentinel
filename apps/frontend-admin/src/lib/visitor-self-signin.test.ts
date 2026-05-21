@@ -209,6 +209,34 @@ describe('buildReasonFirstVisitorGroupPayload', () => {
     expect(payload.unitEventVisitorOptionId).toBe('44444444-4444-4444-4444-444444444444')
     expect(payload.purposeDetails).toContain('Option: Gallery Attendee')
   })
+
+  it('supports military and civilian visitors in the same group', () => {
+    const payload = buildReasonFirstVisitorGroupPayload({
+      kioskId: 'DASHBOARD_KIOSK',
+      reason: 'event',
+      eventId: '22222222-2222-2222-2222-222222222222',
+      eventTitle: 'Standing Court Martial',
+      members: [
+        { branch: 'civilian', firstName: 'Alex', lastName: 'Taylor' },
+        {
+          branch: 'military',
+          rankPrefix: 'PO2',
+          initials: 'M.J.',
+          lastName: 'Sauk',
+          unit: 'HMCS Example',
+        },
+      ],
+    })
+
+    expect(payload.members.map((member) => member.visitType)).toEqual(['guest', 'military'])
+    expect(payload.members[1]).toMatchObject({
+      firstName: 'M.J.',
+      lastName: 'Sauk',
+      rankPrefix: 'PO2',
+      unit: 'HMCS Example',
+    })
+    expect(payload.visitReason).not.toContain('Category:')
+  })
 })
 
 describe('resolveVisitorSelfSigninSubmissionMode', () => {

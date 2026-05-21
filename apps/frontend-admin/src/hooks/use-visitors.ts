@@ -3,7 +3,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '@/lib/api-client'
 import { invalidateDashboardQueries } from '@/lib/dashboard-query-invalidation'
-import { invalidateVisitorEventAvailabilityQueries } from '@/lib/visitor-event-availability-invalidation'
+import {
+  invalidateVisitorEventAvailabilityQueries,
+  refreshVisitorEventAvailabilityQueries,
+} from '@/lib/visitor-event-availability-invalidation'
 import type {
   CreateVisitorInput,
   CreateVisitorGroupInput,
@@ -37,10 +40,10 @@ export function useCreateVisitor() {
       }
       return response.body
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ['active-visitors'] })
       queryClient.invalidateQueries({ queryKey: ['present-people'] })
-      invalidateVisitorEventAvailabilityQueries(queryClient)
+      await refreshVisitorEventAvailabilityQueries(queryClient)
       void invalidateDashboardQueries(queryClient)
     },
   })
@@ -62,10 +65,10 @@ export function useCreateVisitorGroup() {
       }
       return response.body
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ['active-visitors'] })
       queryClient.invalidateQueries({ queryKey: ['present-people'] })
-      invalidateVisitorEventAvailabilityQueries(queryClient)
+      await refreshVisitorEventAvailabilityQueries(queryClient)
       void invalidateDashboardQueries(queryClient)
     },
   })
@@ -84,10 +87,10 @@ export function useCheckoutVisitor() {
       }
       return response.body
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ['active-visitors'] })
       queryClient.invalidateQueries({ queryKey: ['present-people'] })
-      invalidateVisitorEventAvailabilityQueries(queryClient)
+      await refreshVisitorEventAvailabilityQueries(queryClient)
       void invalidateDashboardQueries(queryClient)
     },
   })
@@ -108,10 +111,10 @@ export function useCheckoutVisitorGroup() {
       }
       return response.body
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ['active-visitors'] })
       queryClient.invalidateQueries({ queryKey: ['present-people'] })
-      invalidateVisitorEventAvailabilityQueries(queryClient)
+      await refreshVisitorEventAvailabilityQueries(queryClient)
       void invalidateDashboardQueries(queryClient)
     },
   })

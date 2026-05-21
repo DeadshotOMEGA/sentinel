@@ -13,6 +13,10 @@ import {
 import { Checkbox } from '@/components/ui/checkbox'
 import { useCreateUnitEvent, useUpdateUnitEvent, useEventTypes } from '@/hooks/use-events'
 import { Plus, Trash2 } from 'lucide-react'
+import {
+  allowsGeneralEventVisitorOption,
+  buildUnitEventMetadataWithGeneralVisitorOption,
+} from '@/lib/unit-event-visitor-options'
 import type {
   UnitEventResponse,
   CreateUnitEventInput,
@@ -179,6 +183,7 @@ export function EventFormModal({
   const [organizer, setOrganizer] = useState('')
   const [requiresDutyWatch, setRequiresDutyWatch] = useState(false)
   const [enableVisitorOptions, setEnableVisitorOptions] = useState(false)
+  const [allowGeneralEventVisitorOption, setAllowGeneralEventVisitorOption] = useState(false)
   const [visitorOptions, setVisitorOptions] = useState<VisitorOptionDraft[]>([emptyVisitorOption()])
   const [notes, setNotes] = useState('')
   const [metadata, setMetadata] = useState('')
@@ -215,6 +220,7 @@ export function EventFormModal({
       setOrganizer(event.organizer ?? '')
       setRequiresDutyWatch(event.requiresDutyWatch)
       setEnableVisitorOptions(event.visitorOptions.length > 0)
+      setAllowGeneralEventVisitorOption(allowsGeneralEventVisitorOption(event.metadata))
       setVisitorOptions(
         event.visitorOptions.length > 0
           ? event.visitorOptions.map((option) => ({
@@ -240,6 +246,7 @@ export function EventFormModal({
       setOrganizer('')
       setRequiresDutyWatch(false)
       setEnableVisitorOptions(false)
+      setAllowGeneralEventVisitorOption(false)
       setVisitorOptions([emptyVisitorOption()])
       setNotes('')
       setMetadata('')
@@ -321,7 +328,10 @@ export function EventFormModal({
       description: description.trim() || null,
       organizer: organizer.trim() || null,
       requiresDutyWatch,
-      metadata: parsedMetadata,
+      metadata: buildUnitEventMetadataWithGeneralVisitorOption(
+        parsedMetadata,
+        enableVisitorOptions && allowGeneralEventVisitorOption
+      ),
       notes: notes.trim() || null,
       visitorOptions: buildVisitorOptionsPayload(),
     }
@@ -700,6 +710,9 @@ export function EventFormModal({
                         if (nextEnabled && visitorOptions.length === 0) {
                           setVisitorOptions([emptyVisitorOption()])
                         }
+                        if (!nextEnabled) {
+                          setAllowGeneralEventVisitorOption(false)
+                        }
                         clearFieldError('visitorOptions')
                         setSubmitError(null)
                       }}
@@ -783,6 +796,30 @@ export function EventFormModal({
                           {formErrors.visitorOptions}
                         </p>
                       )}
+
+                      <label
+                        htmlFor="allow-general-event-visitor-option"
+                        className="flex cursor-pointer items-start gap-[var(--space-2)] rounded-md border border-base-300 bg-base-200 p-[var(--space-3)]"
+                      >
+                        <Checkbox
+                          id="allow-general-event-visitor-option"
+                          checked={allowGeneralEventVisitorOption}
+                          onCheckedChange={(checked) => {
+                            setAllowGeneralEventVisitorOption(checked === true)
+                            setSubmitError(null)
+                          }}
+                          disabled={isSubmitting}
+                        />
+                        <span className="space-y-1">
+                          <span className="text-sm font-medium">
+                            Also allow General event visitor
+                          </span>
+                          <span className="block text-xs text-base-content/60">
+                            Shows a no-option choice on the kiosk alongside the custom visitor
+                            options.
+                          </span>
+                        </span>
+                      </label>
 
                       <button
                         type="button"
