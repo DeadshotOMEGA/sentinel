@@ -1,4 +1,4 @@
-import { mkdtemp, rm } from 'node:fs/promises'
+import { mkdtemp, readFile, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
@@ -33,6 +33,9 @@ describe('HostHotspotRecoveryService', () => {
       requestedFromUserAgent: 'vitest',
     })
     const status = await service.readLatestStatus()
+    const payload = JSON.parse(await readFile(queued.requestPath, 'utf-8')) as {
+      source?: string
+    }
 
     expect(status).toMatchObject({
       state: 'queued',
@@ -41,6 +44,32 @@ describe('HostHotspotRecoveryService', () => {
       message: 'Host hotspot repair request queued. Waiting for the host processor to start.',
     })
     expect(status?.updatedAt).toBeTruthy()
+    expect(payload.source).toBe('frontend-admin')
+
+    await rm(rootDir, { recursive: true, force: true })
+  })
+
+  it('stores explicit request sources for scheduled repairs', async () => {
+    const rootDir = await mkdtemp(join(tmpdir(), 'sentinel-hotspot-recovery-'))
+    const requestDir = join(rootDir, 'requests')
+    const statusFile = join(rootDir, 'status.json')
+    const service = new HostHotspotRecoveryService(requestDir, statusFile)
+
+    const queued = await service.queueRecoveryRequest({
+      requestedByMemberId: 'system',
+      requestedByMemberName: 'Sentinel scheduled maintenance',
+      requestedByRemoteSystemName: 'Scheduled job',
+      requestedFromIp: null,
+      requestedFromUserAgent: null,
+      source: 'backend-scheduler',
+    })
+    const payload = JSON.parse(await readFile(queued.requestPath, 'utf-8')) as {
+      source?: string
+      requestedByMemberName?: string
+    }
+
+    expect(payload.source).toBe('backend-scheduler')
+    expect(payload.requestedByMemberName).toBe('Sentinel scheduled maintenance')
 
     await rm(rootDir, { recursive: true, force: true })
   })

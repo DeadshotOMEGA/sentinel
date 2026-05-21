@@ -80,7 +80,7 @@ export function KioskVisitorRail({
                   </button>
                   <button
                     type="button"
-                    className={`btn btn-sm join-item ${mode === 'signout' ? 'btn-secondary' : 'btn-outline'}`}
+                    className={`btn btn-sm join-item ${mode === 'signout' ? 'btn-error' : 'btn-outline'}`}
                     onClick={() => onModeChange('signout')}
                     disabled={fatalOperationalOutage}
                   >
@@ -160,7 +160,7 @@ export function KioskVisitorRail({
                   START
                 </button>
 
-                <div className="mt-(--space-2) border-t border-base-300 pt-(--space-3)">
+                <div className="mt-(--space-2) flex min-h-0 flex-1 flex-col border-t border-base-300 pt-(--space-3)">
                   <VisitorSelfSignoutFlow
                     layout="inline"
                     presentation="embedded"

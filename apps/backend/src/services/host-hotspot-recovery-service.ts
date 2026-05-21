@@ -15,6 +15,7 @@ export interface QueueHostHotspotRecoveryInput {
   requestedByRemoteSystemName: string | null
   requestedFromIp: string | null
   requestedFromUserAgent: string | null
+  source?: string
 }
 
 export class HostHotspotRecoveryService {
@@ -39,11 +40,12 @@ export class HostHotspotRecoveryService {
   }> {
     const requestId = `host-hotspot-recovery-${Date.now()}-${randomUUID()}`
     const requestPath = join(this.requestDir, `${requestId}.json`)
+    const { source, ...requestInput } = input
     const payload = {
       requestId,
       requestedAt: new Date().toISOString(),
-      source: 'frontend-admin',
-      ...input,
+      source: source ?? 'frontend-admin',
+      ...requestInput,
     }
 
     try {

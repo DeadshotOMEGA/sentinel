@@ -19,9 +19,8 @@ export function getWirelessRecoveryState(input: {
   systemStatus: SystemStatusResponse | null
   isLoading: boolean
   isError: boolean
-  hasAdminAccess: boolean
 }): WirelessRecoveryState {
-  const { systemStatus, isLoading, isError, hasAdminAccess } = input
+  const { systemStatus, isLoading, isError } = input
   const primaryApprovedSsid = systemStatus?.network.approvedSsids[0] ?? null
   const issueCode = systemStatus?.network.issueCode ?? null
   const showConnectLaptop =
@@ -33,7 +32,7 @@ export function getWirelessRecoveryState(input: {
     showConnectLaptop && primaryApprovedSsid
       ? `sentinel-hotspot://connect?ssid=${encodeURIComponent(primaryApprovedSsid)}`
       : null
-  const showRepairHostHotspot = hasAdminAccess && !isLoading && !isError
+  const showRepairHostHotspot = !isLoading && !isError
   const hotspotVisibilityIssue =
     !isLoading &&
     !isError &&

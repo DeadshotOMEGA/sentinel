@@ -45,6 +45,30 @@ function visitorDisplayName(visitor: VisitorResponse): string {
   return clean(visitor.displayName) ?? clean(visitor.name) ?? 'Visitor'
 }
 
+function extractDisplayInitials(visitor: VisitorResponse): string | undefined {
+  const display = clean(visitor.displayName) ?? clean(visitor.name)
+  if (!display?.includes(',')) return undefined
+
+  const [, ...remaining] = display.split(',')
+  return clean(remaining.join(','))
+}
+
+function visitorPublicName(visitor: VisitorResponse): string {
+  const rankPrefix = clean(visitor.rankPrefix)
+  const lastName = clean(visitor.lastName)
+  const firstName = clean(visitor.firstName)
+
+  if (rankPrefix && lastName) {
+    const initials = extractDisplayInitials(visitor)
+    return `${rankPrefix} ${lastName}${initials ? `, ${initials}` : ''}`
+  }
+
+  if (lastName && firstName) return `${lastName}, ${firstName}`
+  if (lastName) return lastName
+
+  return visitorDisplayName(visitor)
+}
+
 function extractVisitReasonField(visitor: VisitorResponse, fieldName: string): string | undefined {
   const visitReason = clean(visitor.visitReason)
   if (!visitReason) return undefined
@@ -101,10 +125,10 @@ export function getPublicVisitorContextLine(visitor: VisitorResponse): string | 
 
 export function getPublicVisitorTitle(visitor: VisitorResponse): string {
   if (visitor.visitType === 'contractor') {
-    return clean(visitor.organization) ?? visitorDisplayName(visitor)
+    return clean(visitor.organization) ?? visitorPublicName(visitor)
   }
 
-  return visitorDisplayName(visitor)
+  return visitorPublicName(visitor)
 }
 
 export function buildVisitorEventTabs(activeVisitors: VisitorResponse[]): VisitorEventTabSummary[] {
@@ -289,7 +313,16 @@ export function buildVisitorSignoutGrouping(
     }
   }
 
-  const groupsWithoutCodes = Array.from(groupedMap.entries())
+  const groupEntries: Array<[string, VisitorResponse[]]> = []
+  for (const [groupId, members] of groupedMap.entries()) {
+    if (members.length <= 1) {
+      ungroupedVisitors.push(...members)
+    } else {
+      groupEntries.push([groupId, members])
+    }
+  }
+
+  const groupsWithoutCodes = groupEntries
     .map(([groupId, members]) => {
       const sortedMembers = [...members].sort((left, right) =>
         left.checkInTime.localeCompare(right.checkInTime)

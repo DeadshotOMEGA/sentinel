@@ -83,7 +83,9 @@ function getWorkDescription(person: PresentPerson): string | undefined {
 }
 
 function getHost(person: PresentPerson): string | undefined {
-  const hostName = clean(person.hostName) ?? extractVisitReasonField(person, 'Meeting with')
+  if (clean(person.hostName)) return undefined
+
+  const hostName = extractVisitReasonField(person, 'Meeting with')
   return hostName ? `hosted by ${hostName}` : undefined
 }
 
@@ -135,6 +137,7 @@ export function getDashboardVisitorCardDetails(
   person: PresentPerson,
   displayName: string
 ): DashboardVisitorCardDetails {
+  const subtitle = getVisitorSubtitle(person)
   const details = uniqueOrdered([
     getEventTitle(person),
     getEventOption(person),
@@ -145,11 +148,11 @@ export function getDashboardVisitorCardDetails(
     getVisitTypeName(person),
     getMilitaryContext(person),
     ...getOtherDetails(person),
-  ])
+  ]).filter((detail) => detail.toLowerCase() !== subtitle?.toLowerCase())
 
   return {
     title: getVisitorTitle(person, displayName),
-    subtitle: getVisitorSubtitle(person),
+    subtitle,
     detail: details.length > 0 ? details.join(' • ') : undefined,
   }
 }
