@@ -3,6 +3,7 @@ import type { DutyWatchRule } from '@sentinel/contracts'
 import { logger } from '../lib/logger.js'
 import { checkMissedDailyReset, runDailyReset } from './daily-reset.js'
 import { runDutyWatchAlerts } from './duty-watch-alerts.js'
+import { runScheduledHostHotspotRecovery } from './host-hotspot-recovery.js'
 import { runLockupAlerts } from './lockup-alerts.js'
 
 // ============================================================================
@@ -15,6 +16,7 @@ export interface JobScheduleConfig {
   dutyWatchRules: DutyWatchRule[]
   lockupWarningTime: string // HH:MM format, e.g., "22:00"
   lockupCriticalTime: string // HH:MM format, e.g., "23:00"
+  hostHotspotRecoveryTime: string // HH:MM format, e.g., "06:00"
 }
 
 const DEFAULT_CONFIG: JobScheduleConfig = {
@@ -23,6 +25,7 @@ const DEFAULT_CONFIG: JobScheduleConfig = {
   dutyWatchRules: [],
   lockupWarningTime: '22:00',
   lockupCriticalTime: '23:00',
+  hostHotspotRecoveryTime: '06:00',
 }
 
 // ============================================================================
@@ -99,6 +102,11 @@ export async function startJobScheduler(customConfig?: Partial<JobScheduleConfig
         cronExpr: toCron(config.lockupCriticalTime),
         fn: () => runLockupAlerts('critical'),
       },
+      {
+        name: 'host-hotspot-recovery',
+        cronExpr: toCron(config.hostHotspotRecoveryTime),
+        fn: runScheduledHostHotspotRecovery,
+      },
     ]
 
     for (const job of jobs) {
@@ -153,7 +161,12 @@ export async function stopJobScheduler(): Promise<void> {
  * Manually trigger a job (for testing/admin purposes)
  */
 export async function triggerJob(
-  jobName: 'daily-reset' | 'duty-watch-alerts' | 'lockup-warning' | 'lockup-critical'
+  jobName:
+    | 'daily-reset'
+    | 'duty-watch-alerts'
+    | 'lockup-warning'
+    | 'lockup-critical'
+    | 'host-hotspot-recovery'
 ): Promise<void> {
   logger.info(`Manually triggering job: ${jobName}`)
 
@@ -169,6 +182,9 @@ export async function triggerJob(
       break
     case 'lockup-critical':
       await runLockupAlerts('critical')
+      break
+    case 'host-hotspot-recovery':
+      await runScheduledHostHotspotRecovery()
       break
     default:
       throw new Error(`Unknown job: ${jobName}`)
