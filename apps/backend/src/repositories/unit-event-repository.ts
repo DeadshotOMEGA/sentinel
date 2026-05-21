@@ -257,7 +257,13 @@ const visitorOptionsInclude = {
   orderBy: { displayOrder: 'asc' as const },
   include: {
     _count: {
-      select: { visitors: true },
+      select: {
+        visitors: {
+          where: {
+            checkOutTime: null,
+          },
+        },
+      },
     },
   },
 }

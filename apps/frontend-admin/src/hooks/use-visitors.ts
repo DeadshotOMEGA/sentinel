@@ -87,6 +87,7 @@ export function useCheckoutVisitor() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['active-visitors'] })
       queryClient.invalidateQueries({ queryKey: ['present-people'] })
+      invalidateVisitorEventAvailabilityQueries(queryClient)
       void invalidateDashboardQueries(queryClient)
     },
   })
@@ -110,6 +111,7 @@ export function useCheckoutVisitorGroup() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['active-visitors'] })
       queryClient.invalidateQueries({ queryKey: ['present-people'] })
+      invalidateVisitorEventAvailabilityQueries(queryClient)
       void invalidateDashboardQueries(queryClient)
     },
   })

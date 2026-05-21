@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { invalidateVisitorEventAvailabilityQueries } from '../lib/visitor-event-availability-invalidation'
 
 describe('invalidateVisitorEventAvailabilityQueries', () => {
-  it('refreshes kiosk event option capacity after visitor sign-ins', () => {
+  it('refreshes kiosk event option capacity after visitor sign-ins and sign-outs', () => {
     const queryClient = new QueryClient()
     const invalidateQueries = vi.spyOn(queryClient, 'invalidateQueries')
 
