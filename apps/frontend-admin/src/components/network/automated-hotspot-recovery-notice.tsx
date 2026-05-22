@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils'
 import { useAuthStore } from '@/store/auth-store'
 import {
   formatRecoveryTime,
+  getAutomatedRecoveryStatusRefetchIntervalMs,
   getRecoveryEstimateSeconds,
   getRecoveryProgressPercent,
   getRecoveryRemainingSeconds,
@@ -76,7 +77,7 @@ export function AutomatedHotspotRecoveryNotice() {
   const [refreshPayload, setRefreshPayload] = useState<SystemRefreshPayload | null>(null)
   const systemStatusQuery = useSystemStatus({
     enabled: isAuthenticated,
-    refetchIntervalMs: refreshPayload ? 1_000 : 5_000,
+    refetchIntervalMs: getAutomatedRecoveryStatusRefetchIntervalMs(),
   })
   const systemStatus = systemStatusQuery.data ?? null
   const recoveryStatus = systemStatus?.network.hostHotspotRecovery ?? null
