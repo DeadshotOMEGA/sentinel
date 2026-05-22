@@ -13,6 +13,7 @@ import {
   ScrollText,
   Shield,
   Terminal,
+  UserPlus,
 } from 'lucide-react'
 import type { AdminIconKey } from '@/lib/admin-routes'
 
@@ -48,5 +49,7 @@ export function AdminIcon({ icon, ...props }: AdminIconProps) {
       return <Shield {...props} />
     case 'terminal':
       return <Terminal {...props} />
+    case 'user-plus':
+      return <UserPlus {...props} />
   }
 }

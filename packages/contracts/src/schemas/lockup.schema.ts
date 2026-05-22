@@ -227,11 +227,26 @@ export const PresentVisitorForLockupSchema = v.object({
 })
 
 /**
+ * Present temporary personnel for lockup schema
+ */
+export const PresentTemporaryPersonnelForLockupSchema = v.object({
+  id: v.string(),
+  name: v.string(),
+  organization: v.string(),
+  role: v.nullable(v.string()),
+  assignmentId: v.string(),
+  assignmentName: v.string(),
+  checkInTime: v.string(),
+  kioskId: v.optional(v.string()),
+})
+
+/**
  * Lockup present data response schema
  */
 export const LockupPresentDataResponseSchema = v.object({
   members: v.array(PresentMemberForLockupSchema),
   visitors: v.array(PresentVisitorForLockupSchema),
+  temporaryPersonnel: v.array(PresentTemporaryPersonnelForLockupSchema),
   totalCount: v.number(),
 })
 
@@ -258,11 +273,13 @@ export const ExecuteLockupResponseSchema = v.object({
   checkedOut: v.object({
     members: v.array(v.string()),
     visitors: v.array(v.string()),
+    temporaryPersonnel: v.array(v.string()),
   }),
   auditLogId: v.string(),
   stats: v.object({
     membersCheckedOut: v.number(),
     visitorsCheckedOut: v.number(),
+    temporaryPersonnelCheckedOut: v.number(),
     totalCheckedOut: v.number(),
   }),
 })
@@ -350,6 +367,9 @@ export type LockupHistoryResponse = v.InferOutput<typeof LockupHistoryResponseSc
 // Type exports - Existing types
 export type PresentMemberForLockup = v.InferOutput<typeof PresentMemberForLockupSchema>
 export type PresentVisitorForLockup = v.InferOutput<typeof PresentVisitorForLockupSchema>
+export type PresentTemporaryPersonnelForLockup = v.InferOutput<
+  typeof PresentTemporaryPersonnelForLockupSchema
+>
 export type LockupPresentDataResponse = v.InferOutput<typeof LockupPresentDataResponseSchema>
 export type LockupPresentDataQuery = v.InferOutput<typeof LockupPresentDataQuerySchema>
 export type ExecuteLockupInput = v.InferOutput<typeof ExecuteLockupSchema>

@@ -2,7 +2,7 @@
 
 **Purpose:** Immutable record of all architectural decisions
 
-**Last Updated:** 2026-01-19
+**Last Updated:** 2026-05-22
 
 ---
 
@@ -25,19 +25,19 @@ Architecture Decision Records document:
 | Status     | Count | Description                     |
 | ---------- | ----- | ------------------------------- |
 | Proposed   | 0     | Under review                    |
-| Accepted   | 0     | Approved and active             |
+| Accepted   | 1     | Approved and active             |
 | Deprecated | 0     | Superseded but kept for history |
 | Rejected   | 0     | Proposed but not approved       |
 
-**Total ADRs:** 0
+**Total ADRs:** 1
 
 ---
 
 ## All Decisions (Chronological)
 
-| ADR           | Title | Status | Date | Supersedes | Superseded By |
-| ------------- | ----- | ------ | ---- | ---------- | ------------- |
-| _No ADRs yet_ | -     | -      | -    | -          | -             |
+| ADR                                                    | Title                              | Status   | Date       | Supersedes | Superseded By |
+| ------------------------------------------------------ | ---------------------------------- | -------- | ---------- | ---------- | ------------- |
+| [ADR-0001](0001-temporary-personnel-presence-model.md) | Temporary Personnel Presence Model | Accepted | 2026-05-22 | -          | -             |
 
 ---
 
@@ -53,11 +53,11 @@ _No ADRs yet_
 
 ### Architecture & Infrastructure
 
-_No ADRs yet_
+- [ADR-0001: Temporary Personnel Presence Model](0001-temporary-personnel-presence-model.md)
 
 ### Data & Persistence
 
-_No ADRs yet_
+- [ADR-0001: Temporary Personnel Presence Model](0001-temporary-personnel-presence-model.md)
 
 ### Frontend
 
@@ -73,7 +73,7 @@ _No ADRs yet_
 
 ### Architectural Patterns
 
-_No ADRs yet_
+- [ADR-0001: Temporary Personnel Presence Model](0001-temporary-personnel-presence-model.md)
 
 ### Process & Workflow
 
@@ -89,12 +89,12 @@ _No ADRs yet_
 
 Based on current work, these ADRs should be created:
 
-- [ ] **0001-integration-first-testing.md** - Why integration tests over unit tests
-- [ ] **0002-better-auth-adoption.md** - Why better-auth vs custom JWT
-- [ ] **0003-testcontainers-usage.md** - Testing with real databases
-- [ ] **0004-monorepo-structure.md** - pnpm workspaces organization
-- [ ] **0005-ts-rest-adoption.md** - ts-rest + Valibot for contracts
-- [ ] **0006-daisyui-framework.md** - Why DaisyUI for frontend components
+- [ ] **integration-first-testing.md** - Why integration tests over unit tests
+- [ ] **better-auth-adoption.md** - Why better-auth vs custom JWT
+- [ ] **testcontainers-usage.md** - Testing with real databases
+- [ ] **monorepo-structure.md** - pnpm workspaces organization
+- [ ] **ts-rest-adoption.md** - ts-rest + Valibot for contracts
+- [ ] **daisyui-framework.md** - Why DaisyUI for frontend components
 
 **See:** [Backend Rebuild Plan](../../plans/active/backend-rebuild-plan.md) for context
 
@@ -192,8 +192,8 @@ rg "better-auth|testcontainers|ts-rest" docs/decisions/adr/
 
 ## ADR Statistics
 
-- **Total ADRs:** 0
-- **Accepted:** 0
+- **Total ADRs:** 1
+- **Accepted:** 1
 - **Deprecated:** 0
 - **Rejected:** 0
 - **Average Time to Decision:** N/A

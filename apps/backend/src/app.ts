@@ -12,6 +12,7 @@ import {
   auditContract,
   eventContract,
   visitorContract,
+  temporaryPersonnelContract,
   securityAlertContract,
   ddsContract,
   lockupContract,
@@ -60,6 +61,7 @@ import { badgesRouter } from './routes/badges.js'
 import { auditLogsRouter } from './routes/audit-logs.js'
 import { eventsRouter } from './routes/events.js'
 import { visitorsRouter } from './routes/visitors.js'
+import { temporaryPersonnelRouter } from './routes/temporary-personnel.js'
 import { securityAlertsRouter } from './routes/security-alerts.js'
 import { ddsRouter } from './routes/dds.js'
 import { lockupRouter } from './routes/lockup.js'
@@ -237,6 +239,15 @@ export function createApp(): Express {
     },
   })
   createExpressEndpoints(visitorContract, visitorsRouter, app, {
+    requestValidationErrorHandler: (err, _req, res) => {
+      return res.status(400).json({
+        error: 'VALIDATION_ERROR',
+        message: 'Request validation failed',
+        issues: err.body?.issues || err.pathParams?.issues || err.query?.issues || [],
+      })
+    },
+  })
+  createExpressEndpoints(temporaryPersonnelContract, temporaryPersonnelRouter, app, {
     requestValidationErrorHandler: (err, _req, res) => {
       return res.status(400).json({
         error: 'VALIDATION_ERROR',

@@ -19,6 +19,7 @@ export type AdminRouteId =
   | 'logs'
   | 'database'
   | 'badges'
+  | 'temporary-personnel'
   | 'config'
   | 'timings'
   | 'account-levels'
@@ -50,6 +51,7 @@ export type AdminIconKey =
   | 'network'
   | 'shield'
   | 'terminal'
+  | 'user-plus'
 
 export interface AdminNavRoute {
   id: AdminRouteId
@@ -197,6 +199,22 @@ export const ADMIN_NAV_ROUTES = [
     aliases: ['cards', 'nfc', 'rfid', 'access badges'],
     keywords: ['badges', 'access', 'cards', 'nfc', 'rfid'],
     searchWeight: 88,
+    requiredRole: ADMIN_ROLE_LEVEL.ADMIN,
+    requiredCapabilities: ['admin:view', 'badges:manage'],
+    navVisibility: 'sidebar',
+    featureStatus: 'available',
+  },
+  {
+    id: 'temporary-personnel',
+    label: 'Temporary Personnel',
+    href: '/admin/temporary-personnel',
+    group: 'Access Control',
+    tier: 1,
+    icon: 'user-plus',
+    description: 'Create temporary assignments and issue presence-only NFC tags.',
+    aliases: ['court martial', 'temporary people', 'temporary access', 'nfc tags'],
+    keywords: ['temporary', 'personnel', 'court', 'nfc', 'presence', 'non member'],
+    searchWeight: 87,
     requiredRole: ADMIN_ROLE_LEVEL.ADMIN,
     requiredCapabilities: ['admin:view', 'badges:manage'],
     navVisibility: 'sidebar',

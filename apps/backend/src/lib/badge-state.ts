@@ -51,6 +51,7 @@ export function normalizeBadgeAssignmentType(assignmentType: string): BadgeAssig
   switch (assignmentType) {
     case 'member':
     case 'visitor':
+    case 'temporary_personnel':
     case 'event':
     case 'unassigned':
       return assignmentType

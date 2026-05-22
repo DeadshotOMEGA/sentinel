@@ -312,7 +312,7 @@ export const checkinsRouter = s.router(checkinContract, {
    */
   getPresenceStatus: async () => {
     try {
-      const stats = await checkinRepo.getPresenceStats()
+      const stats = await presenceService.getStats()
 
       // Get division breakdown from database
       const divisions = await getPrismaClient().$queryRaw<
@@ -346,7 +346,8 @@ export const checkinsRouter = s.router(checkinContract, {
       return {
         status: 200 as const,
         body: {
-          totalPresent: stats.present,
+          totalPresent:
+            stats.presentMembers + stats.presentVisitors + stats.presentTemporaryPersonnel,
           totalMembers: stats.totalMembers,
           byDivision: divisions.map((d) => ({
             divisionId: d.division_id,
@@ -431,6 +432,9 @@ export const checkinsRouter = s.router(checkinContract, {
             memberTypeInfo: p.memberTypeInfo,
             tags: p.tags,
             organization: p.organization,
+            role: p.role,
+            temporaryPersonnelAssignmentId: p.temporaryPersonnelAssignmentId,
+            temporaryPersonnelAssignmentName: p.temporaryPersonnelAssignmentName,
             visitType: p.visitType,
             visitReason: p.visitReason,
             hostMemberId: p.hostMemberId,

@@ -25,7 +25,7 @@ import { applyDashboardPersonCardSort } from '@/lib/dashboard-person-card-sort'
 import { canEditHistoryEntries, getCurrentDdsEditorId } from '@/lib/history-permissions'
 import { cn } from '@/lib/utils'
 
-type FilterType = 'all' | 'member' | 'visitor'
+type FilterType = 'all' | 'member' | 'visitor' | 'temporary_personnel'
 
 export function PersonCardGrid() {
   const { data, isLoading, isError } = usePresentPeople()
@@ -120,6 +120,10 @@ export function PersonCardGrid() {
   )
   const visitorCount = useMemo(
     () => data?.people?.filter((p) => p.type === 'visitor').length ?? 0,
+    [data?.people]
+  )
+  const temporaryPersonnelCount = useMemo(
+    () => data?.people?.filter((p) => p.type === 'temporary_personnel').length ?? 0,
     [data?.people]
   )
 
@@ -230,6 +234,13 @@ export function PersonCardGrid() {
               onClick={() => handleFilterChange('visitor')}
             >
               Visitors ({visitorCount})
+            </MotionButton>
+            <MotionButton
+              className={`btn btn-sm ${filter === 'temporary_personnel' ? 'btn-secondary' : 'btn-ghost'}`}
+              aria-pressed={filter === 'temporary_personnel'}
+              onClick={() => handleFilterChange('temporary_personnel')}
+            >
+              Temporary ({temporaryPersonnelCount})
             </MotionButton>
           </div>
           {(isDevMode || isSentinelSystem) && (

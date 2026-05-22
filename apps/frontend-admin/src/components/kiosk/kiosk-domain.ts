@@ -65,6 +65,16 @@ export interface SuccessfulScan {
   timestamp: string
 }
 
+export interface TemporaryPersonnelScan {
+  type: 'temporary_personnel'
+  serial: string
+  temporaryPersonnelId: string
+  temporaryPersonnelName: string
+  assignmentName: string
+  direction: ScanDirection
+  timestamp: string
+}
+
 export interface QueuedScan {
   id: string
   payload: CreateCheckinInput
@@ -135,7 +145,12 @@ export interface KioskConnectivityBadge {
   detail: string
 }
 
-export type ScanMutationResult = SuccessfulScan | VisitorScan | LockupScan | QueuedMemberScan
+export type ScanMutationResult =
+  | SuccessfulScan
+  | TemporaryPersonnelScan
+  | VisitorScan
+  | LockupScan
+  | QueuedMemberScan
 export type DutyWatchData = ReturnType<typeof useTonightDutyWatch>['data']
 export type ScheduledDdsData = ReturnType<typeof useCurrentDds>['data']
 export type LockupStatusData = ReturnType<typeof useLockupStatus>['data']

@@ -34,6 +34,7 @@ export * from './network-setting.contract.js'
 export * from './system-status.contract.js'
 export * from './system-update.contract.js'
 export * from './admin-navigation.contract.js'
+export * from './temporary-personnel.contract.js'
 
 // Main API contract
 export * from './api.contract.js'

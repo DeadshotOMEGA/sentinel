@@ -16,6 +16,7 @@ export const AdminNavigationRouteIdValues = [
   'logs',
   'database',
   'badges',
+  'temporary-personnel',
   'config',
   'timings',
   'account-levels',

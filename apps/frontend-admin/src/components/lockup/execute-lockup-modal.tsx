@@ -66,6 +66,7 @@ export function ExecuteLockupModal({
 
   const memberCount = presentData?.members.length || 0
   const visitorCount = presentData?.visitors.length || 0
+  const temporaryPersonnelCount = presentData?.temporaryPersonnel.length || 0
   const totalCount = presentData?.totalCount || 0
 
   return (
@@ -94,7 +95,7 @@ export function ExecuteLockupModal({
                   {/* People Still Present */}
                   <div className="p-4 bg-base-200/50 rounded-lg border">
                     <h4 className="font-medium mb-3">Currently Checked In</h4>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-4 sm:grid-cols-3">
                       <div className="flex items-center gap-2">
                         <User className="h-4 w-4 text-base-content/60" />
                         <span className="text-sm">{memberCount} members</span>
@@ -102,6 +103,10 @@ export function ExecuteLockupModal({
                       <div className="flex items-center gap-2">
                         <Users className="h-4 w-4 text-base-content/60" />
                         <span className="text-sm">{visitorCount} visitors</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Users className="h-4 w-4 text-base-content/60" />
+                        <span className="text-sm">{temporaryPersonnelCount} temporary</span>
                       </div>
                     </div>
                     {totalCount > 0 && (

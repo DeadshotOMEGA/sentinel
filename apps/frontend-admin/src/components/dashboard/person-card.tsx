@@ -165,6 +165,7 @@ export const PersonCard = memo(function PersonCard({
   onSelectMember,
 }: PersonCardProps) {
   const isMember = person.type === 'member'
+  const isTemporaryPersonnel = person.type === 'temporary_personnel'
   const isInteractive = Boolean(isMember && onSelectMember)
   const displayName = formatPersonLabel({
     name: person.name,
@@ -185,6 +186,10 @@ export const PersonCard = memo(function PersonCard({
   const memberSubtitle = memberFirstName ?? memberInitials
   const memberFallbackSubtitle = fallbackSplit.slice(1).join(',').trim()
   const visitorDetails = getDashboardVisitorCardDetails(person, displayName)
+  const temporaryPersonnelTitle = getOptionalDisplayName(person) ?? person.name
+  const temporaryPersonnelSubtitle = [person.temporaryPersonnelAssignmentName, person.organization]
+    .filter(Boolean)
+    .join(' · ')
   const memberTypeInfo = isMember ? person.memberTypeInfo : undefined
   const shouldShowMemberTypeBadge = Boolean(memberTypeInfo && !hasNonDutyWatchTag(person))
 
@@ -203,8 +208,14 @@ export const PersonCard = memo(function PersonCard({
     ? 'border-primary shadow-md ring-1 ring-primary/20'
     : isMember
       ? 'border-primary/50'
-      : 'border-neutral/50'
-  const cardSurfaceClass = isMember ? 'card-elevated' : 'card-elevated-neutral'
+      : isTemporaryPersonnel
+        ? 'border-secondary/50'
+        : 'border-neutral/50'
+  const cardSurfaceClass = isMember
+    ? 'card-elevated'
+    : isTemporaryPersonnel
+      ? 'card-elevated'
+      : 'card-elevated-neutral'
 
   const handleMemberSelect = (sideHint: 'left' | 'right') => {
     if (isInteractive) {
@@ -236,6 +247,22 @@ export const PersonCard = memo(function PersonCard({
             {divisionCode && (
               <span className="badge badge-outline badge-sm shrink-0">{divisionCode}</span>
             )}
+          </div>
+        ) : isTemporaryPersonnel ? (
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex-1 min-w-0">
+              <h3 className="font-bold text-[0.95rem] leading-tight truncate">
+                {temporaryPersonnelTitle}
+              </h3>
+              {temporaryPersonnelSubtitle && (
+                <p className="text-xs text-base-content/60 truncate">
+                  {temporaryPersonnelSubtitle}
+                </p>
+              )}
+            </div>
+            <AppBadge status="info" size="sm">
+              Temporary
+            </AppBadge>
           </div>
         ) : (
           <div className="flex items-start justify-between gap-2">
@@ -308,6 +335,21 @@ export const PersonCard = memo(function PersonCard({
                 </Chip>
               )}
             </div>
+          ) : isTemporaryPersonnel ? (
+            <div className="flex min-w-0 flex-col gap-1 text-xs text-base-content/70">
+              {person.role && (
+                <span className="flex min-w-0 items-start gap-1">
+                  <User size={10} className="mt-0.5 shrink-0" />
+                  <span className="truncate">{person.role}</span>
+                </span>
+              )}
+              {person.temporaryPersonnelAssignmentName && (
+                <span className="flex min-w-0 items-start gap-1">
+                  <Building2 size={10} className="mt-0.5 shrink-0" />
+                  <span className="truncate">{person.temporaryPersonnelAssignmentName}</span>
+                </span>
+              )}
+            </div>
           ) : (
             <div className="flex min-w-0 flex-col gap-1 text-xs text-base-content/70">
               {person.hostName && (
@@ -339,7 +381,7 @@ export const PersonCard = memo(function PersonCard({
               {isSelected ? 'Actions open' : 'Open actions'}
             </span>
           )}
-          {!isMember && onCheckoutVisitor && (
+          {person.type === 'visitor' && onCheckoutVisitor && (
             <button
               type="button"
               className="btn btn-ghost btn-xs text-error gap-1"
