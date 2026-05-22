@@ -1,8 +1,9 @@
 /* global process */
 import { io, Socket } from 'socket.io-client'
 
-class WebSocketManager {
+export class WebSocketManager {
   private socket: Socket | null = null
+  private subscriptionCounts = new Map<string, number>()
 
   get hasSocket(): boolean {
     return this.socket !== null
@@ -13,7 +14,12 @@ class WebSocketManager {
   }
 
   connect() {
-    if (this.socket) return
+    if (this.socket) {
+      if (!this.socket.connected) {
+        this.socket.connect()
+      }
+      return
+    }
 
     const socketUrl = process.env.NEXT_PUBLIC_WS_URL || undefined
     this.socket = io(socketUrl, {
@@ -27,6 +33,7 @@ class WebSocketManager {
 
     this.socket.on('connect', () => {
       console.log('[WebSocket] Connected:', this.socket?.id)
+      this.resubscribeActiveChannels()
     })
 
     this.socket.on('disconnect', (reason) => {
@@ -40,12 +47,26 @@ class WebSocketManager {
 
   subscribe(channel: string) {
     if (!this.socket) throw new Error('Socket not initialized')
-    this.socket.emit(`${channel}:subscribe`)
+
+    const currentCount = this.subscriptionCounts.get(channel) ?? 0
+    this.subscriptionCounts.set(channel, currentCount + 1)
+
+    if (currentCount === 0) {
+      this.socket.emit(`${channel}:subscribe`)
+    }
   }
 
   unsubscribe(channel: string) {
     if (!this.socket) throw new Error('Socket not initialized')
-    this.socket.emit(`${channel}:unsubscribe`)
+
+    const currentCount = this.subscriptionCounts.get(channel) ?? 0
+    if (currentCount <= 1) {
+      this.subscriptionCounts.delete(channel)
+      this.socket.emit(`${channel}:unsubscribe`)
+      return
+    }
+
+    this.subscriptionCounts.set(channel, currentCount - 1)
   }
 
   on(event: string, handler: (data: unknown) => void) {
@@ -67,6 +88,15 @@ class WebSocketManager {
     if (this.socket) {
       this.socket.disconnect()
       this.socket = null
+    }
+    this.subscriptionCounts.clear()
+  }
+
+  private resubscribeActiveChannels() {
+    if (!this.socket) return
+
+    for (const channel of this.subscriptionCounts.keys()) {
+      this.socket.emit(`${channel}:subscribe`)
     }
   }
 }
