@@ -1587,6 +1587,7 @@ DESKTOP
     "${DEPLOY_DIR}/runtime/hotspot-recovery/failed"
   run_root chmod 755 \
     "${DEPLOY_DIR}/ensure-host-hotspot-profile.sh" \
+    "${DEPLOY_DIR}/monitor-host-hotspot.sh" \
     "${DEPLOY_DIR}/recover-host-hotspot.sh" \
     "${DEPLOY_DIR}/process-host-hotspot-recovery-requests.sh" \
     "${DEPLOY_DIR}/sentinel-hotspot-connect.sh" >/dev/null 2>&1 || true
@@ -1622,11 +1623,44 @@ Unit=sentinel-host-hotspot-recovery.service
 WantedBy=multi-user.target
 UNIT
 
+  local monitor_interval_seconds
+  monitor_interval_seconds="$(env_value HOST_HOTSPOT_MONITOR_INTERVAL_SECONDS 60)"
+  if [[ ! "${monitor_interval_seconds}" =~ ^[0-9]+$ ]] || (( monitor_interval_seconds < 30 )); then
+    monitor_interval_seconds="60"
+  fi
+
+  run_root tee /etc/systemd/system/sentinel-host-hotspot-monitor.service >/dev/null <<UNIT
+[Unit]
+Description=Sentinel host hotspot monitor
+After=network-online.target sentinel-host-hotspot-recovery.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=${DEPLOY_DIR}
+ExecStart=${DEPLOY_DIR}/monitor-host-hotspot.sh
+UNIT
+
+  run_root tee /etc/systemd/system/sentinel-host-hotspot-monitor.timer >/dev/null <<UNIT
+[Unit]
+Description=Sentinel host hotspot monitor timer
+
+[Timer]
+OnBootSec=90s
+OnUnitActiveSec=${monitor_interval_seconds}s
+AccuracySec=10s
+Unit=sentinel-host-hotspot-monitor.service
+
+[Install]
+WantedBy=timers.target
+UNIT
+
   run_root systemctl daemon-reload
   run_root systemctl enable --now sentinel-host-hotspot-recovery.path
+  run_root systemctl enable --now sentinel-host-hotspot-monitor.timer
   run_root systemctl start sentinel-host-hotspot-recovery.service
 
-  log "Host hotspot recovery watcher enabled."
+  log "Host hotspot recovery watcher and monitor enabled."
 }
 
 run_host_hotspot_recovery_nonblocking() {
