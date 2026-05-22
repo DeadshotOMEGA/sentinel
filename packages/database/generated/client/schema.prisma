@@ -62,21 +62,23 @@ model AuditLog {
 }
 
 model Badge {
-  id             String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  serialNumber   String          @unique @map("serial_number") @db.VarChar(100)
-  assignmentType String          @map("assignment_type") @db.VarChar(20)
-  assignedToId   String?         @map("assigned_to_id") @db.Uuid
-  status         String          @default("active") @db.VarChar(20)
-  badgeStatusId  String?         @map("badge_status_id") @db.Uuid
-  lastUsed       DateTime?       @map("last_used") @db.Timestamp(6)
-  createdAt      DateTime?       @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt      DateTime?       @default(now()) @map("updated_at") @db.Timestamp(6)
-  checkins       Checkin[]
-  eventAttendees EventAttendee[]
-  eventCheckins  EventCheckin[]
-  members        Member[]
-  visitors       Visitor[]
-  badgeStatusRef BadgeStatus?    @relation(fields: [badgeStatusId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  id                               String                            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  serialNumber                     String                            @unique @map("serial_number") @db.VarChar(100)
+  assignmentType                   String                            @map("assignment_type") @db.VarChar(20)
+  assignedToId                     String?                           @map("assigned_to_id") @db.Uuid
+  status                           String                            @default("active") @db.VarChar(20)
+  badgeStatusId                    String?                           @map("badge_status_id") @db.Uuid
+  lastUsed                         DateTime?                         @map("last_used") @db.Timestamp(6)
+  createdAt                        DateTime?                         @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt                        DateTime?                         @default(now()) @map("updated_at") @db.Timestamp(6)
+  checkins                         Checkin[]
+  eventAttendees                   EventAttendee[]
+  eventCheckins                    EventCheckin[]
+  members                          Member[]
+  visitors                         Visitor[]
+  temporaryPersonnelNfcAssignments TemporaryPersonnelNfcAssignment[]
+  temporaryPersonnelCheckins       TemporaryPersonnelCheckin[]
+  badgeStatusRef                   BadgeStatus?                      @relation(fields: [badgeStatusId], references: [id], onDelete: Restrict, onUpdate: NoAction)
 
   @@index([assignedToId], map: "idx_badges_assigned_to")
   @@index([serialNumber], map: "idx_badges_serial_number")
@@ -189,65 +191,66 @@ model Event {
 }
 
 model Member {
-  id                         String                    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  serviceNumber              String                    @unique @map("service_number") @db.VarChar(20)
-  rankId                     String                    @map("rank_id") @db.Uuid
-  rank                       String                    @db.VarChar(50)
-  firstName                  String                    @map("first_name") @db.VarChar(100)
-  lastName                   String                    @map("last_name") @db.VarChar(100)
-  displayName                String?                   @map("display_name") @db.VarChar(200)
-  email                      String?                   @db.VarChar(255)
-  mobilePhone                String?                   @map("mobile_phone") @db.VarChar(50)
-  divisionId                 String?                   @map("division_id") @db.Uuid
-  badgeId                    String?                   @map("badge_id") @db.Uuid
-  memberType                 String                    @map("member_type") @db.VarChar(20)
-  memberSource               String                    @default("nominal_roll") @map("member_source") @db.VarChar(30)
-  status                     String                    @default("active") @db.VarChar(20)
-  memberTypeId               String?                   @map("member_type_id") @db.Uuid
-  memberStatusId             String?                   @map("member_status_id") @db.Uuid
-  createdAt                  DateTime?                 @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt                  DateTime?                 @default(now()) @map("updated_at") @db.Timestamp(6)
-  employeeNumber             String?                   @map("employee_number") @db.VarChar(20)
-  initials                   String?                   @db.VarChar(10)
-  mess                       String?                   @db.VarChar(50)
-  moc                        String?                   @db.VarChar(100)
-  classDetails               String?                   @map("class_details") @db.VarChar(100)
-  homePhone                  String?                   @map("home_phone") @db.VarChar(30)
-  notes                      String?
-  contract_start             DateTime?                 @db.Date
-  contract_end               DateTime?                 @db.Date
-  missedCheckoutCount        Int                       @default(0) @map("missed_checkout_count")
-  lastMissedCheckout         DateTime?                 @map("last_missed_checkout") @db.Timestamp(6)
-  rankRef                    Rank?                     @relation(fields: [rankId], references: [id], onDelete: Restrict, onUpdate: NoAction)
-  badge                      Badge?                    @relation(fields: [badgeId], references: [id], onDelete: SetNull, onUpdate: NoAction)
-  bmqEnrollments             BmqEnrollment[]
-  checkins                   Checkin[]
-  division                   Division?                 @relation(fields: [divisionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
-  visitorsHosted             Visitor[]                 @relation("VisitorHost")
-  visitorsCreated            Visitor[]                 @relation("VisitorCreatedBy")
-  visitorGroupsHosted        VisitorGroup[]            @relation("VisitorGroupHost")
-  memberTags                 MemberTag[]
-  ddsAssignments             DdsAssignment[]           @relation("DdsMember")
-  ddsTransfers               DdsAssignment[]           @relation("DdsTransferredTo")
-  memberTypeRef              MemberType?               @relation(fields: [memberTypeId], references: [id], onDelete: Restrict, onUpdate: NoAction)
-  memberStatusRef            MemberStatus?             @relation(fields: [memberStatusId], references: [id], onDelete: Restrict, onUpdate: NoAction)
-  qualifications             MemberQualification[]
-  scheduleAssignments        ScheduleAssignment[]
-  liveDutyAssignments        LiveDutyAssignment[]
-  dwOverridesAsMember        DutyWatchNightOverride[]  @relation("OverrideMember")
-  dwOverridesAsBase          DutyWatchNightOverride[]  @relation("OverrideBaseMember")
-  lockupHolding              LockupStatus[]            @relation("LockupCurrentHolder")
-  lockupSecured              LockupStatus[]            @relation("LockupSecuredBy")
-  lockupTransfersFrom        LockupTransfer[]          @relation("LockupTransferFrom")
-  lockupTransfersTo          LockupTransfer[]          @relation("LockupTransferTo")
-  lockupExecutions           LockupExecution[]
-  pinHash                    String?                   @map("pin_hash") @db.VarChar(255)
-  mustChangePin              Boolean                   @default(false) @map("must_change_pin")
-  accountLevel               Int                       @default(1) @map("account_level")
-  missedCheckouts            MissedCheckout[]
-  unitEventDutyAssignments   UnitEventDutyAssignment[]
-  memberSessions             MemberSession[]
-  acknowledgedSecurityAlerts SecurityAlert[]           @relation("AlertAcknowledgedBy")
+  id                                     String                         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  serviceNumber                          String                         @unique @map("service_number") @db.VarChar(20)
+  rankId                                 String                         @map("rank_id") @db.Uuid
+  rank                                   String                         @db.VarChar(50)
+  firstName                              String                         @map("first_name") @db.VarChar(100)
+  lastName                               String                         @map("last_name") @db.VarChar(100)
+  displayName                            String?                        @map("display_name") @db.VarChar(200)
+  email                                  String?                        @db.VarChar(255)
+  mobilePhone                            String?                        @map("mobile_phone") @db.VarChar(50)
+  divisionId                             String?                        @map("division_id") @db.Uuid
+  badgeId                                String?                        @map("badge_id") @db.Uuid
+  memberType                             String                         @map("member_type") @db.VarChar(20)
+  memberSource                           String                         @default("nominal_roll") @map("member_source") @db.VarChar(30)
+  status                                 String                         @default("active") @db.VarChar(20)
+  memberTypeId                           String?                        @map("member_type_id") @db.Uuid
+  memberStatusId                         String?                        @map("member_status_id") @db.Uuid
+  createdAt                              DateTime?                      @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt                              DateTime?                      @default(now()) @map("updated_at") @db.Timestamp(6)
+  employeeNumber                         String?                        @map("employee_number") @db.VarChar(20)
+  initials                               String?                        @db.VarChar(10)
+  mess                                   String?                        @db.VarChar(50)
+  moc                                    String?                        @db.VarChar(100)
+  classDetails                           String?                        @map("class_details") @db.VarChar(100)
+  homePhone                              String?                        @map("home_phone") @db.VarChar(30)
+  notes                                  String?
+  contract_start                         DateTime?                      @db.Date
+  contract_end                           DateTime?                      @db.Date
+  missedCheckoutCount                    Int                            @default(0) @map("missed_checkout_count")
+  lastMissedCheckout                     DateTime?                      @map("last_missed_checkout") @db.Timestamp(6)
+  rankRef                                Rank?                          @relation(fields: [rankId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  badge                                  Badge?                         @relation(fields: [badgeId], references: [id], onDelete: SetNull, onUpdate: NoAction)
+  bmqEnrollments                         BmqEnrollment[]
+  checkins                               Checkin[]
+  division                               Division?                      @relation(fields: [divisionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  visitorsHosted                         Visitor[]                      @relation("VisitorHost")
+  visitorsCreated                        Visitor[]                      @relation("VisitorCreatedBy")
+  visitorGroupsHosted                    VisitorGroup[]                 @relation("VisitorGroupHost")
+  temporaryPersonnelAssignmentsSponsored TemporaryPersonnelAssignment[] @relation("TemporaryPersonnelAssignmentSponsor")
+  memberTags                             MemberTag[]
+  ddsAssignments                         DdsAssignment[]                @relation("DdsMember")
+  ddsTransfers                           DdsAssignment[]                @relation("DdsTransferredTo")
+  memberTypeRef                          MemberType?                    @relation(fields: [memberTypeId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  memberStatusRef                        MemberStatus?                  @relation(fields: [memberStatusId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  qualifications                         MemberQualification[]
+  scheduleAssignments                    ScheduleAssignment[]
+  liveDutyAssignments                    LiveDutyAssignment[]
+  dwOverridesAsMember                    DutyWatchNightOverride[]       @relation("OverrideMember")
+  dwOverridesAsBase                      DutyWatchNightOverride[]       @relation("OverrideBaseMember")
+  lockupHolding                          LockupStatus[]                 @relation("LockupCurrentHolder")
+  lockupSecured                          LockupStatus[]                 @relation("LockupSecuredBy")
+  lockupTransfersFrom                    LockupTransfer[]               @relation("LockupTransferFrom")
+  lockupTransfersTo                      LockupTransfer[]               @relation("LockupTransferTo")
+  lockupExecutions                       LockupExecution[]
+  pinHash                                String?                        @map("pin_hash") @db.VarChar(255)
+  mustChangePin                          Boolean                        @default(false) @map("must_change_pin")
+  accountLevel                           Int                            @default(1) @map("account_level")
+  missedCheckouts                        MissedCheckout[]
+  unitEventDutyAssignments               UnitEventDutyAssignment[]
+  memberSessions                         MemberSession[]
+  acknowledgedSecurityAlerts             SecurityAlert[]                @relation("AlertAcknowledgedBy")
 
   @@index([badgeId], map: "idx_members_badge")
   @@index([divisionId], map: "idx_members_division")
@@ -453,6 +456,103 @@ model VisitorGroupVehicle {
   @@index([visitorGroupId], map: "idx_visitor_group_vehicles_visitor_group_id")
   @@index([normalizedLicensePlate], map: "idx_visitor_group_vehicles_normalized_license_plate")
   @@map("visitor_group_vehicles")
+}
+
+model TemporaryPersonnelAssignment {
+  id              String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name            String               @db.VarChar(200)
+  sponsorName     String               @map("sponsor_name") @db.VarChar(200)
+  sponsorMemberId String?              @map("sponsor_member_id") @db.Uuid
+  unitEventId     String?              @map("unit_event_id") @db.Uuid
+  startsAt        DateTime             @map("starts_at") @db.Timestamp(6)
+  endsAt          DateTime             @map("ends_at") @db.Timestamp(6)
+  status          String               @default("draft") @db.VarChar(20)
+  notes           String?
+  endedAt         DateTime?            @map("ended_at") @db.Timestamp(6)
+  revokedAt       DateTime?            @map("revoked_at") @db.Timestamp(6)
+  createdAt       DateTime             @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt       DateTime             @default(now()) @map("updated_at") @db.Timestamp(6)
+  sponsorMember   Member?              @relation("TemporaryPersonnelAssignmentSponsor", fields: [sponsorMemberId], references: [id], onDelete: SetNull, onUpdate: NoAction)
+  unitEvent       UnitEvent?           @relation(fields: [unitEventId], references: [id], onDelete: SetNull, onUpdate: NoAction)
+  personnel       TemporaryPersonnel[]
+
+  @@index([status], map: "idx_temporary_personnel_assignments_status")
+  @@index([startsAt, endsAt], map: "idx_temporary_personnel_assignments_dates")
+  @@index([sponsorMemberId], map: "idx_temporary_personnel_assignments_sponsor_member_id")
+  @@index([unitEventId], map: "idx_temporary_personnel_assignments_unit_event_id")
+  @@map("temporary_personnel_assignments")
+}
+
+model TemporaryPersonnel {
+  id             String                            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  assignmentId   String                            @map("assignment_id") @db.Uuid
+  displayName    String                            @map("display_name") @db.VarChar(200)
+  rankPrefix     String?                           @map("rank_prefix") @db.VarChar(50)
+  firstName      String?                           @map("first_name") @db.VarChar(100)
+  lastName       String?                           @map("last_name") @db.VarChar(100)
+  organization   String                            @db.VarChar(200)
+  role           String?                           @db.VarChar(100)
+  mobilePhone    String?                           @map("mobile_phone") @db.VarChar(25)
+  notes          String?
+  status         String                            @default("active") @db.VarChar(20)
+  endedAt        DateTime?                         @map("ended_at") @db.Timestamp(6)
+  revokedAt      DateTime?                         @map("revoked_at") @db.Timestamp(6)
+  createdAt      DateTime                          @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt      DateTime                          @default(now()) @map("updated_at") @db.Timestamp(6)
+  assignment     TemporaryPersonnelAssignment      @relation(fields: [assignmentId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  nfcAssignments TemporaryPersonnelNfcAssignment[]
+  checkins       TemporaryPersonnelCheckin[]
+
+  @@index([assignmentId], map: "idx_temporary_personnel_assignment_id")
+  @@index([status], map: "idx_temporary_personnel_status")
+  @@index([displayName], map: "idx_temporary_personnel_display_name")
+  @@map("temporary_personnel")
+}
+
+model TemporaryPersonnelNfcAssignment {
+  id                   String                      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  temporaryPersonnelId String                      @map("temporary_personnel_id") @db.Uuid
+  badgeId              String                      @map("badge_id") @db.Uuid
+  status               String                      @default("assigned") @db.VarChar(20)
+  assignedAt           DateTime                    @default(now()) @map("assigned_at") @db.Timestamp(6)
+  endedAt              DateTime?                   @map("ended_at") @db.Timestamp(6)
+  returnedAt           DateTime?                   @map("returned_at") @db.Timestamp(6)
+  createdAt            DateTime                    @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt            DateTime                    @default(now()) @map("updated_at") @db.Timestamp(6)
+  temporaryPersonnel   TemporaryPersonnel          @relation(fields: [temporaryPersonnelId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  badge                Badge                       @relation(fields: [badgeId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  checkins             TemporaryPersonnelCheckin[]
+
+  @@index([temporaryPersonnelId], map: "idx_temporary_personnel_nfc_assignments_person_id")
+  @@index([badgeId], map: "idx_temporary_personnel_nfc_assignments_badge_id")
+  @@index([status], map: "idx_temporary_personnel_nfc_assignments_status")
+  @@index([assignedAt], map: "idx_temporary_personnel_nfc_assignments_assigned_at")
+  @@map("temporary_personnel_nfc_assignments")
+}
+
+model TemporaryPersonnelCheckin {
+  id                   String                           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  temporaryPersonnelId String                           @map("temporary_personnel_id") @db.Uuid
+  badgeId              String?                          @map("badge_id") @db.Uuid
+  nfcAssignmentId      String?                          @map("nfc_assignment_id") @db.Uuid
+  direction            String                           @db.VarChar(10)
+  timestamp            DateTime                         @default(now()) @db.Timestamp(6)
+  kioskId              String                           @map("kiosk_id") @db.VarChar(50)
+  method               String                           @default("badge") @db.VarChar(30)
+  reason               String?                          @db.VarChar(500)
+  createdByAdmin       String?                          @map("created_by_admin") @db.Uuid
+  createdAt            DateTime                         @default(now()) @map("created_at") @db.Timestamp(6)
+  temporaryPersonnel   TemporaryPersonnel               @relation(fields: [temporaryPersonnelId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  badge                Badge?                           @relation(fields: [badgeId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  nfcAssignment        TemporaryPersonnelNfcAssignment? @relation(fields: [nfcAssignmentId], references: [id], onDelete: SetNull, onUpdate: NoAction)
+
+  @@index([temporaryPersonnelId, timestamp(sort: Desc)], map: "idx_temporary_personnel_checkins_person_timestamp")
+  @@index([badgeId], map: "idx_temporary_personnel_checkins_badge_id")
+  @@index([nfcAssignmentId], map: "idx_temporary_personnel_checkins_nfc_assignment_id")
+  @@index([kioskId, timestamp(sort: Desc)], map: "idx_temporary_personnel_checkins_kiosk")
+  @@index([timestamp(sort: Desc)], map: "idx_temporary_personnel_checkins_timestamp")
+  @@index([method], map: "idx_temporary_personnel_checkins_method")
+  @@map("temporary_personnel_checkins")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
@@ -1094,29 +1194,30 @@ model UnitEventType {
 }
 
 model UnitEvent {
-  id                String                    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  title             String                    @db.VarChar(200)
-  eventTypeId       String?                   @map("event_type_id") @db.Uuid
-  eventDate         DateTime                  @map("event_date") @db.Date
-  endDate           DateTime?                 @map("end_date") @db.Date
-  startTime         DateTime?                 @map("start_time") @db.Time(6)
-  endTime           DateTime?                 @map("end_time") @db.Time(6)
-  location          String?                   @db.VarChar(200)
-  description       String?
-  organizer         String?                   @db.VarChar(200)
-  requiresDutyWatch Boolean                   @default(false) @map("requires_duty_watch")
-  status            String                    @default("draft") @db.VarChar(20) // draft, planned, confirmed, in_progress, completed, cancelled, postponed
-  metadata          Json?
-  notes             String?
-  createdBy         String?                   @map("created_by") @db.Uuid
-  createdAt         DateTime                  @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt         DateTime                  @updatedAt @map("updated_at") @db.Timestamp(6)
-  eventType         UnitEventType?            @relation(fields: [eventTypeId], references: [id], onDelete: SetNull, onUpdate: NoAction)
-  dutyPositions     UnitEventDutyPosition[]
-  dutyAssignments   UnitEventDutyAssignment[]
-  visitorOptions    UnitEventVisitorOption[]
-  visitors          Visitor[]
-  visitorGroups     VisitorGroup[]
+  id                            String                         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title                         String                         @db.VarChar(200)
+  eventTypeId                   String?                        @map("event_type_id") @db.Uuid
+  eventDate                     DateTime                       @map("event_date") @db.Date
+  endDate                       DateTime?                      @map("end_date") @db.Date
+  startTime                     DateTime?                      @map("start_time") @db.Time(6)
+  endTime                       DateTime?                      @map("end_time") @db.Time(6)
+  location                      String?                        @db.VarChar(200)
+  description                   String?
+  organizer                     String?                        @db.VarChar(200)
+  requiresDutyWatch             Boolean                        @default(false) @map("requires_duty_watch")
+  status                        String                         @default("draft") @db.VarChar(20) // draft, planned, confirmed, in_progress, completed, cancelled, postponed
+  metadata                      Json?
+  notes                         String?
+  createdBy                     String?                        @map("created_by") @db.Uuid
+  createdAt                     DateTime                       @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt                     DateTime                       @updatedAt @map("updated_at") @db.Timestamp(6)
+  eventType                     UnitEventType?                 @relation(fields: [eventTypeId], references: [id], onDelete: SetNull, onUpdate: NoAction)
+  dutyPositions                 UnitEventDutyPosition[]
+  dutyAssignments               UnitEventDutyAssignment[]
+  visitorOptions                UnitEventVisitorOption[]
+  visitors                      Visitor[]
+  visitorGroups                 VisitorGroup[]
+  temporaryPersonnelAssignments TemporaryPersonnelAssignment[]
 
   @@index([eventDate, endDate], map: "idx_unit_events_date_range")
   @@index([status], map: "idx_unit_events_status")

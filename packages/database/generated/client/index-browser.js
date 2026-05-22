@@ -383,6 +383,66 @@ exports.Prisma.VisitorGroupVehicleScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.TemporaryPersonnelAssignmentScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  sponsorName: 'sponsorName',
+  sponsorMemberId: 'sponsorMemberId',
+  unitEventId: 'unitEventId',
+  startsAt: 'startsAt',
+  endsAt: 'endsAt',
+  status: 'status',
+  notes: 'notes',
+  endedAt: 'endedAt',
+  revokedAt: 'revokedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.TemporaryPersonnelScalarFieldEnum = {
+  id: 'id',
+  assignmentId: 'assignmentId',
+  displayName: 'displayName',
+  rankPrefix: 'rankPrefix',
+  firstName: 'firstName',
+  lastName: 'lastName',
+  organization: 'organization',
+  role: 'role',
+  mobilePhone: 'mobilePhone',
+  notes: 'notes',
+  status: 'status',
+  endedAt: 'endedAt',
+  revokedAt: 'revokedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.TemporaryPersonnelNfcAssignmentScalarFieldEnum = {
+  id: 'id',
+  temporaryPersonnelId: 'temporaryPersonnelId',
+  badgeId: 'badgeId',
+  status: 'status',
+  assignedAt: 'assignedAt',
+  endedAt: 'endedAt',
+  returnedAt: 'returnedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.TemporaryPersonnelCheckinScalarFieldEnum = {
+  id: 'id',
+  temporaryPersonnelId: 'temporaryPersonnelId',
+  badgeId: 'badgeId',
+  nfcAssignmentId: 'nfcAssignmentId',
+  direction: 'direction',
+  timestamp: 'timestamp',
+  kioskId: 'kioskId',
+  method: 'method',
+  reason: 'reason',
+  createdByAdmin: 'createdByAdmin',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.BmqCourseScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -882,6 +942,10 @@ exports.Prisma.ModelName = {
   Visitor: 'Visitor',
   VisitorGroup: 'VisitorGroup',
   VisitorGroupVehicle: 'VisitorGroupVehicle',
+  TemporaryPersonnelAssignment: 'TemporaryPersonnelAssignment',
+  TemporaryPersonnel: 'TemporaryPersonnel',
+  TemporaryPersonnelNfcAssignment: 'TemporaryPersonnelNfcAssignment',
+  TemporaryPersonnelCheckin: 'TemporaryPersonnelCheckin',
   BmqCourse: 'BmqCourse',
   BmqEnrollment: 'BmqEnrollment',
   migrations: 'migrations',
