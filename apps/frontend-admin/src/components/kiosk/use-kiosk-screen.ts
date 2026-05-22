@@ -297,6 +297,31 @@ export function useKioskScreen() {
         }
       }
 
+      if (badge.assignmentType === 'temporary_personnel') {
+        const scanResponse = await apiClient.temporaryPersonnel.scan({
+          body: {
+            serialNumber: scannedSerial,
+            kioskId: KIOSK_ID,
+          },
+        })
+
+        if (scanResponse.status !== 200) {
+          throw new Error(
+            extractErrorMessage(scanResponse.body, 'Temporary personnel scan failed.')
+          )
+        }
+
+        return {
+          type: 'temporary_personnel',
+          serial: scannedSerial,
+          temporaryPersonnelId: scanResponse.body.temporaryPersonnel.id,
+          temporaryPersonnelName: scanResponse.body.temporaryPersonnel.displayName,
+          assignmentName: scanResponse.body.assignment.name,
+          direction: scanResponse.body.direction,
+          timestamp: scanResponse.body.checkin.timestamp,
+        }
+      }
+
       if (badge.assignmentType !== 'member' || !badge.assignedToId) {
         throw new Error('Badge is not assigned to a member.')
       }
@@ -436,6 +461,28 @@ export function useKioskScreen() {
           serial: scanResult.serial,
           timestamp: scanResult.timestamp,
         })
+        refocusBadgeInput()
+        return
+      }
+
+      if (scanResult.type === 'temporary_personnel') {
+        setPendingLockup(null)
+        setShowLockupOptions(false)
+        setResult({
+          tone: toneForDirection(scanResult.direction),
+          eyebrow:
+            scanResult.direction === 'in'
+              ? 'Temporary Check-In Recorded'
+              : 'Temporary Check-Out Recorded',
+          title: scanResult.temporaryPersonnelName,
+          message: `${scanResult.assignmentName} · ${
+            scanResult.direction === 'in' ? 'Arrived' : 'Departed'
+          } at ${formatTimestamp(scanResult.timestamp)}.`,
+          serial: scanResult.serial,
+          direction: scanResult.direction,
+          timestamp: scanResult.timestamp,
+        })
+        invalidateKioskQueries()
         refocusBadgeInput()
         return
       }

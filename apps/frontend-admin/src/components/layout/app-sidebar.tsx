@@ -164,6 +164,7 @@ export function AppSidebar({ drawerId }: AppSidebarProps) {
           {activities.map((item: RecentActivityItem) => {
             const isCheckIn = item.direction === 'in'
             const isVisitor = item.type === 'visitor'
+            const isTemporaryPersonnel = item.type === 'temporary_personnel'
             const isEditing = editingId === item.id
             const Icon = isCheckIn ? ArrowDownCircle : ArrowUpCircle
             const itemDisplayName = formatPersonLabel({
@@ -172,8 +173,8 @@ export function AppSidebar({ drawerId }: AppSidebarProps) {
               rank: item.rank,
               compact: true,
             })
-            // Visitors don't have a checkin record to edit/delete here.
-            const canEdit = canEditHistory && !isVisitor
+            // Visitors and temporary personnel don't use member checkin edit/delete here.
+            const canEdit = canEditHistory && !isVisitor && !isTemporaryPersonnel
 
             return (
               <li key={`${item.type}-${item.id}-${item.direction}`}>
@@ -198,6 +199,9 @@ export function AppSidebar({ drawerId }: AppSidebarProps) {
                         </span>
                         {isVisitor && (
                           <span className="badge badge-info badge-sm shrink-0">Visitor</span>
+                        )}
+                        {isTemporaryPersonnel && (
+                          <span className="badge badge-secondary badge-sm shrink-0">Temporary</span>
                         )}
                       </div>
                     </div>
