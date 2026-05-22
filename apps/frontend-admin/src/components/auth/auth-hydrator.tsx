@@ -11,7 +11,10 @@ import {
 } from '@/lib/post-login-destination'
 import { isKioskRoute } from '@/lib/kiosk-device-auth'
 import { useAuthStore } from '@/store/auth-store'
-import { shouldIgnoreStaleUnauthorizedSessionCheck } from './auth-hydrator.logic'
+import {
+  shouldIgnoreStaleUnauthorizedSessionCheck,
+  shouldRunSessionHeartbeat,
+} from './auth-hydrator.logic'
 
 /**
  * Validates the session cookie on mount and syncs the Zustand auth store.
@@ -24,6 +27,7 @@ export function AuthHydrator() {
   const { isAuthenticated, setAuth, updateSession, logout } = useAuthStore()
   const hasValidated = useRef(false)
   const kioskRoute = isKioskRoute(pathname)
+  const shouldHeartbeat = shouldRunSessionHeartbeat({ isAuthenticated, pathname })
 
   const validateSession = useEffectEvent(async () => {
     const wasAuthenticatedAtRequestStart = useAuthStore.getState().isAuthenticated
@@ -116,7 +120,7 @@ export function AuthHydrator() {
   }, [])
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!shouldHeartbeat) {
       return
     }
 
@@ -144,7 +148,7 @@ export function AuthHydrator() {
       window.removeEventListener('focus', handleFocus)
       document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
-  }, [isAuthenticated, kioskRoute])
+  }, [shouldHeartbeat, kioskRoute])
 
   return null
 }
