@@ -3,7 +3,12 @@ import * as v from 'valibot'
 /**
  * Badge assignment type enum
  */
-export const BadgeAssignmentTypeEnum = v.picklist(['member', 'visitor', 'unassigned'])
+export const BadgeAssignmentTypeEnum = v.picklist([
+  'member',
+  'visitor',
+  'temporary_personnel',
+  'unassigned',
+])
 
 /**
  * Badge status enum

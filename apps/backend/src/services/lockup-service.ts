@@ -2,6 +2,7 @@ import type { PrismaClient } from '@sentinel/database'
 import type { MemberType } from '@sentinel/types'
 import { getPrismaClient } from '../lib/database.js'
 import { CheckinRepository } from '../repositories/checkin-repository.js'
+import { TemporaryPersonnelRepository } from '../repositories/temporary-personnel-repository.js'
 import { VisitorRepository } from '../repositories/visitor-repository.js'
 import { LockupRepository } from '../repositories/lockup-repository.js'
 import type {
@@ -47,12 +48,23 @@ interface LockupPresentData {
     visitType: string
     checkInTime: Date
   }>
+  temporaryPersonnel: Array<{
+    id: string
+    name: string
+    organization: string
+    role: string | null
+    assignmentId: string
+    assignmentName: string
+    checkInTime: Date
+    kioskId?: string
+  }>
 }
 
 interface LockupExecutionResult {
   checkedOut: {
     members: string[]
     visitors: string[]
+    temporaryPersonnel: string[]
   }
   executionId: string
 }
@@ -115,6 +127,7 @@ type LockupHistoryItem = LockupTransferHistoryItem | LockupExecutionHistoryItem
 export class LockupService {
   private prisma: PrismaClient
   private checkinRepo: CheckinRepository
+  private temporaryPersonnelRepo: TemporaryPersonnelRepository
   private visitorRepo: VisitorRepository
   private lockupRepo: LockupRepository
   private qualificationService: QualificationService
@@ -125,6 +138,7 @@ export class LockupService {
   constructor(prismaClient?: PrismaClient) {
     this.prisma = prismaClient || getPrismaClient()
     this.checkinRepo = new CheckinRepository(this.prisma)
+    this.temporaryPersonnelRepo = new TemporaryPersonnelRepository(this.prisma)
     this.visitorRepo = new VisitorRepository(this.prisma)
     this.lockupRepo = new LockupRepository(this.prisma)
     this.qualificationService = new QualificationService(this.prisma)
@@ -685,9 +699,10 @@ export class LockupService {
    * Get all currently present members and visitors for lockup confirmation screen
    */
   async getPresentMembersForLockup(options?: LockupPresentOptions): Promise<LockupPresentData> {
-    const [members, visitors] = await Promise.all([
+    const [members, visitors, temporaryPersonnel] = await Promise.all([
       this.checkinRepo.getPresentMembers(),
       this.visitorRepo.findActive(),
+      this.temporaryPersonnelRepo.getPresentPersonnel(),
     ])
 
     const filteredMembers = options?.excludeMemberId
@@ -702,6 +717,16 @@ export class LockupService {
         organization: v.organization,
         visitType: v.visitType,
         checkInTime: v.checkInTime,
+      })),
+      temporaryPersonnel: temporaryPersonnel.map((person) => ({
+        id: person.id,
+        name: person.displayName,
+        organization: person.organization,
+        role: person.role,
+        assignmentId: person.assignmentId,
+        assignmentName: person.assignmentName,
+        checkInTime: person.lastCheckin ? new Date(person.lastCheckin.timestamp) : new Date(),
+        kioskId: person.lastCheckin?.kioskId ?? undefined,
       })),
     }
   }
@@ -728,7 +753,7 @@ export class LockupService {
     // Mark building as locking up
     await this.lockupRepo.markLockingUp(status.id)
 
-    const { members, visitors } = await this.getPresentMembersForLockup()
+    const { members, visitors, temporaryPersonnel } = await this.getPresentMembersForLockup()
 
     const checkedOutMembers: Array<{ id: string; name: string }> = []
     const forcedMissedCheckouts: Array<{
@@ -736,6 +761,7 @@ export class LockupService {
       originalCheckinAt: Date
     }> = []
     const checkedOutVisitors: Array<{ id: string; name: string }> = []
+    const checkedOutTemporaryPersonnel: Array<{ id: string; name: string }> = []
     const now = new Date()
 
     // Check out the lockup holder first so their exit is recorded normally.
@@ -833,6 +859,28 @@ export class LockupService {
       }
     }
 
+    // Process temporary personnel checkouts
+    for (const person of temporaryPersonnel) {
+      try {
+        await this.temporaryPersonnelRepo.manualCheckin(person.id, {
+          direction: 'out',
+          kioskId: 'lockup-force-checkout',
+          timestamp: now.toISOString(),
+          reason: note ?? 'Temporary personnel was checked out during Execute Lockup.',
+        })
+
+        checkedOutTemporaryPersonnel.push({
+          id: person.id,
+          name: person.name,
+        })
+      } catch (error) {
+        serviceLogger.error('Failed to checkout temporary personnel during lockup', {
+          temporaryPersonnelId: person.id,
+          error: error instanceof Error ? error.message : String(error),
+        })
+      }
+    }
+
     if (checkedOutMembers.length > 0) {
       await this.liveDutyAssignmentService.clearAssignmentsForMembers(
         checkedOutMembers.map((member) => member.id),
@@ -847,7 +895,8 @@ export class LockupService {
       executedBy: performedById,
       membersCheckedOut: checkedOutMembers,
       visitorsCheckedOut: checkedOutVisitors,
-      totalCheckedOut: checkedOutMembers.length + checkedOutVisitors.length,
+      totalCheckedOut:
+        checkedOutMembers.length + checkedOutVisitors.length + checkedOutTemporaryPersonnel.length,
       notes: note,
     })
 
@@ -894,7 +943,7 @@ export class LockupService {
         performedByType: 'member',
         notes:
           note ??
-          `Lockup executed. Checked out ${checkedOutMembers.length} members and ${checkedOutVisitors.length} visitors.`,
+          `Lockup executed. Checked out ${checkedOutMembers.length} members, ${checkedOutVisitors.length} visitors, and ${checkedOutTemporaryPersonnel.length} temporary personnel.`,
       },
     })
 
@@ -910,7 +959,7 @@ export class LockupService {
         performedBy: performedById,
         performedByName: `${performerData.firstName} ${performerData.lastName}`,
         membersCheckedOut: checkedOutMembers.length,
-        visitorsCheckedOut: checkedOutVisitors.length,
+        visitorsCheckedOut: checkedOutVisitors.length + checkedOutTemporaryPersonnel.length,
         timestamp: now.toISOString(),
       })
     }
@@ -919,6 +968,7 @@ export class LockupService {
       checkedOut: {
         members: checkedOutMembers.map((m) => m.id),
         visitors: checkedOutVisitors.map((v) => v.id),
+        temporaryPersonnel: checkedOutTemporaryPersonnel.map((person) => person.id),
       },
       executionId: execution.id,
     }

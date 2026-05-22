@@ -167,7 +167,7 @@ export const PresenceStatusResponseSchema = v.object({
  */
 export const PresentPersonSchema = v.object({
   id: v.string(),
-  type: v.picklist(['member', 'visitor']),
+  type: v.picklist(['member', 'visitor', 'temporary_personnel']),
   name: v.string(),
   displayName: v.optional(v.string()),
   rank: v.optional(v.string()),
@@ -202,6 +202,9 @@ export const PresentPersonSchema = v.object({
     )
   ),
   organization: v.optional(v.string()),
+  role: v.optional(v.string()),
+  temporaryPersonnelAssignmentId: v.optional(v.string()),
+  temporaryPersonnelAssignmentName: v.optional(v.string()),
   visitType: v.optional(
     v.object({
       id: v.string(),
@@ -279,7 +282,7 @@ export const ManualCheckoutResponseSchema = v.object({
  * Recent activity item schema (unified checkin + visitor events)
  */
 export const RecentActivityItemSchema = v.object({
-  type: v.picklist(['checkin', 'visitor']),
+  type: v.picklist(['checkin', 'visitor', 'temporary_personnel']),
   id: v.string(),
   timestamp: v.string(),
   direction: v.picklist(['in', 'out']),
@@ -290,6 +293,9 @@ export const RecentActivityItemSchema = v.object({
   kioskId: v.optional(v.string()),
   kioskName: v.optional(v.string()),
   organization: v.optional(v.string()),
+  role: v.optional(v.string()),
+  temporaryPersonnelAssignmentId: v.optional(v.string()),
+  temporaryPersonnelAssignmentName: v.optional(v.string()),
   visitType: v.optional(v.string()),
   visitReason: v.optional(v.string()),
   hostName: v.optional(v.string()),

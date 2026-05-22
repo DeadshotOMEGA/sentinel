@@ -1,6 +1,11 @@
 // Badge-related types
 
-export type BadgeAssignmentType = 'member' | 'visitor' | 'event' | 'unassigned'
+export type BadgeAssignmentType =
+  | 'member'
+  | 'visitor'
+  | 'temporary_personnel'
+  | 'event'
+  | 'unassigned'
 
 export interface BadgeStatusSummary {
   name: string

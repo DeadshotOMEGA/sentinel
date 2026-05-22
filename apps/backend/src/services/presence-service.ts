@@ -1,6 +1,7 @@
 import type { PrismaClient } from '@sentinel/database'
 import { getPrismaClient } from '../lib/database.js'
 import { CheckinRepository } from '../repositories/checkin-repository.js'
+import { TemporaryPersonnelRepository } from '../repositories/temporary-personnel-repository.js'
 import { VisitorRepository } from '../repositories/visitor-repository.js'
 import { broadcastPresenceUpdate } from '../websocket/broadcast.js'
 import { serviceLogger } from '../lib/logger.js'
@@ -14,6 +15,8 @@ interface PresenceStats {
   presentMembers: number
   totalVisitors: number
   presentVisitors: number
+  totalTemporaryPersonnel: number
+  presentTemporaryPersonnel: number
 }
 
 interface PresentMember {
@@ -101,11 +104,12 @@ interface MemberPresenceItem {
 }
 
 interface RecentActivityItem {
-  type: 'checkin' | 'visitor'
+  type: 'checkin' | 'visitor' | 'temporary_personnel'
   id: string
   timestamp: string
   direction: 'in' | 'out'
   name: string
+  displayName?: string
   // Member fields
   rank?: string
   division?: string
@@ -114,6 +118,9 @@ interface RecentActivityItem {
   kioskName?: string
   // Visitor fields
   organization?: string
+  role?: string
+  temporaryPersonnelAssignmentId?: string
+  temporaryPersonnelAssignmentName?: string
   visitType?: string
   visitReason?: string
   visitPurpose?: string
@@ -126,7 +133,7 @@ interface RecentActivityItem {
 
 interface PresentPerson {
   id: string
-  type: 'member' | 'visitor'
+  type: 'member' | 'visitor' | 'temporary_personnel'
   name: string
   displayName?: string
   rank?: string
@@ -155,6 +162,9 @@ interface PresentPerson {
     source?: 'direct' | 'qualification'
   }>
   organization?: string
+  role?: string
+  temporaryPersonnelAssignmentId?: string
+  temporaryPersonnelAssignmentName?: string
   visitType?: { id: string; name: string; chipVariant?: string; chipColor?: string }
   visitReason?: string
   visitPurpose?: string
@@ -185,11 +195,13 @@ interface PresentPerson {
 export class PresenceService {
   private checkinRepo: CheckinRepository
   private visitorRepo: VisitorRepository
+  private temporaryPersonnelRepo: TemporaryPersonnelRepository
 
   constructor(prismaClient?: PrismaClient) {
     const prisma = prismaClient || getPrismaClient()
     this.checkinRepo = new CheckinRepository(prisma)
     this.visitorRepo = new VisitorRepository(prisma)
+    this.temporaryPersonnelRepo = new TemporaryPersonnelRepository(prisma)
   }
 
   /**
@@ -197,8 +209,22 @@ export class PresenceService {
    * Delegates to repository which handles caching
    */
   async getStats(): Promise<PresenceStats> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (await this.checkinRepo.getPresenceStats()) as any
+    const [memberStats, totalVisitors, presentTemporaryPersonnel, totalTemporaryPersonnel] =
+      await Promise.all([
+        this.checkinRepo.getPresenceStats(),
+        this.visitorRepo.getActiveCount(),
+        this.temporaryPersonnelRepo.getPresentPersonnel(),
+        this.temporaryPersonnelRepo.getActivePersonnelCount(),
+      ])
+
+    return {
+      totalMembers: memberStats.totalMembers,
+      presentMembers: memberStats.present,
+      totalVisitors,
+      presentVisitors: totalVisitors,
+      totalTemporaryPersonnel,
+      presentTemporaryPersonnel: presentTemporaryPersonnel.length,
+    }
   }
 
   /**
@@ -232,7 +258,14 @@ export class PresenceService {
     if (limit < 1 || limit > 100) {
       throw new Error('Limit must be between 1 and 100')
     }
-    return await this.checkinRepo.getRecentActivity(limit)
+    const [standardActivity, temporaryPersonnelActivity] = await Promise.all([
+      this.checkinRepo.getRecentActivity(limit),
+      this.temporaryPersonnelRepo.getRecentActivity(limit),
+    ])
+
+    return [...standardActivity, ...temporaryPersonnelActivity]
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+      .slice(0, limit)
   }
 
   /**
@@ -240,9 +273,10 @@ export class PresenceService {
    * Returns unified PresentPerson array with alerts
    */
   async getAllPresentPeople(): Promise<PresentPerson[]> {
-    const [members, visitors] = await Promise.all([
+    const [members, visitors, temporaryPersonnel] = await Promise.all([
       this.getPresentMembers(),
       this.visitorRepo.findActiveWithRelations(),
+      this.temporaryPersonnelRepo.getPresentPersonnel(),
     ])
 
     const presentMembers: PresentPerson[] = members.map((m) => {
@@ -308,7 +342,25 @@ export class PresenceService {
       }
     })
 
-    return [...presentMembers, ...presentVisitors]
+    const presentTemporaryPersonnel: PresentPerson[] = temporaryPersonnel.map((person) => ({
+      id: person.id,
+      type: 'temporary_personnel' as const,
+      name: person.displayName,
+      displayName: person.displayName,
+      rank: person.rankPrefix ?? undefined,
+      firstName: person.firstName ?? undefined,
+      lastName: person.lastName ?? undefined,
+      organization: person.organization,
+      role: person.role ?? undefined,
+      temporaryPersonnelAssignmentId: person.assignmentId,
+      temporaryPersonnelAssignmentName: person.assignmentName,
+      activeCheckinId: person.lastCheckin?.id ?? undefined,
+      checkInTime: person.lastCheckin ? new Date(person.lastCheckin.timestamp) : new Date(),
+      kioskId: person.lastCheckin?.kioskId ?? undefined,
+      kioskName: person.lastCheckin?.kioskId ?? undefined,
+    }))
+
+    return [...presentMembers, ...presentVisitors, ...presentTemporaryPersonnel]
   }
 
   /**
@@ -316,9 +368,12 @@ export class PresenceService {
    * Fetches latest stats and broadcasts them via WebSocket
    */
   async broadcastStatsUpdate(): Promise<void> {
-    const stats = await this.checkinRepo.getPresenceStats()
+    const [stats, temporaryPersonnel] = await Promise.all([
+      this.checkinRepo.getPresenceStats(),
+      this.temporaryPersonnelRepo.getPresentPersonnel(),
+    ])
     broadcastPresenceUpdate({
-      totalPresent: stats.present,
+      totalPresent: stats.present + temporaryPersonnel.length,
       totalMembers: stats.totalMembers,
       byDivision: stats.byDivision.map((d) => ({
         divisionId: d.division.id,

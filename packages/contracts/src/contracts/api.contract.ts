@@ -33,6 +33,7 @@ import { networkSettingContract } from './network-setting.contract.js'
 import { systemStatusContract } from './system-status.contract.js'
 import { systemUpdateContract } from './system-update.contract.js'
 import { adminNavigationContract } from './admin-navigation.contract.js'
+import { temporaryPersonnelContract } from './temporary-personnel.contract.js'
 
 const c = initContract()
 
@@ -71,6 +72,7 @@ export type ApiContract = {
   systemStatus: typeof systemStatusContract
   systemUpdate: typeof systemUpdateContract
   adminNavigation: typeof adminNavigationContract
+  temporaryPersonnel: typeof temporaryPersonnelContract
 }
 
 /**
@@ -115,6 +117,7 @@ export const apiContract: ApiContract = c.router(
     systemStatus: systemStatusContract,
     systemUpdate: systemUpdateContract,
     adminNavigation: adminNavigationContract,
+    temporaryPersonnel: temporaryPersonnelContract,
   },
   {
     pathPrefix: '',

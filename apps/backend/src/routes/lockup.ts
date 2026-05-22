@@ -524,12 +524,25 @@ export const lockupRouter = s.router(lockupContract, {
         checkInTime: v.checkInTime.toISOString(),
       }))
 
+      const temporaryPersonnelFormatted = presentData.temporaryPersonnel.map((person) => ({
+        id: person.id,
+        name: person.name,
+        organization: person.organization,
+        role: person.role,
+        assignmentId: person.assignmentId,
+        assignmentName: person.assignmentName,
+        checkInTime: person.checkInTime.toISOString(),
+        kioskId: person.kioskId,
+      }))
+
       return {
         status: 200 as const,
         body: {
           members: membersFormatted,
           visitors: visitorsFormatted,
-          totalCount: membersFormatted.length + visitorsFormatted.length,
+          temporaryPersonnel: temporaryPersonnelFormatted,
+          totalCount:
+            membersFormatted.length + visitorsFormatted.length + temporaryPersonnelFormatted.length,
         },
       }
     } catch (error) {
@@ -612,7 +625,11 @@ export const lockupRouter = s.router(lockupContract, {
           note: body.note ?? null,
           membersCheckedOut: result.checkedOut.members.length,
           visitorsCheckedOut: result.checkedOut.visitors.length,
-          totalCheckedOut: result.checkedOut.members.length + result.checkedOut.visitors.length,
+          temporaryPersonnelCheckedOut: result.checkedOut.temporaryPersonnel.length,
+          totalCheckedOut:
+            result.checkedOut.members.length +
+            result.checkedOut.visitors.length +
+            result.checkedOut.temporaryPersonnel.length,
         },
       })
 
@@ -620,13 +637,17 @@ export const lockupRouter = s.router(lockupContract, {
         status: 200 as const,
         body: {
           success: true,
-          message: `Lockup executed successfully. Checked out ${result.checkedOut.members.length} members and ${result.checkedOut.visitors.length} visitors.`,
+          message: `Lockup executed successfully. Checked out ${result.checkedOut.members.length} members, ${result.checkedOut.visitors.length} visitors, and ${result.checkedOut.temporaryPersonnel.length} temporary personnel.`,
           checkedOut: result.checkedOut,
           auditLogId: result.executionId, // Maps executionId to auditLogId for API compatibility
           stats: {
             membersCheckedOut: result.checkedOut.members.length,
             visitorsCheckedOut: result.checkedOut.visitors.length,
-            totalCheckedOut: result.checkedOut.members.length + result.checkedOut.visitors.length,
+            temporaryPersonnelCheckedOut: result.checkedOut.temporaryPersonnel.length,
+            totalCheckedOut:
+              result.checkedOut.members.length +
+              result.checkedOut.visitors.length +
+              result.checkedOut.temporaryPersonnel.length,
           },
         },
       }
