@@ -2,6 +2,7 @@ import type { HostHotspotRecoveryStatus, SystemStatusResponse } from '@sentinel/
 
 const AUTOMATED_RECOVERY_SOURCES = new Set(['host-hotspot-monitor', 'backend-scheduler'])
 const DEFAULT_ESTIMATED_RECOVERY_SECONDS = 45
+const AUTOMATED_RECOVERY_STATUS_REFETCH_INTERVAL_MS = 1_000
 
 export function isAutomatedHotspotRecovery(
   recoveryStatus: HostHotspotRecoveryStatus | null | undefined
@@ -106,4 +107,8 @@ export function getRecoveryRequestKey(
   return (
     recoveryStatus.requestId ?? `${recoveryStatus.source ?? 'unknown'}:${recoveryStatus.updatedAt}`
   )
+}
+
+export function getAutomatedRecoveryStatusRefetchIntervalMs(): number {
+  return AUTOMATED_RECOVERY_STATUS_REFETCH_INTERVAL_MS
 }

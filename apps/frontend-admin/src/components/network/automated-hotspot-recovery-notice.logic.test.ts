@@ -2,6 +2,7 @@ import type { HostHotspotRecoveryStatus, SystemStatusResponse } from '@sentinel/
 import { describe, expect, it } from 'vitest'
 import {
   formatRecoveryTime,
+  getAutomatedRecoveryStatusRefetchIntervalMs,
   getRecoveryElapsedSeconds,
   getRecoveryEstimateSeconds,
   getRecoveryProgressPercent,
@@ -125,5 +126,9 @@ describe('automated hotspot recovery notice logic', () => {
   it('formats short and minute-level durations', () => {
     expect(formatRecoveryTime(42)).toBe('42s')
     expect(formatRecoveryTime(75)).toBe('1m 15s')
+  })
+
+  it('polls frequently enough to catch short automated repairs', () => {
+    expect(getAutomatedRecoveryStatusRefetchIntervalMs()).toBeLessThanOrEqual(1_000)
   })
 })
