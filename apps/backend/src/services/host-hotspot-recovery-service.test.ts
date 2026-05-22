@@ -1,10 +1,11 @@
-import { mkdtemp, readFile, rm } from 'node:fs/promises'
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import {
   DEFAULT_HOST_HOTSPOT_RECOVERY_REQUEST_DIR,
   DEFAULT_HOST_HOTSPOT_RECOVERY_STATUS_FILE,
+  DEFAULT_HOST_HOTSPOT_RECOVERY_HISTORY_FILE,
   HostHotspotRecoveryQueueError,
   HostHotspotRecoveryService,
 } from './host-hotspot-recovery-service.js'
@@ -16,6 +17,9 @@ describe('HostHotspotRecoveryService', () => {
     )
     expect(DEFAULT_HOST_HOTSPOT_RECOVERY_STATUS_FILE).toBe(
       '/opt/sentinel/deploy/runtime/hotspot-recovery/status.json'
+    )
+    expect(DEFAULT_HOST_HOTSPOT_RECOVERY_HISTORY_FILE).toBe(
+      '/opt/sentinel/deploy/runtime/hotspot-recovery/history.jsonl'
     )
   })
 
@@ -41,10 +45,35 @@ describe('HostHotspotRecoveryService', () => {
       state: 'queued',
       stage: 'request_queued',
       requestId: queued.requestId,
+      source: 'frontend-admin',
       message: 'Host hotspot repair request queued. Waiting for the host processor to start.',
+      estimatedDurationSeconds: 45,
     })
     expect(status?.updatedAt).toBeTruthy()
     expect(payload.source).toBe('frontend-admin')
+
+    await rm(rootDir, { recursive: true, force: true })
+  })
+
+  it('uses recent completed recovery history for duration estimates', async () => {
+    const rootDir = await mkdtemp(join(tmpdir(), 'sentinel-hotspot-recovery-'))
+    const requestDir = join(rootDir, 'requests')
+    const statusFile = join(rootDir, 'status.json')
+    const historyFile = join(rootDir, 'history.jsonl')
+    const service = new HostHotspotRecoveryService(requestDir, statusFile, historyFile)
+
+    await writeFile(
+      historyFile,
+      [
+        JSON.stringify({ state: 'completed', durationSeconds: 35 }),
+        JSON.stringify({ state: 'failed', durationSeconds: 90 }),
+        JSON.stringify({ state: 'completed', durationSeconds: 42 }),
+        JSON.stringify({ state: 'completed', durationSeconds: 55 }),
+      ].join('\n'),
+      'utf-8'
+    )
+
+    expect(await service.readEstimatedDurationSeconds()).toBe(42)
 
     await rm(rootDir, { recursive: true, force: true })
   })

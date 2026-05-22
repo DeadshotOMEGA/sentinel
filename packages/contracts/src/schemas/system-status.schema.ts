@@ -63,6 +63,7 @@ export const HostHotspotRecoveryStatusSchema = v.object({
   stage: HostHotspotRecoveryStageSchema,
   message: v.string(),
   requestId: v.nullable(v.string()),
+  source: v.optional(v.nullable(v.string())),
   connectionName: v.nullable(v.string()),
   hotspotSsid: v.nullable(v.string()),
   hotspotDevice: v.nullable(v.string()),
@@ -72,6 +73,8 @@ export const HostHotspotRecoveryStatusSchema = v.object({
   startedAt: v.nullable(v.string()),
   updatedAt: v.string(),
   completedAt: v.nullable(v.string()),
+  durationSeconds: v.optional(v.nullable(v.number())),
+  estimatedDurationSeconds: v.optional(v.nullable(v.number())),
 })
 
 export const NetworkFactsSchema = v.object({

@@ -31,6 +31,28 @@ export function broadcastLogEntry(entry: LogEntry) {
 }
 
 /**
+ * Tell connected clients to refresh after host-side recovery changes.
+ */
+export function broadcastSystemRefreshRequired(payload: {
+  reason: 'host_hotspot_recovered'
+  requestId: string | null
+  message: string
+  timestamp: string
+}) {
+  if (!io) {
+    logger.warn('Cannot broadcast system refresh request: Socket.IO not initialized')
+    return
+  }
+
+  io.emit('system:refresh-required', payload)
+
+  logger.info('Broadcasted system refresh request', {
+    reason: payload.reason,
+    requestId: payload.requestId,
+  })
+}
+
+/**
  * Broadcast presence statistics update
  */
 export function broadcastPresenceUpdate(stats: {

@@ -174,6 +174,7 @@ Install/update now provisions hotspot and update helpers:
 - hotspot recovery also detects when NetworkManager has connected the approved AP dongle to internet Wi-Fi, moves that saved Wi-Fi profile to the scan radio, then reserves the AP dongle for broadcasting the Sentinel hotspot
 - a local `sentinel-hotspot://connect?ssid=<approved-ssid>` URL handler that tries to reconnect the current laptop to an approved internet Wi-Fi SSID, then falls back to Wi-Fi settings
 - a host-side recovery queue watched by systemd so the webapp can ask the deployment server to repair the hosted hotspot without interactive root access
+- a host-side hotspot monitor runs on a systemd timer and automatically queues recovery when the approved AP dongle disappears, gets used by internet Wi-Fi, or the Sentinel SSID is no longer visible
 - a managed sudoers entry for the desktop operator account so hotspot recovery commands can be run non-interactively (no password prompt) when needed
 - a packaged updater bridge/socket pair so the webapp and local CLI wrappers both use the same canonical update engine
 
@@ -181,6 +182,7 @@ Relevant runtime paths:
 
 - local reconnect handler: `/opt/sentinel/deploy/sentinel-hotspot-connect.sh`
 - canonical hotspot helper: `/opt/sentinel/deploy/ensure-host-hotspot-profile.sh`
+- hotspot monitor status: `/opt/sentinel/deploy/runtime/hotspot-recovery/monitor.json`
 - queued recovery requests: `/opt/sentinel/deploy/runtime/hotspot-recovery/requests`
 - processed requests: `/opt/sentinel/deploy/runtime/hotspot-recovery/processed`
 - failed requests: `/opt/sentinel/deploy/runtime/hotspot-recovery/failed`
@@ -193,6 +195,8 @@ Relevant systemd units:
 
 - `sentinel-host-hotspot-recovery.path`
 - `sentinel-host-hotspot-recovery.service`
+- `sentinel-host-hotspot-monitor.timer`
+- `sentinel-host-hotspot-monitor.service`
 - `sentinel-update-bridge.socket`
 - `sentinel-update-bridge.service`
 - `sentinel-updater.service`
