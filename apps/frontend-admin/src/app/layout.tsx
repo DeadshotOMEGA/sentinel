@@ -10,6 +10,7 @@ import { queryClient } from '@/lib/query-client'
 import { AppNavbar } from '@/components/layout/app-navbar'
 import { AppSidebar } from '@/components/layout/app-sidebar'
 import { AuthHydrator } from '@/components/auth/auth-hydrator'
+import { AutomatedHotspotRecoveryNotice } from '@/components/network/automated-hotspot-recovery-notice'
 import './globals.css'
 
 const DRAWER_ID = 'app-drawer'
@@ -56,6 +57,7 @@ export default function RootLayout({
               </div>
             </div>
           )}
+          {!isBareRoute && <AutomatedHotspotRecoveryNotice />}
           <Toaster
             position="top-right"
             expand={false}

@@ -7,7 +7,10 @@ export const DEFAULT_HOST_HOTSPOT_RECOVERY_REQUEST_DIR =
   '/opt/sentinel/deploy/runtime/hotspot-recovery/requests'
 export const DEFAULT_HOST_HOTSPOT_RECOVERY_STATUS_FILE =
   '/opt/sentinel/deploy/runtime/hotspot-recovery/status.json'
+export const DEFAULT_HOST_HOTSPOT_RECOVERY_HISTORY_FILE =
+  '/opt/sentinel/deploy/runtime/hotspot-recovery/history.jsonl'
 const HOST_HOTSPOT_RECOVERY_STATUS_STALE_SECONDS = 600
+const DEFAULT_HOST_HOTSPOT_RECOVERY_ESTIMATE_SECONDS = 45
 
 export interface QueueHostHotspotRecoveryInput {
   requestedByMemberId: string
@@ -21,8 +24,9 @@ export interface QueueHostHotspotRecoveryInput {
 export class HostHotspotRecoveryService {
   private readonly requestDir: string
   private readonly statusFilePath: string
+  private readonly historyFilePath: string
 
-  constructor(requestDir?: string, statusFilePath?: string) {
+  constructor(requestDir?: string, statusFilePath?: string, historyFilePath?: string) {
     requestDir =
       requestDir ??
       process.env.HOST_HOTSPOT_RECOVERY_REQUEST_DIR ??
@@ -32,6 +36,10 @@ export class HostHotspotRecoveryService {
       statusFilePath ??
       process.env.HOST_HOTSPOT_RECOVERY_STATUS_FILE ??
       resolveDefaultStatusFilePath(requestDir)
+    this.historyFilePath =
+      historyFilePath ??
+      process.env.HOST_HOTSPOT_RECOVERY_HISTORY_FILE ??
+      resolveDefaultHistoryFilePath(requestDir)
   }
 
   async queueRecoveryRequest(input: QueueHostHotspotRecoveryInput): Promise<{
@@ -64,6 +72,7 @@ export class HostHotspotRecoveryService {
       message: 'Host hotspot repair request queued. Waiting for the host processor to start.',
       requestId,
       requestedAt: payload.requestedAt,
+      source: payload.source,
     })
 
     return {
@@ -80,9 +89,32 @@ export class HostHotspotRecoveryService {
         return null
       }
 
-      return status
+      return {
+        ...status,
+        estimatedDurationSeconds: await this.readEstimatedDurationSeconds(),
+      }
     } catch {
       return null
+    }
+  }
+
+  async readEstimatedDurationSeconds(): Promise<number> {
+    try {
+      const raw = await readFile(this.historyFilePath, 'utf-8')
+      const durations = raw
+        .split('\n')
+        .map((line) => parseRecoveryHistoryDuration(line))
+        .filter((duration): duration is number => duration !== null)
+        .slice(-10)
+
+      if (durations.length === 0) {
+        return DEFAULT_HOST_HOTSPOT_RECOVERY_ESTIMATE_SECONDS
+      }
+
+      const sorted = [...durations].sort((a, b) => a - b)
+      return sorted[Math.floor(sorted.length / 2)] ?? DEFAULT_HOST_HOTSPOT_RECOVERY_ESTIMATE_SECONDS
+    } catch {
+      return DEFAULT_HOST_HOTSPOT_RECOVERY_ESTIMATE_SECONDS
     }
   }
 
@@ -92,12 +124,14 @@ export class HostHotspotRecoveryService {
     message: string
     requestId: string
     requestedAt: string
+    source: string
   }): Promise<void> {
     const status: HostHotspotRecoveryStatus = {
       state: input.state,
       stage: input.stage,
       message: input.message,
       requestId: input.requestId,
+      source: input.source,
       connectionName: null,
       hotspotSsid: null,
       hotspotDevice: null,
@@ -107,6 +141,8 @@ export class HostHotspotRecoveryService {
       startedAt: input.requestedAt,
       updatedAt: new Date().toISOString(),
       completedAt: null,
+      durationSeconds: null,
+      estimatedDurationSeconds: await this.readEstimatedDurationSeconds(),
     }
 
     try {
@@ -150,6 +186,12 @@ function resolveDefaultStatusFilePath(requestDir: string): string {
     : join(requestDir, 'status.json')
 }
 
+function resolveDefaultHistoryFilePath(requestDir: string): string {
+  return basename(requestDir) === 'requests'
+    ? join(dirname(requestDir), 'history.jsonl')
+    : join(requestDir, 'history.jsonl')
+}
+
 function parseHostHotspotRecoveryStatus(payload: unknown): HostHotspotRecoveryStatus | null {
   if (!isRecord(payload)) {
     return null
@@ -169,6 +211,7 @@ function parseHostHotspotRecoveryStatus(payload: unknown): HostHotspotRecoverySt
     stage,
     message,
     requestId: normalizeNullableString(payload.requestId),
+    source: normalizeNullableString(payload.source),
     connectionName: normalizeNullableString(payload.connectionName),
     hotspotSsid: normalizeNullableString(payload.hotspotSsid),
     hotspotDevice: normalizeNullableString(payload.hotspotDevice),
@@ -178,6 +221,26 @@ function parseHostHotspotRecoveryStatus(payload: unknown): HostHotspotRecoverySt
     startedAt: normalizeTimestampString(payload.startedAt),
     updatedAt,
     completedAt: normalizeTimestampString(payload.completedAt),
+    durationSeconds: normalizeNullableNumber(payload.durationSeconds),
+    estimatedDurationSeconds: normalizeNullableNumber(payload.estimatedDurationSeconds),
+  }
+}
+
+function parseRecoveryHistoryDuration(line: string): number | null {
+  if (line.trim().length === 0) {
+    return null
+  }
+
+  try {
+    const payload = JSON.parse(line) as unknown
+    if (!isRecord(payload) || payload.state !== 'completed') {
+      return null
+    }
+
+    const duration = normalizeNullableNumber(payload.durationSeconds)
+    return duration !== null && duration > 0 && duration <= 300 ? Math.round(duration) : null
+  } catch {
+    return null
   }
 }
 
@@ -219,6 +282,19 @@ function normalizeNullableBoolean(value: unknown): boolean | null {
 
 function normalizeNullableString(value: unknown): string | null {
   return typeof value === 'string' && value.trim().length > 0 ? value.trim() : null
+}
+
+function normalizeNullableNumber(value: unknown): number | null {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value
+  }
+
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    return null
+  }
+
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : null
 }
 
 function normalizeTimestampString(value: unknown): string | null {

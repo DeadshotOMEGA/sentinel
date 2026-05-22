@@ -14,6 +14,8 @@ HOTSPOT_BAND="$(env_value HOTSPOT_BAND 'bg')"
 HOTSPOT_CHANNEL="$(env_value HOTSPOT_CHANNEL '1')"
 LOCK_FILE="${LOCK_FILE:-/run/lock/sentinel-host-hotspot-recover.lock}"
 STATUS_FILE="${HOST_HOTSPOT_RECOVERY_STATUS_FILE:-${SCRIPT_DIR}/runtime/hotspot-recovery/status.json}"
+HISTORY_FILE="${HOST_HOTSPOT_RECOVERY_HISTORY_FILE:-${SCRIPT_DIR}/runtime/hotspot-recovery/history.jsonl}"
+RECOVERY_SOURCE="${HOST_HOTSPOT_RECOVERY_SOURCE:-unknown}"
 export HOTSPOT_CONNECTION_NAME_OVERRIDE="${CONNECTION_NAME}"
 
 STARTED_AT="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
@@ -43,18 +45,48 @@ json_string_or_null() {
   printf '"%s"' "$(json_escape "${value}")"
 }
 
+recovery_duration_seconds() {
+  local completed_at="${1:-}" start_epoch completed_epoch
+  [[ -n "${completed_at}" ]] || return 0
+
+  start_epoch="$(date -u -d "${STARTED_AT}" +%s 2>/dev/null || true)"
+  completed_epoch="$(date -u -d "${completed_at}" +%s 2>/dev/null || true)"
+  if [[ -z "${start_epoch}" || -z "${completed_epoch}" ]]; then
+    return 0
+  fi
+
+  printf '%s\n' "$((completed_epoch - start_epoch))"
+}
+
+recovery_append_history() {
+  local state="${1:-}" stage="${2:-}" message="${3:-}" completed_at="${4:-}" duration_seconds="${5:-}" tmp_file
+  [[ "${stage}" == "completed" || "${stage}" == "failed" ]] || return 0
+
+  mkdir -p "$(dirname "${HISTORY_FILE}")" >/dev/null 2>&1 || return 0
+  tmp_file="$(mktemp "$(dirname "${HISTORY_FILE}")/history.XXXXXX" 2>/dev/null)" || return 0
+
+  cat >"${tmp_file}" <<JSON
+{"state":"$(json_escape "${state}")","stage":"$(json_escape "${stage}")","message":"$(json_escape "${message}")","requestId":$(json_string_or_null "${REQUEST_ID}"),"source":"$(json_escape "${RECOVERY_SOURCE}")","startedAt":"$(json_escape "${STARTED_AT}")","completedAt":$(json_string_or_null "${completed_at}"),"durationSeconds":$(json_string_or_null "${duration_seconds}")}
+JSON
+  cat "${tmp_file}" >>"${HISTORY_FILE}" 2>/dev/null || true
+  rm -f "${tmp_file}"
+  chmod 664 "${HISTORY_FILE}" >/dev/null 2>&1 || true
+}
+
 recovery_write_status() {
   local state="$1"
   local stage="$2"
   local message="$3"
   local completed="${4:-false}"
-  local updated_at completed_at tmp_file had_errexit
+  local updated_at completed_at duration_seconds tmp_file had_errexit
 
   updated_at="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
   if [[ "${completed}" == "true" ]]; then
     completed_at="${updated_at}"
+    duration_seconds="$(recovery_duration_seconds "${completed_at}" || true)"
   else
     completed_at=""
+    duration_seconds=""
   fi
 
   had_errexit="false"
@@ -80,6 +112,7 @@ recovery_write_status() {
   "stage": "$(json_escape "${stage}")",
   "message": "$(json_escape "${message}")",
   "requestId": $(json_string_or_null "${REQUEST_ID}"),
+  "source": $(json_string_or_null "${RECOVERY_SOURCE}"),
   "connectionName": $(json_string_or_null "${CONNECTION_NAME}"),
   "hotspotSsid": $(json_string_or_null "${SSID:-}"),
   "hotspotDevice": $(json_string_or_null "${DEVICE:-}"),
@@ -88,11 +121,13 @@ recovery_write_status() {
   "hardwareResetApplied": $(json_bool "${hardware_reset_applied:-false}"),
   "startedAt": "$(json_escape "${STARTED_AT}")",
   "updatedAt": "$(json_escape "${updated_at}")",
-  "completedAt": $(json_string_or_null "${completed_at}")
+  "completedAt": $(json_string_or_null "${completed_at}"),
+  "durationSeconds": $(json_string_or_null "${duration_seconds}")
 }
 JSON
   chmod 664 "${tmp_file}" >/dev/null 2>&1 || true
   mv "${tmp_file}" "${STATUS_FILE}" >/dev/null 2>&1 || rm -f "${tmp_file}" >/dev/null 2>&1 || true
+  recovery_append_history "${state}" "${stage}" "${message}" "${completed_at}" "${duration_seconds}"
 
   if [[ "${had_errexit}" == "true" ]]; then
     set -e

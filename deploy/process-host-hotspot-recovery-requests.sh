@@ -32,9 +32,27 @@ fi
 for request_file in "${requests[@]}"; do
   base_name="$(basename "${request_file}")"
   request_id="${base_name%.json}"
+  request_source="$(
+    python3 - "${request_file}" <<'PY'
+from __future__ import annotations
+
+import json
+import sys
+from pathlib import Path
+
+try:
+    payload = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+except (OSError, json.JSONDecodeError):
+    print("unknown")
+    raise SystemExit(0)
+
+source = payload.get("source")
+print(source if isinstance(source, str) and source.strip() else "unknown")
+PY
+  )"
   log "Processing host hotspot recovery request ${base_name}"
 
-  if "${SCRIPT_DIR}/recover-host-hotspot.sh" "${CONNECTION_NAME}" "${request_id}"; then
+  if HOST_HOTSPOT_RECOVERY_SOURCE="${request_source}" "${SCRIPT_DIR}/recover-host-hotspot.sh" "${CONNECTION_NAME}" "${request_id}"; then
     mv "${request_file}" "${PROCESSED_DIR}/${base_name}"
     log "Host hotspot recovery request ${base_name} completed."
   else
