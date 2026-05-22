@@ -19,6 +19,7 @@ import {
 import { AppBadge } from '@/components/ui/AppBadge'
 import { Chip } from '@/components/ui/chip'
 import { formatDutyWatchOccurrenceLabel, getWeekDutyWatchOccurrences } from '@/lib/duty-watch'
+import { isDutyWatchPublishDisabled } from './duty-watch-publish-state'
 
 import {
   AlertDialog,
@@ -510,7 +511,7 @@ export function DutyWatchCard({
               )}
               {missingRequired > 0 && (
                 <AppBadge status="error" className="whitespace-nowrap">
-                  {missingRequired} Required
+                  {missingRequired} Missing
                 </AppBadge>
               )}
             </div>
@@ -579,7 +580,10 @@ export function DutyWatchCard({
             <button
               className="btn btn-primary btn-md"
               onClick={handlePublish}
-              disabled={publishSchedule.isPending || missingRequired > 0}
+              disabled={isDutyWatchPublishDisabled({
+                isPublishPending: publishSchedule.isPending,
+                missingRequiredSlots: missingRequired,
+              })}
             >
               {publishSchedule.isPending ? <ButtonSpinner /> : <Check className="h-4 w-4 mr-2" />}
               Publish Schedule
