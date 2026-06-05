@@ -603,20 +603,25 @@ function StatusActionsStat({
   onSetTodayDds: () => void
   onTransferLockup: () => void
 }) {
-  const actionBaseClass =
-    'btn btn-xs w-fit border font-medium transition-all duration-200 shadow-sm hover:shadow-md btn-action stats-action-button disabled:opacity-40'
+  const primaryActionClass =
+    'btn btn-sm w-full min-w-44 justify-start border font-semibold transition-all duration-200 shadow-sm hover:shadow-md btn-action stats-action-button disabled:opacity-40'
+  const transferActionClass =
+    'btn btn-xs w-full justify-center border font-medium transition-all duration-200 shadow-sm hover:shadow-md btn-action stats-action-button disabled:opacity-40'
+  const transferGridClass = isOpenWithHolder
+    ? 'grid grid-cols-2 gap-[var(--space-1)]'
+    : 'grid grid-cols-1 gap-[var(--space-1)]'
 
   return (
     <StatContainer helpId="dashboard.stat.actions">
       <div className="stat-desc">
-        <div className="mt-1 flex flex-col items-start gap-1">
+        <div className="mt-[var(--space-1)] flex min-w-48 flex-col items-stretch gap-[var(--space-2)]">
           {isSecured ? (
             <div
               className={!isAdmin ? 'tooltip tooltip-right' : ''}
               data-tip="Requires Admin level or higher"
             >
               <MotionButton
-                className={`${actionBaseClass} stats-action-success justify-start`}
+                className={`${primaryActionClass} stats-action-success`}
                 disabled={!isAdmin}
                 onClick={onOpenBuilding}
                 data-testid={TID.dashboard.quickAction.openBuilding}
@@ -632,7 +637,7 @@ function StatusActionsStat({
               data-tip={!isAdmin ? 'Requires admin role' : 'No lockup holder assigned'}
             >
               <MotionButton
-                className={`${actionBaseClass} stats-action-error justify-start`}
+                className={`${primaryActionClass} stats-action-error stats-action-emphasis-error`}
                 disabled={!isAdmin || isOpenNoHolder}
                 onClick={onExecuteLockup}
                 data-testid={TID.dashboard.quickAction.executeLockup}
@@ -644,39 +649,48 @@ function StatusActionsStat({
             </div>
           )}
 
-          <div
-            className={!isAdmin ? 'tooltip tooltip-right' : ''}
-            data-tip="Requires Admin level or higher"
-          >
-            <MotionButton
-              className={`${actionBaseClass} stats-action-warning justify-start`}
-              disabled={!isAdmin}
-              onClick={onSetTodayDds}
-              data-testid={TID.dashboard.quickAction.setTodayDds}
-              data-help-id="dashboard.quick-actions.transfer-dds"
-            >
-              <ShieldCheck className="size-[1.1em] shrink-0" />
-              {ddsActionLabel}
-            </MotionButton>
-          </div>
-
-          {isOpenWithHolder && (
-            <div
-              className={!isAdmin ? 'tooltip tooltip-right' : ''}
-              data-tip="Requires Admin level or higher"
-            >
-              <MotionButton
-                className={`${actionBaseClass} stats-action-warning justify-start`}
-                disabled={!isAdmin}
-                onClick={onTransferLockup}
-                data-testid={TID.dashboard.quickAction.transferLockup}
-                data-help-id="dashboard.quick-actions.transfer-lockup"
+          <div className="flex flex-col gap-[var(--space-1)]">
+            <p className="text-[0.68rem] leading-none font-semibold tracking-wide text-base-content/60 uppercase">
+              Transfer
+            </p>
+            <div className={transferGridClass} aria-label="Transfer quick actions">
+              <div
+                className={`w-full ${!isAdmin ? 'tooltip tooltip-right' : ''}`}
+                data-tip="Requires Admin level or higher"
               >
-                <ArrowRightLeft className="size-[1.1em] shrink-0" />
-                Transfer Lockup
-              </MotionButton>
+                <MotionButton
+                  className={`${transferActionClass} stats-action-warning`}
+                  disabled={!isAdmin}
+                  onClick={onSetTodayDds}
+                  title={ddsActionLabel}
+                  aria-label={ddsActionLabel}
+                  data-testid={TID.dashboard.quickAction.setTodayDds}
+                  data-help-id="dashboard.quick-actions.transfer-dds"
+                >
+                  <ShieldCheck className="size-[1.1em] shrink-0" />
+                  DDS
+                </MotionButton>
+              </div>
+
+              {isOpenWithHolder && (
+                <div
+                  className={`w-full ${!isAdmin ? 'tooltip tooltip-right' : ''}`}
+                  data-tip="Requires Admin level or higher"
+                >
+                  <MotionButton
+                    className={`${transferActionClass} stats-action-warning`}
+                    disabled={!isAdmin}
+                    onClick={onTransferLockup}
+                    data-testid={TID.dashboard.quickAction.transferLockup}
+                    data-help-id="dashboard.quick-actions.transfer-lockup"
+                  >
+                    <ArrowRightLeft className="size-[1.1em] shrink-0" />
+                    Lockup
+                  </MotionButton>
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
       </div>
     </StatContainer>

@@ -13,9 +13,7 @@ export default function DashboardPage() {
       >
         <h1 className="sr-only">Dashboard</h1>
 
-        <section>
-          <SecurityAlertsBar />
-        </section>
+        <SecurityAlertsBar />
 
         <section>
           <StatusStats />

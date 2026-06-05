@@ -545,6 +545,12 @@ html[data-theme='business'] .backend-status-badge {
   color: var(--btn-fg);
 }
 
+.stats-action-emphasis-error:not(:disabled) {
+  --btn-bg: var(--color-error-fadded);
+  --btn-border: var(--color-error);
+  --btn-fg: var(--color-error-fadded-content);
+}
+
 .stats-action-success:hover:not(:disabled),
 .stats-action-success:focus-visible:not(:disabled) {
   --btn-bg: var(--color-success);
