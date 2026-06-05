@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { AlertCircle, ShieldCheck } from 'lucide-react'
+import { AlertCircle } from 'lucide-react'
 import { useSecurityAlerts, useAcknowledgeAlert } from '@/hooks/use-security-alerts'
 import { useAuthStore } from '@/store/auth-store'
 import { AccountLevel } from '@/store/auth-store'
@@ -139,25 +139,13 @@ export function SecurityAlertsBar() {
   const { data, isLoading, isError } = useSecurityAlerts()
 
   if (isLoading) {
-    return (
-      <div
-        className="mb-4 rounded-box border border-base-300 bg-base-100 px-(--space-4) py-(--space-3) shadow-sm"
-        data-help-id="dashboard.security-alerts"
-        role="status"
-        aria-label="Checking security alerts"
-      >
-        <div className="flex items-center gap-(--space-2) text-sm text-base-content/60">
-          <span className="loading loading-spinner loading-xs" />
-          Checking security alerts...
-        </div>
-      </div>
-    )
+    return null
   }
 
   if (isError) {
     return (
       <div
-        className="mb-4 rounded-box border border-warning/35 bg-warning-fadded px-(--space-4) py-(--space-3) text-warning-fadded-content shadow-sm"
+        className="rounded-box border border-warning/35 bg-warning-fadded px-(--space-4) py-(--space-3) text-warning-fadded-content shadow-sm"
         data-help-id="dashboard.security-alerts"
         role="status"
       >
@@ -177,33 +165,13 @@ export function SecurityAlertsBar() {
   }
 
   if (!data?.alerts || data.alerts.length === 0) {
-    return (
-      <div
-        className="mb-4 rounded-box border border-success/25 bg-success-fadded px-(--space-4) py-(--space-3) text-success-fadded-content shadow-sm"
-        data-help-id="dashboard.security-alerts"
-      >
-        <div className="flex items-center justify-between gap-(--space-3)">
-          <div className="flex min-w-0 items-center gap-(--space-3)">
-            <ShieldCheck className="size-5 shrink-0" />
-            <div className="min-w-0">
-              <p className="font-display text-sm font-semibold">No active security alerts</p>
-              <p className="mt-0.5 text-xs leading-5">
-                Start here each day. If alerts appear, handle them before changing building state.
-              </p>
-            </div>
-          </div>
-          <AppBadge status="success" size="sm">
-            Clear
-          </AppBadge>
-        </div>
-      </div>
-    )
+    return null
   }
 
   const alerts = data.alerts
 
   return (
-    <div className="space-y-2 mb-4" data-help-id="dashboard.security-alerts">
+    <div className="space-y-2" data-help-id="dashboard.security-alerts">
       {alerts.slice(0, 3).map((alert: SecurityAlertResponse) => (
         <SecurityAlertItem key={alert.id} alert={alert} />
       ))}
