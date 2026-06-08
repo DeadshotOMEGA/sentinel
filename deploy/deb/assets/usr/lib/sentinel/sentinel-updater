@@ -71,6 +71,8 @@ NONINTERACTIVE_ENV = {
 INSTALL_TIMEOUT_SECONDS = int(os.environ.get("SENTINEL_INSTALL_TIMEOUT_SECONDS", "1800"))
 COMMAND_TIMEOUT_SECONDS = int(os.environ.get("SENTINEL_COMMAND_TIMEOUT_SECONDS", "900"))
 HEALTH_TIMEOUT_SECONDS = int(os.environ.get("SENTINEL_HEALTH_TIMEOUT_SECONDS", "240"))
+IMAGE_PULL_ATTEMPTS = int(os.environ.get("SENTINEL_IMAGE_PULL_ATTEMPTS", "3"))
+IMAGE_PULL_RETRY_DELAY_SECONDS = int(os.environ.get("SENTINEL_IMAGE_PULL_RETRY_DELAY_SECONDS", "20"))
 CHECKSUM_NAME_PATTERN = re.compile(r"(sha256|checksum)", re.IGNORECASE)
 TRACE_COMPONENT = "updater"
 UPDATER_UNIT = os.environ.get("SENTINEL_UPDATER_UNIT", "sentinel-updater.service")
@@ -711,6 +713,50 @@ def run_command(
     return result
 
 
+def run_command_with_retries(
+    command: list[str],
+    *,
+    job_logger: JobLogger,
+    timeout: int,
+    step: str,
+    env: dict[str, str] | None = None,
+    attempts: int,
+    retry_delay_seconds: int,
+    retry_context: str,
+) -> subprocess.CompletedProcess[str]:
+    bounded_attempts = max(1, attempts)
+    last_result: subprocess.CompletedProcess[str] | None = None
+    for attempt in range(1, bounded_attempts + 1):
+        if bounded_attempts > 1:
+            job_logger.write_line(f"{retry_context} attempt {attempt} of {bounded_attempts}.")
+            trace("info", f"{retry_context} attempt {attempt} of {bounded_attempts}.")
+
+        last_result = run_command(
+            command,
+            job_logger=job_logger,
+            timeout=timeout,
+            step=step,
+            env=env,
+        )
+        if last_result.returncode == 0 or attempt >= bounded_attempts:
+            return last_result
+
+        job_logger.write_line(
+            f"{retry_context} failed with status {last_result.returncode}; "
+            f"retrying in {retry_delay_seconds}s."
+        )
+        trace(
+            "warning",
+            f"{retry_context} failed with status {last_result.returncode}; "
+            f"retrying in {retry_delay_seconds}s.",
+        )
+        time.sleep(max(0, retry_delay_seconds))
+
+    if last_result is None:
+        raise UpdaterError(step, f"{retry_context} did not run.")
+    return last_result
+
+
 def refreshed_appliance_env(*, overrides: dict[str, str] | None = None) -> dict[str, str]:
     env = dict(os.environ)
     env.update(read_env_file(APPLIANCE_ENV_PATH))
@@ -955,25 +1001,93 @@ def run_backend_post_update(
     trace("info", "Backend post-update commands completed successfully.")
 
 
+def compose_images_available_locally(
+    state: dict[str, Any],
+    command_env: dict[str, str],
+    job_logger: JobLogger,
+) -> bool:
+    config_result = run_command(
+        compose_command(state, "config", "--images"),
+        job_logger=job_logger,
+        timeout=COMMAND_TIMEOUT_SECONDS,
+        step="post_install",
+        env=command_env,
+    )
+    if config_result.returncode != 0:
+        trace("warning", "Could not resolve compose image list after a failed image pull.")
+        return False
+
+    images = list(
+        dict.fromkeys(line.strip() for line in config_result.stdout.splitlines() if line.strip())
+    )
+    if not images:
+        trace("warning", "Compose image list was empty after a failed image pull.")
+        return False
+
+    inspect_result = run_command(
+        ["docker", "image", "inspect", "--format", "{{.Id}}", *images],
+        job_logger=job_logger,
+        timeout=COMMAND_TIMEOUT_SECONDS,
+        step="post_install",
+        env=command_env,
+    )
+    return inspect_result.returncode == 0
+
+
 def pull_stack_images(
     state: dict[str, Any],
     job_logger: JobLogger,
     *,
     version_override: str | None = None,
 ) -> None:
-    trace("info", "Pulling fresh container images for the Sentinel stack.")
     command_env = refreshed_appliance_env(
         overrides={"SENTINEL_VERSION": version_override} if version_override else None
     )
-    pull_result = run_command(
+
+    trace("info", "Pulling Sentinel application container images.")
+    app_pull_result = run_command_with_retries(
+        compose_command(state, "pull", "backend", "frontend"),
+        job_logger=job_logger,
+        timeout=COMMAND_TIMEOUT_SECONDS,
+        step="post_install",
+        env=command_env,
+        attempts=IMAGE_PULL_ATTEMPTS,
+        retry_delay_seconds=IMAGE_PULL_RETRY_DELAY_SECONDS,
+        retry_context="Sentinel application image pull",
+    )
+    if app_pull_result.returncode != 0:
+        raise UpdaterError(
+            "post_install",
+            "docker compose pull failed for Sentinel application images.",
+        )
+
+    trace("info", "Pulling fresh container images for the Sentinel stack.")
+    pull_result = run_command_with_retries(
         compose_command(state, "pull"),
         job_logger=job_logger,
         timeout=COMMAND_TIMEOUT_SECONDS,
         step="post_install",
         env=command_env,
+        attempts=IMAGE_PULL_ATTEMPTS,
+        retry_delay_seconds=IMAGE_PULL_RETRY_DELAY_SECONDS,
+        retry_context="Full stack image pull",
     )
-    if pull_result.returncode != 0:
-        raise UpdaterError("post_install", "docker compose pull failed.")
+    if pull_result.returncode == 0:
+        return
+
+    if compose_images_available_locally(state, command_env, job_logger):
+        message = (
+            "Full stack image pull failed after retries, but every compose image is available "
+            "locally. Continuing with cached third-party images."
+        )
+        job_logger.write_line(message)
+        trace("warning", message)
+        return
+
+    raise UpdaterError(
+        "post_install",
+        "docker compose pull failed and one or more compose images are missing locally.",
+    )
 
 
 def restart_stack_services(

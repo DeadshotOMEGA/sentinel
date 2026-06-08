@@ -260,6 +260,12 @@ This guided flow handles both install and update:
 - runs `/opt/sentinel/deploy/update.sh --version vX.Y.Z`, which is now a compatibility wrapper around the packaged updater.
 - `--no-firewall`
 
+The packaged updater retries transient container image pull failures before it rolls back. It pulls Sentinel
+backend/frontend images first, then pulls the full stack. If a third-party registry briefly fails after all
+required images are already cached locally, the updater records a warning and continues instead of rolling
+back a healthy Sentinel package install. Tune retry behavior with `SENTINEL_IMAGE_PULL_ATTEMPTS` and
+`SENTINEL_IMAGE_PULL_RETRY_DELAY_SECONDS` in the updater environment when needed.
+
 ## Automatic upgrade helper
 
 If you want unattended upgrade checks on the Sentinel server laptop, use:
