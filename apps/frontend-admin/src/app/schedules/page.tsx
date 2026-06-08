@@ -6,14 +6,15 @@ import { AnimatePresence, motion } from 'motion/react'
 import { WeekPicker, type NavigationDirection } from '@/components/schedules/week-picker'
 import { WeekColumn } from '@/components/schedules/week-column'
 import { ScheduleViewTabs, type ScheduleView } from '@/components/schedules/schedule-view-tabs'
-import { MonthPicker } from '@/components/schedules/month-picker'
 import { QuarterPicker } from '@/components/schedules/quarter-picker'
-import { MonthCalendarView } from '@/components/schedules/month-calendar-view'
 import { QuarterView } from '@/components/schedules/quarter-view'
+import { WeeklyDdsPanel } from '@/components/schedules/weekly-dds-panel'
 import { ScheduleErrorBoundary } from '@/components/schedules/error-boundary'
+import { ModalProvider } from '@/components/schedules/modals/modal-context'
+import { DdsModal } from '@/components/schedules/modals/dds-modal'
 import { SchedulesHelpLauncher } from '@/components/help/section-help-launchers'
 import { CalendarDays } from 'lucide-react'
-import { getMonday, formatDateISO, getQuarterStart, parseDateString } from '@/lib/date-utils'
+import { getMonday, formatDateISO, parseDateString } from '@/lib/date-utils'
 import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion'
 
 const EASE_STANDARD: [number, number, number, number] = [0.25, 0.1, 0.25, 1]
@@ -64,11 +65,9 @@ export default function SchedulesPage() {
     return formatDateISO(addDays(current, 7))
   }, [weekStartDate])
 
-  // Month view state
-  const [currentMonth, setCurrentMonth] = useState(() => startOfMonth(new Date()))
-
-  // Quarter view state
-  const [quarterStart, setQuarterStart] = useState(() => getQuarterStart(new Date()))
+  // Monthly range view state
+  const [monthlyRangeStart, setMonthlyRangeStart] = useState(() => startOfMonth(new Date()))
+  const ddsPanelStartDate = useMemo(() => formatDateISO(getMonday(new Date())), [])
 
   const handleWeekChange = (newDate: string, dir: NavigationDirection) => {
     setDirection(dir)
@@ -102,14 +101,12 @@ export default function SchedulesPage() {
               <WeekPicker weekStartDate={weekStartDate} onWeekChange={handleWeekChange} />
             </div>
           )}
-          {activeView === 'month' && (
+          {activeView === 'monthly' && (
             <div data-help-id="schedules.date-picker">
-              <MonthPicker currentMonth={currentMonth} onMonthChange={setCurrentMonth} />
-            </div>
-          )}
-          {activeView === 'quarter' && (
-            <div data-help-id="schedules.date-picker">
-              <QuarterPicker quarterStart={quarterStart} onQuarterChange={setQuarterStart} />
+              <QuarterPicker
+                quarterStart={monthlyRangeStart}
+                onQuarterChange={setMonthlyRangeStart}
+              />
             </div>
           )}
         </div>
@@ -119,35 +116,38 @@ export default function SchedulesPage() {
       <div id="schedule-view-panel" role="tabpanel">
         <ScheduleErrorBoundary>
           {activeView === 'week' && (
-            <AnimatePresence mode="wait" custom={direction}>
-              <motion.div
-                key={weekStartDate}
-                custom={direction}
-                variants={activeVariants}
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                className="grid grid-cols-1 lg:grid-cols-2 gap-6"
-                data-help-id="schedules.week-columns"
-              >
-                <WeekColumn weekStartDate={weekStartDate} />
-                <WeekColumn weekStartDate={nextWeekStartDate} />
-              </motion.div>
-            </AnimatePresence>
+            <ModalProvider>
+              <AnimatePresence mode="wait" custom={direction}>
+                <motion.div
+                  key={weekStartDate}
+                  custom={direction}
+                  variants={activeVariants}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                  className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(17rem,21rem)_minmax(0,1fr)]"
+                  data-help-id="schedules.week-columns"
+                >
+                  <WeeklyDdsPanel
+                    startWeekDate={ddsPanelStartDate}
+                    selectedWeekDate={weekStartDate}
+                  />
+                  <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                    <WeekColumn weekStartDate={weekStartDate} />
+                    <WeekColumn weekStartDate={nextWeekStartDate} />
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+              <DdsModal />
+            </ModalProvider>
           )}
 
-          {activeView === 'month' && (
+          {activeView === 'monthly' && (
             <div data-help-id="schedules.month-quarter-view">
-              <MonthCalendarView
-                currentMonth={currentMonth}
+              <QuarterView
+                quarterStart={monthlyRangeStart}
                 onWeekClick={handleWeekClickFromCalendar}
               />
-            </div>
-          )}
-
-          {activeView === 'quarter' && (
-            <div data-help-id="schedules.month-quarter-view">
-              <QuarterView quarterStart={quarterStart} onWeekClick={handleWeekClickFromCalendar} />
             </div>
           )}
         </ScheduleErrorBoundary>

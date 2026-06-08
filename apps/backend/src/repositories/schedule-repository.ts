@@ -1,4 +1,4 @@
-import type { PrismaClientInstance } from '@sentinel/database'
+import type { Prisma, PrismaClientInstance } from '@sentinel/database'
 import { prisma as defaultPrisma } from '@sentinel/database'
 
 // ============================================================================
@@ -200,6 +200,37 @@ export interface ScheduleListFilter {
   offset?: number
 }
 
+export interface ShiftDdsAssignmentsInput {
+  startWeekDate: Date
+  direction: 'forward' | 'backward'
+}
+
+export interface ShiftDdsAssignmentsResult {
+  startWeekDate: Date
+  direction: 'forward' | 'backward'
+  affectedWeeks: number
+  assignmentsMoved: number
+  schedulesCreated: number
+  clearedWeeks: number
+}
+
+type ScheduleDbClient = PrismaClientInstance | Prisma.TransactionClient
+
+interface ShiftSourceAssignment {
+  dutyPositionId: string | null
+  memberId: string
+  status: string
+  confirmedAt: Date | null
+  releasedAt: Date | null
+  notes: string | null
+}
+
+interface ShiftWeekSnapshot {
+  scheduleId: string | null
+  status: string
+  assignment: ShiftSourceAssignment | null
+}
+
 // ============================================================================
 // Prisma Include/Select Definitions
 // ============================================================================
@@ -257,6 +288,16 @@ const overrideInclude = {
       name: true,
     },
   },
+}
+
+function addWeeks(date: Date, weeks: number): Date {
+  const next = new Date(date)
+  next.setUTCDate(next.getUTCDate() + weeks * 7)
+  return next
+}
+
+function toDateKey(date: Date): string {
+  return date.toISOString().substring(0, 10)
 }
 
 /**
@@ -517,6 +558,189 @@ export class ScheduleRepository {
   async deleteSchedule(id: string): Promise<void> {
     await this.prisma.weeklySchedule.delete({
       where: { id },
+    })
+  }
+
+  /**
+   * Shift DDS assignments by one week from the selected week onward.
+   *
+   * Forward shift clears the selected week and pushes every later DDS assignment
+   * one week later. Backward shift pulls later DDS assignments one week earlier
+   * and clears the final populated week.
+   */
+  async shiftDdsAssignments(input: ShiftDdsAssignmentsInput): Promise<ShiftDdsAssignmentsResult> {
+    return this.prisma.$transaction(async (tx) => {
+      const ddsRole = await tx.dutyRole.findUnique({
+        where: { code: 'DDS' },
+      })
+
+      if (!ddsRole) {
+        throw new Error('DDS duty role not found')
+      }
+
+      const schedules = await tx.weeklySchedule.findMany({
+        where: {
+          dutyRoleId: ddsRole.id,
+          weekStartDate: { gte: input.startWeekDate },
+        },
+        include: {
+          ...scheduleInclude,
+          assignments: {
+            where: { status: { not: 'released' } },
+            include: assignmentInclude,
+            orderBy: { createdAt: 'asc' },
+          },
+        },
+        orderBy: { weekStartDate: 'asc' },
+      })
+
+      const populatedSchedules = schedules.filter((schedule) => schedule.assignments.length > 0)
+      if (populatedSchedules.length === 0) {
+        return {
+          startWeekDate: input.startWeekDate,
+          direction: input.direction,
+          affectedWeeks: 0,
+          assignmentsMoved: 0,
+          schedulesCreated: 0,
+          clearedWeeks: 0,
+        }
+      }
+
+      const lastPopulatedSchedule = populatedSchedules[populatedSchedules.length - 1]
+      if (!lastPopulatedSchedule) {
+        throw new Error('Unable to resolve last DDS assignment')
+      }
+
+      const endWeekDate =
+        input.direction === 'forward'
+          ? addWeeks(lastPopulatedSchedule.weekStartDate, 1)
+          : lastPopulatedSchedule.weekStartDate
+
+      const snapshots = new Map<string, ShiftWeekSnapshot>()
+      for (const schedule of schedules) {
+        const assignment = schedule.assignments[0]
+        snapshots.set(toDateKey(schedule.weekStartDate), {
+          scheduleId: schedule.id,
+          status: schedule.status,
+          assignment: assignment
+            ? {
+                dutyPositionId: assignment.dutyPositionId,
+                memberId: assignment.memberId,
+                status: assignment.status,
+                confirmedAt: assignment.confirmedAt,
+                releasedAt: assignment.releasedAt,
+                notes: assignment.notes,
+              }
+            : null,
+        })
+      }
+
+      let affectedWeeks = 0
+      let assignmentsMoved = 0
+      let schedulesCreated = 0
+      let clearedWeeks = 0
+
+      for (
+        let cursor = new Date(input.startWeekDate);
+        cursor <= endWeekDate;
+        cursor = addWeeks(cursor, 1)
+      ) {
+        const targetKey = toDateKey(cursor)
+        const sourceDate =
+          input.direction === 'forward' ? addWeeks(cursor, -1) : addWeeks(cursor, 1)
+        const sourceAssignment =
+          input.direction === 'forward' && targetKey === toDateKey(input.startWeekDate)
+            ? null
+            : (snapshots.get(toDateKey(sourceDate))?.assignment ?? null)
+
+        const targetSnapshot = snapshots.get(targetKey)
+        const scheduleId =
+          targetSnapshot?.scheduleId ??
+          (sourceAssignment
+            ? await this.createDdsScheduleForShift(tx, ddsRole.id, cursor).then((schedule) => {
+                schedulesCreated += 1
+                return schedule.id
+              })
+            : null)
+
+        if (!scheduleId) {
+          continue
+        }
+
+        affectedWeeks += 1
+
+        const existingAssignments = await tx.scheduleAssignment.findMany({
+          where: { scheduleId, status: { not: 'released' } },
+          orderBy: { createdAt: 'asc' },
+        })
+        const primaryAssignment = existingAssignments[0]
+        const extraAssignmentIds = existingAssignments.slice(1).map((assignment) => assignment.id)
+
+        if (extraAssignmentIds.length > 0) {
+          await tx.scheduleAssignment.deleteMany({
+            where: { id: { in: extraAssignmentIds } },
+          })
+        }
+
+        if (!sourceAssignment) {
+          if (primaryAssignment) {
+            await tx.scheduleAssignment.delete({
+              where: { id: primaryAssignment.id },
+            })
+            clearedWeeks += 1
+          }
+          continue
+        }
+
+        const assignmentData = {
+          dutyPositionId: sourceAssignment.dutyPositionId,
+          memberId: sourceAssignment.memberId,
+          status: sourceAssignment.status,
+          confirmedAt: sourceAssignment.confirmedAt,
+          releasedAt: sourceAssignment.releasedAt,
+          notes: sourceAssignment.notes,
+        }
+
+        if (primaryAssignment) {
+          await tx.scheduleAssignment.update({
+            where: { id: primaryAssignment.id },
+            data: assignmentData,
+          })
+        } else {
+          await tx.scheduleAssignment.create({
+            data: {
+              scheduleId,
+              ...assignmentData,
+            },
+          })
+        }
+
+        assignmentsMoved += 1
+      }
+
+      return {
+        startWeekDate: input.startWeekDate,
+        direction: input.direction,
+        affectedWeeks,
+        assignmentsMoved,
+        schedulesCreated,
+        clearedWeeks,
+      }
+    })
+  }
+
+  private async createDdsScheduleForShift(
+    tx: ScheduleDbClient,
+    dutyRoleId: string,
+    weekStartDate: Date
+  ): Promise<{ id: string }> {
+    return tx.weeklySchedule.create({
+      data: {
+        dutyRoleId,
+        weekStartDate,
+        status: 'draft',
+      },
+      select: { id: true },
     })
   }
 

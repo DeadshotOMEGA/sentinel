@@ -10,6 +10,7 @@ import type {
   UpdateScheduleInput,
   CreateAssignmentInput,
   UpdateAssignmentInput,
+  ShiftDdsScheduleInput,
   CreateDwOverrideInput,
   CreateLiveDutyAssignmentInput,
   ClearLiveDutyAssignmentInput,
@@ -424,6 +425,28 @@ export function useDdsByWeek(date: string) {
       return response.body
     },
     enabled: !!date,
+  })
+}
+
+export function useShiftDdsSchedule() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (data: ShiftDdsScheduleInput) => {
+      const response = await apiClient.schedules.shiftDdsSchedule({
+        body: data,
+      })
+      if (response.status !== 200) {
+        const errorBody = response.body as { message?: string }
+        throw new Error(errorBody?.message ?? 'Failed to shift DDS schedule')
+      }
+      return response.body
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: scheduleKeys.all })
+      queryClient.invalidateQueries({ queryKey: ['dds'] })
+      void invalidateDashboardQueries(queryClient)
+    },
   })
 }
 

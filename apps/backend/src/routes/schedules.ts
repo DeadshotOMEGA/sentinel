@@ -11,6 +11,7 @@ import type {
   UpdateScheduleInput,
   CreateAssignmentInput,
   UpdateAssignmentInput,
+  ShiftDdsScheduleInput,
   CreateDwOverrideInput,
   DwOverrideParams,
   DwOverrideQuery,
@@ -916,6 +917,43 @@ export const schedulesRouter = s.router(scheduleContract, {
         body: {
           error: 'INTERNAL_ERROR',
           message: error instanceof Error ? error.message : 'Failed to fetch DDS',
+        },
+      }
+    }
+  },
+
+  shiftDdsSchedule: async ({ body }: { body: ShiftDdsScheduleInput }) => {
+    try {
+      const startWeekDate = parseOperationalDate(body.startWeekDate)
+      const result = await scheduleService.shiftDdsSchedule(startWeekDate, body.direction)
+      return {
+        status: 200 as const,
+        body: result,
+      }
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('Invalid')) {
+        return {
+          status: 400 as const,
+          body: {
+            error: 'VALIDATION_ERROR',
+            message: error.message,
+          },
+        }
+      }
+      if (error instanceof Error && error.message.includes('not found')) {
+        return {
+          status: 404 as const,
+          body: {
+            error: 'NOT_FOUND',
+            message: error.message,
+          },
+        }
+      }
+      return {
+        status: 500 as const,
+        body: {
+          error: 'INTERNAL_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to shift DDS schedule',
         },
       }
     }

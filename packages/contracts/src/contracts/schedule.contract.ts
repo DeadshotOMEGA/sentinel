@@ -11,6 +11,8 @@ import {
   UpdateScheduleInputSchema,
   CreateAssignmentInputSchema,
   UpdateAssignmentInputSchema,
+  ShiftDdsScheduleInputSchema,
+  ShiftDdsScheduleResponseSchema,
   ScheduleListQuerySchema,
   DateParamSchema, // from lockup.schema.ts
   ScheduleIdParamSchema,
@@ -376,6 +378,25 @@ export const scheduleContract = c.router({
     },
     summary: 'Get DDS by week',
     description: 'Get DDS for the week containing the specified date',
+  },
+
+  /**
+   * Shift DDS assignments by one week from a selected week onward
+   */
+  shiftDdsSchedule: {
+    method: 'POST',
+    path: '/api/schedules/dds/shift',
+    body: ShiftDdsScheduleInputSchema,
+    responses: {
+      200: ShiftDdsScheduleResponseSchema,
+      400: ErrorResponseSchema,
+      401: ErrorResponseSchema,
+      404: ErrorResponseSchema,
+      500: ErrorResponseSchema,
+    },
+    summary: 'Shift DDS schedule',
+    description:
+      'Shift DDS assignments forward or backward by one week from a selected week onward.',
   },
 
   // ==========================================================================

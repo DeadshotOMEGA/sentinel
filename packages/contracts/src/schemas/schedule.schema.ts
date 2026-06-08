@@ -223,6 +223,26 @@ export const UpdateAssignmentInputSchema = v.object({
   notes: v.optional(v.nullable(v.string())),
 })
 
+/**
+ * Shift DDS assignments forward or backward by one week from a selected week.
+ */
+export const ShiftDdsScheduleInputSchema = v.object({
+  startWeekDate: v.pipe(
+    v.string('Start week date is required'),
+    v.regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format')
+  ),
+  direction: v.picklist(['forward', 'backward']),
+})
+
+export const ShiftDdsScheduleResponseSchema = v.object({
+  startWeekDate: v.string(),
+  direction: v.picklist(['forward', 'backward']),
+  affectedWeeks: v.number(),
+  assignmentsMoved: v.number(),
+  schedulesCreated: v.number(),
+  clearedWeeks: v.number(),
+})
+
 // ============================================================================
 // Query Schemas
 // ============================================================================
@@ -390,6 +410,8 @@ export type CreateScheduleInput = v.InferOutput<typeof CreateScheduleInputSchema
 export type UpdateScheduleInput = v.InferOutput<typeof UpdateScheduleInputSchema>
 export type CreateAssignmentInput = v.InferOutput<typeof CreateAssignmentInputSchema>
 export type UpdateAssignmentInput = v.InferOutput<typeof UpdateAssignmentInputSchema>
+export type ShiftDdsScheduleInput = v.InferOutput<typeof ShiftDdsScheduleInputSchema>
+export type ShiftDdsScheduleResponse = v.InferOutput<typeof ShiftDdsScheduleResponseSchema>
 export type ScheduleListQuery = v.InferOutput<typeof ScheduleListQuerySchema>
 // DateParam type is exported from lockup.schema.ts
 export type ScheduleIdParam = v.InferOutput<typeof ScheduleIdParamSchema>

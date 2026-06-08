@@ -26,6 +26,7 @@ interface RepositoryMock {
   findDutyWatchForWeek: ReturnType<typeof vi.fn>
   findOverridesBySchedule: ReturnType<typeof vi.fn>
   findMemberDutyAssignmentsBetween: ReturnType<typeof vi.fn>
+  shiftDdsAssignments: ReturnType<typeof vi.fn>
 }
 
 function createRepositoryMock(): RepositoryMock {
@@ -37,6 +38,7 @@ function createRepositoryMock(): RepositoryMock {
     findDutyWatchForWeek: vi.fn(),
     findOverridesBySchedule: vi.fn(),
     findMemberDutyAssignmentsBetween: vi.fn(),
+    shiftDdsAssignments: vi.fn(),
   }
 }
 
@@ -291,6 +293,47 @@ describe('ScheduleService.getMemberAssignmentSummary', () => {
       expect.any(Date),
       expect.any(Date)
     )
+  })
+})
+
+describe('ScheduleService.shiftDdsSchedule', () => {
+  let repositoryMock: RepositoryMock
+
+  beforeEach(() => {
+    repositoryMock = createRepositoryMock()
+  })
+
+  function createServiceWithRepositoryMock(): ScheduleService {
+    const service = new ScheduleService({} as PrismaClientInstance)
+    ;(service as unknown as { repository: RepositoryMock }).repository = repositoryMock
+    return service
+  }
+
+  it('normalizes the selected week and returns shift metrics', async () => {
+    repositoryMock.shiftDdsAssignments.mockResolvedValue({
+      startWeekDate: new Date('2026-03-02T00:00:00.000Z'),
+      direction: 'forward',
+      affectedWeeks: 4,
+      assignmentsMoved: 3,
+      schedulesCreated: 1,
+      clearedWeeks: 1,
+    })
+
+    const service = createServiceWithRepositoryMock()
+    const result = await service.shiftDdsSchedule(new Date('2026-03-04T00:00:00.000Z'), 'forward')
+
+    expect(repositoryMock.shiftDdsAssignments).toHaveBeenCalledWith({
+      startWeekDate: new Date('2026-03-02T00:00:00.000Z'),
+      direction: 'forward',
+    })
+    expect(result).toEqual({
+      startWeekDate: '2026-03-02',
+      direction: 'forward',
+      affectedWeeks: 4,
+      assignmentsMoved: 3,
+      schedulesCreated: 1,
+      clearedWeeks: 1,
+    })
   })
 })
 
