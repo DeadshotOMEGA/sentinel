@@ -342,6 +342,10 @@ export const TID = {
       transferLockup: 'quick-action-transfer-lockup',
       simulateScan: 'quick-action-simulate-scan',
     },
+    scan: {
+      input: 'dashboard-scan-input',
+      result: 'dashboard-scan-result',
+    },
     kiosk: {
       launchTab: 'dashboard-kiosk-launch-tab',
       badgeInput: 'kiosk-badge-input',
