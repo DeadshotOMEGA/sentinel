@@ -8,10 +8,7 @@ import { DashboardScanPanel } from '@/components/dashboard/dashboard-scan-panel'
 export default function DashboardPage() {
   return (
     <DashboardDdsChecklistDrawer>
-      <main
-        className="mx-auto w-full max-w-[1600px] space-y-6 pb-24 sm:pb-20"
-        data-help-id="dashboard.root"
-      >
+      <main className="mx-auto w-full max-w-[1760px] space-y-6 pb-44" data-help-id="dashboard.root">
         <h1 className="sr-only">Dashboard</h1>
 
         <SecurityAlertsBar />
@@ -22,12 +19,10 @@ export default function DashboardPage() {
         <section>
           <PersonCardGrid />
         </section>
-        <section>
-          <DashboardScanPanel />
-        </section>
 
         <DashboardHelpLauncher />
       </main>
+      <DashboardScanPanel />
     </DashboardDdsChecklistDrawer>
   )
 }
