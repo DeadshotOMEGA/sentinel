@@ -22,6 +22,19 @@ import {
 } from '@/components/kiosk/kiosk-domain'
 
 const DASHBOARD_BROW_KIOSK_ID = 'DASHBOARD_BROW'
+const SCAN_RESULT_VISIBLE_MS = 4000
+const SCAN_INPUT_REFOCUS_MS = 1500
+const FOCUS_HOLD_SELECTOR = [
+  `input:not([data-testid="${TID.dashboard.scan.input}"])`,
+  'textarea',
+  'select',
+  '[contenteditable="true"]',
+].join(',')
+const ACTIVE_WORK_SURFACE_SELECTOR = [
+  '.modal[open]',
+  '.presence-member-drawer[data-open="true"]',
+  `[data-testid="${TID.dashboard.help.launcher}"] [aria-expanded="true"]`,
+].join(',')
 
 type DashboardScanMutationResult =
   | {
@@ -75,6 +88,29 @@ const INITIAL_SCAN_RESULT: DashboardScanResult = {
   eyebrow: 'Ready',
   title: 'Brow scanner',
   message: 'Awaiting badge scan.',
+}
+
+function isInitialScanResult(result: DashboardScanResult): boolean {
+  return (
+    result.tone === INITIAL_SCAN_RESULT.tone &&
+    result.eyebrow === INITIAL_SCAN_RESULT.eyebrow &&
+    result.title === INITIAL_SCAN_RESULT.title &&
+    result.message === INITIAL_SCAN_RESULT.message
+  )
+}
+
+function shouldRefocusScanInput(input: HTMLInputElement | null): boolean {
+  if (!input || document.hidden) return false
+  if (document.querySelector(ACTIVE_WORK_SURFACE_SELECTOR)) return false
+
+  const activeElement = document.activeElement
+  if (activeElement === input) return false
+
+  if (activeElement instanceof HTMLElement) {
+    return !activeElement.closest(FOCUS_HOLD_SELECTOR)
+  }
+
+  return true
 }
 
 function getResultSurfaceClass(tone: ResultTone): string {
@@ -310,6 +346,37 @@ export function DashboardScanPanel() {
     }
   }, [lockupOptionsOpen, refocusInput, scanMutation.isPending])
 
+  useEffect(() => {
+    if (scanMutation.isPending || lockupOptionsOpen) return
+
+    const refocusWhenIdle = () => {
+      if (shouldRefocusScanInput(inputRef.current)) {
+        inputRef.current?.focus({ preventScroll: true })
+      }
+    }
+
+    const intervalId = window.setInterval(refocusWhenIdle, SCAN_INPUT_REFOCUS_MS)
+
+    window.addEventListener('focus', refocusWhenIdle)
+    document.addEventListener('visibilitychange', refocusWhenIdle)
+
+    return () => {
+      window.clearInterval(intervalId)
+      window.removeEventListener('focus', refocusWhenIdle)
+      document.removeEventListener('visibilitychange', refocusWhenIdle)
+    }
+  }, [lockupOptionsOpen, scanMutation.isPending])
+
+  useEffect(() => {
+    if (lockupOptionsOpen || isInitialScanResult(result)) return
+
+    const clearResult = window.setTimeout(() => {
+      setResult(INITIAL_SCAN_RESULT)
+    }, SCAN_RESULT_VISIBLE_MS)
+
+    return () => window.clearTimeout(clearResult)
+  }, [lockupOptionsOpen, result])
+
   const handleSubmit = () => {
     if (scanMutation.isPending) return
 
@@ -393,58 +460,60 @@ export function DashboardScanPanel() {
 
   return (
     <>
-      <AppCard
-        className="border border-base-300 bg-base-100 shadow-md"
-        data-help-id="dashboard.scan-panel"
-      >
-        <AppCardContent style={{ padding: 'var(--space-3)' }}>
-          <form
-            className={cn(
-              'grid min-h-24 items-center gap-(--space-3) rounded-box border px-(--space-4) py-(--space-3) lg:grid-cols-[auto_minmax(0,1fr)_minmax(16rem,24rem)]',
-              getResultSurfaceClass(result.tone)
-            )}
-            onSubmit={(event) => {
-              event.preventDefault()
-              handleSubmit()
-            }}
-            data-testid={TID.dashboard.scan.result}
-          >
-            {getDirectionIcon(result.direction, result.tone)}
-            <div
-              className="min-w-0"
-              role={result.tone === 'error' || result.tone === 'warning' ? 'alert' : 'status'}
-              aria-live={
-                result.tone === 'error' || result.tone === 'warning' ? 'assertive' : 'polite'
-              }
+      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-(--z-sticky) px-(--space-4) pb-(--space-4) lg:px-(--space-6)">
+        <AppCard
+          className="pointer-events-auto mx-auto w-full max-w-[1760px] border border-base-300 bg-base-100 shadow-[var(--shadow-3)]"
+          data-help-id="dashboard.scan-panel"
+        >
+          <AppCardContent style={{ padding: 'var(--space-3)' }}>
+            <form
+              className={cn(
+                'grid min-h-20 items-center gap-(--space-3) rounded-box border px-(--space-4) py-(--space-3) lg:grid-cols-[auto_minmax(0,1fr)_minmax(18rem,24rem)]',
+                getResultSurfaceClass(result.tone)
+              )}
+              onSubmit={(event) => {
+                event.preventDefault()
+                handleSubmit()
+              }}
+              data-testid={TID.dashboard.scan.result}
             >
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-base-content/60">
-                {result.eyebrow}
-              </p>
-              <p className="mt-(--space-1) truncate text-lg font-semibold leading-tight">
-                {result.title}
-              </p>
-              <p className="mt-(--space-1) text-sm leading-5 text-base-content/75">
-                {result.message}
-              </p>
-            </div>
-            <label className="input input-sm flex h-10 w-full items-center gap-(--space-2) border-base-300 bg-base-100 lg:justify-self-end">
-              <Keyboard className="size-4 shrink-0 text-base-content/45" />
-              <input
-                ref={inputRef}
-                value={serial}
-                type="text"
-                autoComplete="off"
-                aria-label="Scan badge"
-                className="min-w-0 flex-1 font-mono text-sm tracking-[0.12em] uppercase placeholder:normal-case placeholder:tracking-normal"
-                placeholder="Scan badge"
-                disabled={scanMutation.isPending}
-                onChange={(event) => setSerial(event.target.value)}
-                data-testid={TID.dashboard.scan.input}
-              />
-            </label>
-          </form>
-        </AppCardContent>
-      </AppCard>
+              {getDirectionIcon(result.direction, result.tone)}
+              <div
+                className="min-w-0"
+                role={result.tone === 'error' || result.tone === 'warning' ? 'alert' : 'status'}
+                aria-live={
+                  result.tone === 'error' || result.tone === 'warning' ? 'assertive' : 'polite'
+                }
+              >
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-base-content/60">
+                  {result.eyebrow}
+                </p>
+                <p className="mt-(--space-1) truncate text-lg font-semibold leading-tight">
+                  {result.title}
+                </p>
+                <p className="mt-(--space-1) text-sm leading-5 text-base-content/75">
+                  {result.message}
+                </p>
+              </div>
+              <label className="input input-sm flex h-10 w-full items-center gap-(--space-2) border-base-300 bg-base-100 lg:justify-self-end">
+                <Keyboard className="size-4 shrink-0 text-base-content/45" />
+                <input
+                  ref={inputRef}
+                  value={serial}
+                  type="text"
+                  autoComplete="off"
+                  aria-label="Scan badge"
+                  className="min-w-0 flex-1 font-mono text-sm tracking-[0.12em] uppercase placeholder:normal-case placeholder:tracking-normal"
+                  placeholder="Scan badge"
+                  disabled={scanMutation.isPending}
+                  onChange={(event) => setSerial(event.target.value)}
+                  data-testid={TID.dashboard.scan.input}
+                />
+              </label>
+            </form>
+          </AppCardContent>
+        </AppCard>
+      </div>
 
       {pendingLockup && checkoutOptions && (
         <LockupOptionsModal

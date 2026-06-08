@@ -11,6 +11,7 @@ import { DriverJsProcedureDriver } from '@/help/driver-adapter'
 import { subscribeHelpTourRequest } from '@/help/help-events'
 import { loadProcedureProgress } from '@/help/persistence'
 import { useAuthStore } from '@/store/auth-store'
+import { cn } from '@/lib/utils'
 import type {
   ProcedureController,
   ProcedureDefinition,
@@ -34,6 +35,7 @@ interface ProcedureHelpLauncherProps {
   procedures: ProcedureDefinition[]
   minAccountLevel?: number
   testId?: string
+  launcherClassName?: string
 }
 
 function getBadgeStatus(status?: ProcedureStatus): AppBadgeStatus {
@@ -64,6 +66,7 @@ export function ProcedureHelpLauncher({
   procedures,
   minAccountLevel = 0,
   testId,
+  launcherClassName,
 }: ProcedureHelpLauncherProps) {
   const pathname = usePathname()
   const member = useAuthStore((state) => state.member)
@@ -170,7 +173,10 @@ export function ProcedureHelpLauncher({
 
   return (
     <div
-      className="fixed bottom-3 left-3 right-3 z-(--z-sticky) hidden sm:block sm:bottom-20 sm:left-auto sm:right-6"
+      className={cn(
+        'fixed bottom-3 left-3 right-3 z-(--z-sticky) hidden sm:block sm:left-auto sm:right-6',
+        launcherClassName ?? 'sm:bottom-20'
+      )}
       data-testid={testId}
     >
       {!isOpen && (

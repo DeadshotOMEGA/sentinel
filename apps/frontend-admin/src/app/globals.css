@@ -787,8 +787,7 @@ html[data-theme='business'] .backend-status-badge {
 
 /* Person card grid: container-query-based columns
    Self-contained — no dependency on drawer/layout ancestor classes.
-   With 290px sidebar on 1920px screen: container ≈ 1550px → 6 cols
-   Without sidebar on 1920px screen: container ≈ 1840px → 7 cols */
+   With the widened dashboard on a 1920px screen: container ≈ 1720px → 6 cols */
 .presence-card-grid {
   grid-template-columns: repeat(2, 1fr);
 }
@@ -817,9 +816,15 @@ html[data-theme='business'] .backend-status-badge {
   }
 }
 
-@container (min-width: 1650px) {
+@container (min-width: 1540px) {
   .presence-card-grid {
     grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+@container (min-width: 1840px) {
+  .presence-card-grid {
+    grid-template-columns: repeat(7, 1fr);
   }
 }
 

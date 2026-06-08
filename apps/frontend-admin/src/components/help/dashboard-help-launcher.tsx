@@ -37,6 +37,7 @@ export function DashboardHelpLauncher() {
       procedures={dashboardProcedureDefinitions}
       minAccountLevel={AccountLevel.ADMIN}
       testId={TID.dashboard.help.launcher}
+      launcherClassName="sm:bottom-40"
     />
   )
 }
