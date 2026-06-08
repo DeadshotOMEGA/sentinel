@@ -222,11 +222,18 @@ function HoverDetail({
 
 export function QuarterView({ quarterStart, onWeekClick }: QuarterViewProps) {
   const months = useMemo(
-    () => [quarterStart, addMonths(quarterStart, 1), addMonths(quarterStart, 2)],
+    () => [
+      quarterStart,
+      addMonths(quarterStart, 1),
+      addMonths(quarterStart, 2),
+      addMonths(quarterStart, 3),
+      addMonths(quarterStart, 4),
+      addMonths(quarterStart, 5),
+    ],
     [quarterStart]
   )
 
-  const quarterEnd = endOfMonth(addMonths(quarterStart, 2))
+  const quarterEnd = endOfMonth(addMonths(quarterStart, 5))
   const gridStart = startOfWeek(quarterStart, { weekStartsOn: 1 })
   const gridEnd = addDays(startOfWeek(addDays(quarterEnd, 1), { weekStartsOn: 1 }), -3)
 
@@ -316,7 +323,7 @@ export function QuarterView({ quarterStart, onWeekClick }: QuarterViewProps) {
     return (
       <AppCard status="error">
         <AppCardHeader>
-          <AppCardTitle>Quarter View</AppCardTitle>
+          <AppCardTitle>Monthly View</AppCardTitle>
         </AppCardHeader>
         <AppCardContent>
           <div className="flex items-center gap-2 text-error">

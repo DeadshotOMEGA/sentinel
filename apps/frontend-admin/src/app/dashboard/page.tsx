@@ -3,6 +3,7 @@ import { PersonCardGrid } from '@/components/dashboard/person-card-grid'
 import { DashboardDdsChecklistDrawer } from '@/components/dashboard/dashboard-dds-checklist-drawer'
 import { DashboardHelpLauncher } from '@/components/help/dashboard-help-launcher'
 import { SecurityAlertsBar } from '@/components/dashboard/security-alerts-bar'
+import { DashboardScanPanel } from '@/components/dashboard/dashboard-scan-panel'
 
 export default function DashboardPage() {
   return (
@@ -20,6 +21,9 @@ export default function DashboardPage() {
         </section>
         <section>
           <PersonCardGrid />
+        </section>
+        <section>
+          <DashboardScanPanel />
         </section>
 
         <DashboardHelpLauncher />

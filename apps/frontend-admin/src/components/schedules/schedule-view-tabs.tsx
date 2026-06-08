@@ -10,7 +10,7 @@
  * ```
  */
 
-export type ScheduleView = 'week' | 'month' | 'quarter'
+export type ScheduleView = 'week' | 'monthly'
 
 interface ScheduleViewTabsProps {
   /** Currently active view */
@@ -39,23 +39,13 @@ export function ScheduleViewTabs({ activeView, onViewChange }: ScheduleViewTabsP
       </button>
       <button
         role="tab"
-        className={`tab ${activeView === 'month' ? 'tab-active' : ''}`}
-        onClick={() => onViewChange('month')}
-        aria-selected={activeView === 'month'}
+        className={`tab ${activeView === 'monthly' ? 'tab-active' : ''}`}
+        onClick={() => onViewChange('monthly')}
+        aria-selected={activeView === 'monthly'}
         aria-controls="schedule-view-panel"
         type="button"
       >
-        Month
-      </button>
-      <button
-        role="tab"
-        className={`tab ${activeView === 'quarter' ? 'tab-active' : ''}`}
-        onClick={() => onViewChange('quarter')}
-        aria-selected={activeView === 'quarter'}
-        aria-controls="schedule-view-panel"
-        type="button"
-      >
-        Quarter
+        Monthly
       </button>
     </div>
   )

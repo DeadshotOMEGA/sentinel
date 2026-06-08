@@ -100,6 +100,15 @@ export interface MemberAssignmentSummary {
   upcomingDutyWatchWeeks: string[]
 }
 
+export interface ShiftDdsScheduleResult {
+  startWeekDate: string
+  direction: 'forward' | 'backward'
+  affectedWeeks: number
+  assignmentsMoved: number
+  schedulesCreated: number
+  clearedWeeks: number
+}
+
 const MEMBER_ASSIGNMENT_LOOKAHEAD_WEEKS = 8
 const MEMBER_ASSIGNMENT_PREVIEW_LIMIT = 4
 
@@ -543,6 +552,38 @@ export class ScheduleService {
         status: result.assignment.status as 'assigned' | 'confirmed' | 'released',
       },
       operationalDate,
+    }
+  }
+
+  /**
+   * Shift DDS assignments forward or backward one week from a selected week onward.
+   */
+  async shiftDdsSchedule(
+    startWeekDate: Date,
+    direction: 'forward' | 'backward'
+  ): Promise<ShiftDdsScheduleResult> {
+    const adjustedDate = this.ensureMonday(startWeekDate)
+    const result = await this.repository.shiftDdsAssignments({
+      startWeekDate: adjustedDate,
+      direction,
+    })
+
+    broadcastScheduleUpdate({
+      action: 'updated',
+      scheduleId: 'dds-shift',
+      dutyRoleCode: 'DDS',
+      weekStartDate: adjustedDate.toISOString().substring(0, 10),
+      status: 'updated',
+      timestamp: new Date().toISOString(),
+    })
+
+    return {
+      startWeekDate: result.startWeekDate.toISOString().substring(0, 10),
+      direction: result.direction,
+      affectedWeeks: result.affectedWeeks,
+      assignmentsMoved: result.assignmentsMoved,
+      schedulesCreated: result.schedulesCreated,
+      clearedWeeks: result.clearedWeeks,
     }
   }
 
