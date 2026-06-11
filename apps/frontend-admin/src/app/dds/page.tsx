@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { type ReactNode, useState } from 'react'
 import {
   BookOpenCheck,
   ClipboardList,
@@ -25,6 +25,7 @@ import {
   AppCardHeader,
   AppCardTitle,
 } from '@/components/ui/AppCard'
+import { AppBadge, type AppBadgeStatus } from '@/components/ui/AppBadge'
 import { AppAlert } from '@/components/ui/AppAlert'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { useDdsChecklist } from '@/hooks/use-dds-checklist'
@@ -62,6 +63,42 @@ function isUpdatePlaceholder(value: string): boolean {
   return value.includes('<update required>')
 }
 
+interface DdsOverviewStatProps {
+  label: string
+  value: string
+  detail: string
+  badge?: {
+    label: string
+    status: AppBadgeStatus
+  }
+  children?: ReactNode
+}
+
+function DdsOverviewStat({ label, value, detail, badge, children }: DdsOverviewStatProps) {
+  return (
+    <div
+      className="min-w-0 border border-base-300 bg-base-100"
+      style={{ padding: 'var(--space-3)', display: 'grid', gap: 'var(--space-2)' }}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <p className="text-xs font-semibold tracking-wide text-base-content/60 uppercase">
+            {label}
+          </p>
+          <p className="mt-1 text-2xl leading-none font-bold text-base-content">{value}</p>
+        </div>
+        {badge ? (
+          <AppBadge status={badge.status} size="sm">
+            {badge.label}
+          </AppBadge>
+        ) : null}
+      </div>
+      {children}
+      <p className="text-xs leading-relaxed text-base-content/70">{detail}</p>
+    </div>
+  )
+}
+
 export default function DdsPage() {
   const member = useAuthStore((state) => state.member)
   const hasMinimumLevel = useAuthStore((state) => state.hasMinimumLevel)
@@ -86,6 +123,22 @@ export default function DdsPage() {
   const totalChecklistTasks = checklist.totalTasks
   const completedChecklistTasks = checklist.completedTasks
   const completionPercent = checklist.completionPercent
+  const contactUpdateCount =
+    activeTemplate?.quickContacts.filter((contact) => isUpdatePlaceholder(contact.phone)).length ??
+    0
+  const checklistBadge: DdsOverviewStatProps['badge'] =
+    totalChecklistTasks > 0 && completedChecklistTasks === totalChecklistTasks
+      ? { label: 'Complete', status: 'success' }
+      : completedChecklistTasks > 0
+        ? { label: 'In progress', status: 'info' }
+        : { label: 'Not started', status: 'neutral' }
+  const contactBadge: DdsOverviewStatProps['badge'] =
+    contactUpdateCount > 0
+      ? {
+          label: `${contactUpdateCount} update${contactUpdateCount === 1 ? '' : 's'}`,
+          status: 'warning',
+        }
+      : { label: 'Ready', status: 'success' }
 
   const updateDraft = (updater: (current: DdsPageContent) => DdsPageContent) => {
     setDraftTemplate((current) => {
@@ -132,7 +185,7 @@ export default function DdsPage() {
 
   if (isLoading) {
     return (
-      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+      <div style={{ maxWidth: '1440px', margin: '0 auto' }}>
         <AppCard>
           <AppCardContent
             className="flex items-center justify-center"
@@ -147,7 +200,7 @@ export default function DdsPage() {
 
   if (isError || !currentTemplate || !activeTemplate) {
     return (
-      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+      <div style={{ maxWidth: '1440px', margin: '0 auto' }}>
         <AppCard status="error">
           <AppCardHeader>
             <AppCardTitle className="flex items-center gap-2">
@@ -171,7 +224,7 @@ export default function DdsPage() {
   const templateState = data as NonNullable<typeof data>
   return (
     <main
-      className="mx-auto w-full max-w-[1200px]"
+      className="mx-auto w-full max-w-[1440px]"
       style={{ display: 'grid', gap: 'var(--space-6)', paddingBottom: 'var(--space-10)' }}
     >
       <AppCard variant="elevated">
@@ -197,7 +250,7 @@ export default function DdsPage() {
                   data-testid="dds-edit-template-btn"
                 >
                   <Pencil className="h-4 w-4" />
-                  Edit Template
+                  Edit template
                 </button>
               )}
 
@@ -213,7 +266,7 @@ export default function DdsPage() {
                     data-testid="dds-save-template-btn"
                   >
                     <Save className="h-4 w-4" />
-                    Save Template
+                    Save template
                   </button>
                   <button
                     type="button"
@@ -233,12 +286,60 @@ export default function DdsPage() {
 
         <AppCardContent>
           <AppAlert
-            tone="info"
-            heading="Template is editable"
-            description="Admin/Developer users can update checklist, contacts, call playbooks, and reference downloads when SOP text changes."
+            tone={contactUpdateCount > 0 ? 'warning' : 'info'}
+            heading={
+              contactUpdateCount > 0
+                ? 'Contact details need updates'
+                : isEditingTemplate
+                  ? 'Editing template draft'
+                  : 'Template ready for DDS use'
+            }
+            description={
+              contactUpdateCount > 0
+                ? `${contactUpdateCount} duty contact ${contactUpdateCount === 1 ? 'entry still uses' : 'entries still use'} an update placeholder. Confirm the current number before relying on that escalation path.`
+                : canEditTemplate
+                  ? 'Admin/Developer users can update checklist, contacts, call playbooks, and reference downloads when SOP text changes.'
+                  : 'Use the current template as the operational baseline and follow chain-of-command direction when SOP text changes.'
+            }
             meta={`Last updated: ${formatUpdatedAt(templateState.updatedAt)}`}
             style={{ marginTop: 'var(--space-2)' }}
           />
+
+          <section
+            aria-label="DDS operational overview"
+            className="grid md:grid-cols-2 xl:grid-cols-4"
+            style={{ gap: 'var(--space-3)', marginTop: 'var(--space-4)' }}
+          >
+            <DdsOverviewStat
+              label="Checklist"
+              value={`${completedChecklistTasks}/${totalChecklistTasks}`}
+              detail={`Personal completion for ${todayIso}`}
+              badge={checklistBadge}
+            >
+              <progress
+                className="progress progress-primary h-1.5 w-full"
+                value={completionPercent}
+                max={100}
+                aria-label="DDS checklist completion"
+              />
+            </DdsOverviewStat>
+            <DdsOverviewStat
+              label="Responsibilities"
+              value={String(activeTemplate.responsibilitySections.length)}
+              detail="Rule and handoff sections"
+            />
+            <DdsOverviewStat
+              label="Duty contacts"
+              value={String(activeTemplate.quickContacts.length)}
+              detail="Call and escalation references"
+              badge={contactBadge}
+            />
+            <DdsOverviewStat
+              label="References"
+              value={String(activeTemplate.referenceDownloads.length)}
+              detail="SOP, phone log, guide, and floor plan files"
+            />
+          </section>
         </AppCardContent>
       </AppCard>
 

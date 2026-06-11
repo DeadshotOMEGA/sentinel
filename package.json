@@ -1,6 +1,6 @@
 {
   "name": "sentinel-monorepo",
-  "version": "3.4.3",
+  "version": "3.4.4",
   "private": true,
   "description": "RFID Attendance Tracking System for HMCS Chippawa",
   "scripts": {
@@ -24,6 +24,8 @@
     "wiki:publish:dashboard:dry": "node scripts/wiki/publish-dashboard-pages.mjs --dry-run",
     "wiki:publish:sections": "node scripts/wiki/publish-section-pages.mjs",
     "wiki:publish:sections:dry": "node scripts/wiki/publish-section-pages.mjs --dry-run",
+    "wiki:navigation": "node scripts/wiki/configure-navigation.mjs",
+    "wiki:navigation:dry": "node scripts/wiki/configure-navigation.mjs --dry-run",
     "wiki:ensure-api-key": "node scripts/wiki/ensure-api-key.mjs",
     "wiki:configure:kroki": "node scripts/wiki/configure-kroki.mjs",
     "wiki:configure:kroki:dry": "node scripts/wiki/configure-kroki.mjs --dry-run",

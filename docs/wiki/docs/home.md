@@ -14,6 +14,7 @@ This Wiki is the operator help center for Sentinel. Start here when you need to 
 - **You schedule DDS or Duty Watch:** start with [DDS And Duty Watch Scheduling](/operations/schedules/dds-duty-watch-scheduling), then use [Week View](/operations/schedules/week-view), [Assign DDS](/operations/schedules/assign-dds), [Assign Duty Watch](/operations/schedules/assign-duty-watch), and [Publish And Edit](/operations/schedules/publish-and-edit).
 - **You are starting the day:** use [Daily Start: System Status](/operations/dashboard/daily-start/system-status), then continue through alerts, DDS, Duty Watch, building state, and Presence review.
 - **You are closing or handing off:** use [Daily End: Security Alerts](/operations/dashboard/daily-end/security-alerts), then confirm remaining people, lockup holder, lockup action, and building recheck.
+- **You came in to missed lockup alerts:** open [Missed Lockup Follow-up](/operations/dashboard/alerts/missed-lockup-follow-up) before acknowledging anything.
 - **You need to correct attendance:** use [Presence: Search](/operations/dashboard/presence/search), [Manual In/Out](/operations/dashboard/presence/manual-in-out), and [Member Actions](/operations/dashboard/presence/member-actions).
 - **You are about to change responsibility or building state:** read [Quick Actions](/operations/dashboard/quick-actions), [Transfer DDS](/operations/dashboard/actions/transfer-dds), [Transfer Lockup](/operations/dashboard/actions/transfer-lockup), and [Open Or Lockup](/operations/dashboard/actions/open-or-lockup).
 
@@ -35,6 +36,7 @@ This Wiki is the operator help center for Sentinel. Start here when you need to 
 ## Dashboard Work Order
 
 1. Check [Security Alerts](/operations/dashboard/security-alerts) before changing building or lockup state.
+   If alerts are grouped as DDS missed-lockup follow-up, read [Missed Lockup Follow-up](/operations/dashboard/alerts/missed-lockup-follow-up) first.
 2. Check the status panel: [DDS](/operations/dashboard/status/dds), [Duty Watch](/operations/dashboard/status/duty-watch), [Building State](/operations/dashboard/status/building-state), and [Lockup Holder](/operations/dashboard/status/lockup-holder).
 3. Use [Quick Actions](/operations/dashboard/status/quick-action-state) only after the status blocks match the real situation.
 4. Confirm the result in [Presence](/operations/dashboard/presence-grid) before you move on.
@@ -128,5 +130,5 @@ This Wiki is the operator help center for Sentinel. Start here when you need to 
 
 ## Version Notes
 
-- Last updated: `2026-05-08`
+- Last updated: `2026-06-11`
 - Content owner: `Sentinel Operations`

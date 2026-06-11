@@ -1,8 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { useState, type CSSProperties, type ReactNode } from 'react'
-import { motion, useReducedMotion } from 'motion/react'
+import { useState, useSyncExternalStore, type CSSProperties, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import { BookOpenCheck, ChevronLeft, PanelRightOpen } from 'lucide-react'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { DdsChecklistCard } from '@/components/dds/dds-checklist-card'
@@ -18,30 +18,37 @@ interface DashboardDdsChecklistDrawerProps {
   children: ReactNode
 }
 
+const NAV_SLOT_ID = 'dashboard-dds-checklist-nav-slot'
+
+function subscribeToNavSlot() {
+  return () => {}
+}
+
+function getNavSlotSnapshot(): HTMLElement | null {
+  return document.getElementById(NAV_SLOT_ID)
+}
+
+function getServerNavSlotSnapshot(): HTMLElement | null {
+  return null
+}
+
 function clampPercent(value: number): number {
   return Math.max(0, Math.min(100, Math.round(value)))
 }
 
 export function DashboardDdsChecklistDrawer({ children }: DashboardDdsChecklistDrawerProps) {
   const [isOpen, setIsOpen] = useState(false)
-  const shouldReduceMotion = useReducedMotion()
+  const navSlot = useSyncExternalStore(
+    subscribeToNavSlot,
+    getNavSlotSnapshot,
+    getServerNavSlotSnapshot
+  )
   const member = useAuthStore((state) => state.member)
   const { data, isLoading, isError, error } = useDdsPageContent()
   const { data: timingsData } = useOperationalTimings({ enabled: true })
   const rolloverTime = timingsData?.settings.operational.dayRolloverTime ?? '03:00'
   const operationalDateKey = useOperationalDateKey(rolloverTime)
   const drawerZIndex = 'calc(var(--z-tooltip) + 1)'
-  const floatingTabHeight = '2.5rem'
-  const floatingTabRight = 'calc(-1 * var(--space-3))'
-  const ddsTabTop = 'calc(4rem + var(--space-4) + var(--space-5) + 10px)'
-  const kioskTabTop = `calc(${ddsTabTop} + ${floatingTabHeight} + 10px)`
-  const floatingTabClassName =
-    'fixed right-0 z-(--z-sticky) h-10 w-26 items-center justify-center gap-(--space-1) rounded-l-full rounded-r-none px-(--space-2) text-sm ring-1 ring-base-100/50'
-  const floatingTabHover = shouldReduceMotion ? undefined : { x: -5, y: -2, scale: 1.03 }
-  const floatingTabTap = shouldReduceMotion ? undefined : { x: -2, y: -1, scale: 0.98 }
-  const floatingTabTransition = shouldReduceMotion
-    ? { duration: 0 }
-    : { duration: 0.16, ease: 'easeOut' as const }
 
   const checklist = useDdsChecklist({
     checklistBlocks: data?.content.checklistBlocks ?? [],
@@ -59,6 +66,34 @@ export function DashboardDdsChecklistDrawer({ children }: DashboardDdsChecklistD
     '--thickness': 'calc(var(--space-1) - 1px)',
   } as CSSProperties
 
+  const checklistButton =
+    navSlot && !isOpen
+      ? createPortal(
+          <button
+            type="button"
+            className="btn btn-secondary btn-sm min-h-9 gap-(--space-2) px-(--space-3) text-sm font-semibold text-secondary-content shadow-sm"
+            onClick={() => setIsOpen(true)}
+            data-testid={TID.dashboard.ddsDrawer.open}
+          >
+            <span>DDS Checklist</span>
+            <div className="tooltip tooltip-bottom" data-tip={checklistProgressTip}>
+              <div
+                className="radial-progress shrink-0 text-[0.6rem] font-semibold"
+                style={checklistProgressStyle}
+                aria-label={`Checklist completion ${checklistCompletionPercent}%`}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={checklistCompletionPercent}
+                role="progressbar"
+              >
+                {checklistCompletionPercent}%
+              </div>
+            </div>
+          </button>,
+          navSlot
+        )
+      : null
+
   return (
     <div className="drawer drawer-end overflow-visible">
       <input
@@ -71,57 +106,7 @@ export function DashboardDdsChecklistDrawer({ children }: DashboardDdsChecklistD
 
       <div className="drawer-content overflow-visible">
         {children}
-
-        {!isOpen ? (
-          <motion.button
-            type="button"
-            className={cn('btn btn-sm btn-secondary text-white', floatingTabClassName)}
-            whileHover={floatingTabHover}
-            whileTap={floatingTabTap}
-            transition={floatingTabTransition}
-            style={{
-              right: floatingTabRight,
-              top: ddsTabTop,
-              boxShadow:
-                'var(--shadow-3), -12px 0 22px -12px color-mix(in oklab, var(--color-neutral) 80%, transparent), 0 20px 28px -18px color-mix(in oklab, var(--color-neutral) 80%, transparent)',
-            }}
-            onClick={() => setIsOpen(true)}
-            data-testid={TID.dashboard.ddsDrawer.open}
-          >
-            <span className="font-semibold tracking-wide">DDS</span>
-            <div className="tooltip tooltip-left" data-tip={checklistProgressTip}>
-              <div
-                className="radial-progress shrink-0 text-white text-[0.6rem] font-semibold"
-                style={checklistProgressStyle}
-                aria-label={`Checklist completion ${checklistCompletionPercent}%`}
-                aria-valuemin={0}
-                aria-valuemax={100}
-                aria-valuenow={checklistCompletionPercent}
-                role="progressbar"
-              >
-                {checklistCompletionPercent}%
-              </div>
-            </div>
-          </motion.button>
-        ) : null}
-
-        <motion.button
-          type="button"
-          className={cn('btn btn-sm btn-secondary text-white', floatingTabClassName)}
-          whileHover={floatingTabHover}
-          whileTap={floatingTabTap}
-          transition={floatingTabTransition}
-          style={{
-            right: floatingTabRight,
-            top: kioskTabTop,
-            boxShadow:
-              'var(--shadow-3), -12px 0 22px -12px color-mix(in oklab, var(--color-neutral) 70%, transparent), 0 20px 28px -18px color-mix(in oklab, var(--color-neutral) 70%, transparent)',
-          }}
-          onClick={() => window.open('/kiosk', '_blank', 'noopener,noreferrer')}
-          data-testid={TID.dashboard.kiosk.launchTab}
-        >
-          KIOSK
-        </motion.button>
+        {checklistButton}
       </div>
 
       <div className="drawer-side pointer-events-none" style={{ zIndex: drawerZIndex }}>
@@ -146,7 +131,7 @@ export function DashboardDdsChecklistDrawer({ children }: DashboardDdsChecklistD
           style={{
             top: '4rem',
             height: 'calc(100dvh - 4rem)',
-            width: '30rem',
+            width: '50vw',
             maxWidth: 'calc(100vw - var(--space-8))',
             boxShadow: 'var(--shadow-3)',
             padding: 'var(--space-4)',

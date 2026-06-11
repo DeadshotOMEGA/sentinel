@@ -46,6 +46,7 @@ Escalate unresolved alerts before leaving the workstation.
 
 - [Overview](/operations/dashboard/overview)
 - [Security Alerts](/operations/dashboard/daily-end/security-alerts)
+- [Missed Lockup Follow-up](/operations/dashboard/alerts/missed-lockup-follow-up)
 - [Presence Review](/operations/dashboard/daily-end/presence-review)
 - [Duty Handoff](/operations/dashboard/daily-end/duty-handoff)
 - [Lockup Holder](/operations/dashboard/daily-end/lockup-holder)

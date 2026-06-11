@@ -47,5 +47,6 @@ Escalate if an alert cannot be understood, if the same alert returns, or if the 
 ## Related Dashboard Help Pages
 
 - [Overview](/operations/dashboard/overview)
+- [Missed Lockup Follow-up](/operations/dashboard/alerts/missed-lockup-follow-up)
 - [Security Alerts](/operations/dashboard/daily-start/security-alerts)
 - [Security Alerts](/operations/dashboard/daily-end/security-alerts)
