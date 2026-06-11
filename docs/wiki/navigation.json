@@ -1,0 +1,89 @@
+{
+  "locale": "en",
+  "items": [
+    {
+      "id": "home",
+      "kind": "link",
+      "label": "Home",
+      "target": "/",
+      "icon": "mdi-home"
+    },
+    {
+      "id": "start-here",
+      "kind": "link",
+      "label": "Start Here",
+      "target": "/docs/start-here",
+      "icon": "mdi-compass-outline"
+    },
+    {
+      "id": "dashboard",
+      "kind": "link",
+      "label": "Dashboard Overview",
+      "target": "/operations/dashboard/overview",
+      "icon": "mdi-view-dashboard-outline"
+    },
+    {
+      "id": "dds",
+      "kind": "link",
+      "label": "DDS Workflow",
+      "target": "/operations/day-duty/dds-daily-workflow",
+      "icon": "mdi-clipboard-check-outline"
+    },
+    {
+      "id": "dds-start",
+      "kind": "link",
+      "label": "DDS Start Here",
+      "target": "/operations/day-duty/dds-start-here",
+      "icon": "mdi-account-clock-outline"
+    },
+    {
+      "id": "missed-lockup",
+      "kind": "link",
+      "label": "Missed Lockup Follow-up",
+      "target": "/operations/dashboard/alerts/missed-lockup-follow-up",
+      "icon": "mdi-alert-octagon-outline"
+    },
+    {
+      "id": "schedules",
+      "kind": "link",
+      "label": "Schedules",
+      "target": "/operations/schedules/dds-duty-watch-scheduling",
+      "icon": "mdi-calendar-clock"
+    },
+    {
+      "id": "events",
+      "kind": "link",
+      "label": "Events",
+      "target": "/operations/events/event-management",
+      "icon": "mdi-calendar-star"
+    },
+    {
+      "id": "history",
+      "kind": "link",
+      "label": "History",
+      "target": "/operations/history/overview",
+      "icon": "mdi-history"
+    },
+    {
+      "id": "kiosk",
+      "kind": "link",
+      "label": "Kiosk Operations",
+      "target": "/operations/kiosk/kiosk-operations",
+      "icon": "mdi-monitor-dashboard"
+    },
+    {
+      "id": "members",
+      "kind": "link",
+      "label": "Member Records",
+      "target": "/admin/members/member-records",
+      "icon": "mdi-account-group-outline"
+    },
+    {
+      "id": "wiki-review",
+      "kind": "link",
+      "label": "Wiki Review",
+      "target": "/docs/wiki-page-review",
+      "icon": "mdi-file-document-check-outline"
+    }
+  ]
+}

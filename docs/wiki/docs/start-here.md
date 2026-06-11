@@ -30,6 +30,7 @@ Use these action pages when responsibility changes:
 - [Transfer DDS](/operations/day-duty/transfer-dds)
 - [Transfer Lockup](/operations/day-duty/transfer-lockup)
 - [Execute Lockup](/operations/day-duty/execute-lockup)
+- [Missed Lockup Follow-up](/operations/dashboard/alerts/missed-lockup-follow-up)
 
 ### I Am A New Admin
 
@@ -98,5 +99,5 @@ Use these action pages when responsibility changes:
 
 ## Version Notes
 
-- Last updated: `2026-05-08`
+- Last updated: `2026-06-11`
 - Content owner: `Sentinel Operations`

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated": "2026-05-08",
+  "updated": "2026-06-11",
   "slugs": [
     "admin/badges/badge-lifecycle",
     "admin/members/bulk-actions",
@@ -14,6 +14,7 @@
     "admin/members/sync-qualifications",
     "docs/start-here",
     "docs/wiki-page-review",
+    "operations/dashboard/alerts/missed-lockup-follow-up",
     "operations/dashboard/actions/action-block",
     "operations/dashboard/actions/manual-in-out",
     "operations/dashboard/actions/open-or-lockup",
