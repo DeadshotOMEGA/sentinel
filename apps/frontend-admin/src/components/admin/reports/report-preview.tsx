@@ -259,7 +259,16 @@ function DailyPresenceReport({ report }: { report: DailyPresenceReportResponse }
         />
       ) : (
         <div className="overflow-x-auto">
-          <table className="table table-sm reports-table">
+          <table className="table table-sm reports-table reports-daily-presence-table">
+            <colgroup>
+              <col className="reports-daily-member-col" />
+              <col className="reports-daily-department-col" />
+              <col className="reports-daily-tags-col" />
+              <col className="reports-daily-time-col" />
+              <col className="reports-daily-last-out-col" />
+              <col className="reports-daily-returned-col" />
+              <col className="reports-daily-session-col" />
+            </colgroup>
             <thead>
               <tr>
                 <th>Member</th>
@@ -267,30 +276,44 @@ function DailyPresenceReport({ report }: { report: DailyPresenceReportResponse }
                 <th>Tags</th>
                 <th>First in</th>
                 <th>Last out</th>
-                <th>Left / returned</th>
-                <th>Sessions</th>
+                <th>Returned</th>
+                <th className="text-right">Sessions</th>
               </tr>
             </thead>
             <tbody>
               {rows.map((row) => (
                 <tr key={row.member.id}>
-                  <td>
+                  <td className="reports-member-cell">
                     <MemberName member={row.member} />
                   </td>
-                  <td>{row.member.division?.code ?? row.member.division?.name ?? 'Unassigned'}</td>
-                  <td>
+                  <td className="reports-department-cell">
+                    {row.member.division?.code ?? row.member.division?.name ?? 'Unassigned'}
+                  </td>
+                  <td className="reports-tags-cell">
                     <TagList tags={row.member.tags} />
                   </td>
-                  <td className="font-mono">{formatReportTime(row.firstIn)}</td>
-                  <td className="font-mono">
-                    {row.lastOut ? formatReportTime(row.lastOut) : 'Still present'}
+                  <td className="reports-time-cell font-mono">{formatReportTime(row.firstIn)}</td>
+                  <td className="reports-time-cell font-mono">
+                    {row.lastOut ? (
+                      formatReportTime(row.lastOut)
+                    ) : (
+                      <>
+                        <span className="reports-screen-only">Still present</span>
+                        <span className="hidden reports-print-inline">Present</span>
+                      </>
+                    )}
                   </td>
                   <td>
-                    <AppBadge status={row.leftAndReturned ? 'warning' : 'neutral'} size="sm">
-                      {row.leftAndReturned ? `Yes — ${row.sessionCount} sessions` : 'No'}
-                    </AppBadge>
+                    <span className="reports-screen-only">
+                      <AppBadge status={row.leftAndReturned ? 'warning' : 'neutral'} size="sm">
+                        {row.leftAndReturned ? `Yes — ${row.sessionCount} sessions` : 'No'}
+                      </AppBadge>
+                    </span>
+                    <span className="hidden reports-print-inline font-mono">
+                      {row.leftAndReturned ? 'Yes' : 'No'}
+                    </span>
                   </td>
-                  <td>
+                  <td className="reports-session-cell text-right font-mono">
                     <details className="reports-screen-only">
                       <summary className="cursor-pointer text-sm font-semibold text-info">
                         {row.sessionCount}
@@ -764,20 +787,27 @@ function TagList({ tags }: { tags: ReportTagSummary[] }) {
     return <span className="text-xs text-base-content/45">No tags</span>
   }
 
+  const printLabel = tags.map((tag) => tag.name).join(', ')
+
   return (
-    <div className="flex max-w-72 flex-wrap gap-(--space-1)">
-      {tags.slice(0, 4).map((tag) => (
-        <Chip
-          key={`${tag.id}-${tag.source}`}
-          size="sm"
-          variant={getChipVariant(tag.chipVariant)}
-          color={getChipColor(tag.chipColor)}
-        >
-          {tag.name}
-        </Chip>
-      ))}
-      {tags.length > 4 && <span className="text-xs text-base-content/55">+{tags.length - 4}</span>}
-    </div>
+    <>
+      <div className="reports-screen-tag-list flex max-w-72 flex-wrap gap-(--space-1)">
+        {tags.slice(0, 4).map((tag) => (
+          <Chip
+            key={`${tag.id}-${tag.source}`}
+            size="sm"
+            variant={getChipVariant(tag.chipVariant)}
+            color={getChipColor(tag.chipColor)}
+          >
+            {tag.name}
+          </Chip>
+        ))}
+        {tags.length > 4 && (
+          <span className="text-xs text-base-content/55">+{tags.length - 4}</span>
+        )}
+      </div>
+      <span className="reports-print-tag-text hidden">{printLabel}</span>
+    </>
   )
 }
 

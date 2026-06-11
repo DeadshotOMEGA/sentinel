@@ -1,7 +1,8 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { FileText, Play, Printer, RotateCcw } from 'lucide-react'
+import { ArrowDown, ArrowUp, FileText, Play, Plus, Printer, RotateCcw, X } from 'lucide-react'
+import type { DailyPresenceSortCriterion } from '@sentinel/contracts'
 import {
   AppCard,
   AppCardContent,
@@ -25,6 +26,7 @@ import {
   getReportDefinition,
   REPORT_DEFINITIONS,
   type AdminReportType,
+  type DailyPresenceSortRule,
   type ReportFilters,
   type ReportScopeType,
 } from './report-definitions'
@@ -45,6 +47,27 @@ function scopeRequiresTag(scopeType: ReportScopeType): boolean {
   return scopeType === 'tag'
 }
 
+function createDailyPresenceSortRuleId(): string {
+  return `daily-sort-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
+}
+
+function toDailyPresenceSortCriteria(rules: DailyPresenceSortRule[]): DailyPresenceSortCriterion[] {
+  const criteria: DailyPresenceSortCriterion[] = []
+
+  for (const rule of rules) {
+    if (rule.type === 'tag') {
+      if (rule.tagId) {
+        criteria.push({ type: 'tag', tagId: rule.tagId, direction: rule.direction })
+      }
+      continue
+    }
+
+    criteria.push({ type: 'field', field: rule.field, direction: rule.direction })
+  }
+
+  return criteria
+}
+
 function buildRunInput(filters: ReportFilters): RunAdminReportInput {
   const scopeType = filters.scopeType
   const divisionId = scopeRequiresDepartment(scopeType)
@@ -61,6 +84,7 @@ function buildRunInput(filters: ReportFilters): RunAdminReportInput {
           scopeType,
           divisionId,
           tagId,
+          sort: toDailyPresenceSortCriteria(filters.dailyPresenceSort),
         },
       }
     case 'weekly_presence':
@@ -153,6 +177,13 @@ export function AdminReportsPage() {
 
     if (scopeRequiresTag(filters.scopeType) && !filters.tagId) {
       messages.push('Select a tag for the specific tag scope.')
+    }
+
+    if (
+      filters.reportType === 'daily_presence' &&
+      filters.dailyPresenceSort.some((rule) => rule.type === 'tag' && !rule.tagId)
+    ) {
+      messages.push('Select a tag for each tag sort rule.')
     }
 
     if (shortcutWarning) {
@@ -329,6 +360,7 @@ function ReportsFilterPanel({
     visible.has('divisionId') &&
     (filters.reportType === 'training_night_monthly' || filters.scopeType === 'department')
   const showTag = visible.has('tagId') && filters.scopeType === 'tag'
+  const showDailyPresenceSort = visible.has('dailyPresenceSort')
 
   return (
     <div className="grid gap-(--space-3) md:grid-cols-2 xl:grid-cols-3">
@@ -436,6 +468,15 @@ function ReportsFilterPanel({
           </select>
         </label>
       )}
+      {showDailyPresenceSort && (
+        <div className="md:col-span-2 xl:col-span-3">
+          <DailyPresenceSortBuilder
+            rules={filters.dailyPresenceSort}
+            tags={tags}
+            onChange={(dailyPresenceSort) => updateFilters({ dailyPresenceSort })}
+          />
+        </div>
+      )}
       {visible.has('visitType') && (
         <label className="form-control w-full">
           <span className="label pb-(--space-1)">
@@ -519,6 +560,269 @@ function ReportsFilterPanel({
         </label>
       )}
     </div>
+  )
+}
+
+const DAILY_PRESENCE_FIELD_OPTIONS: Array<{
+  value: Extract<DailyPresenceSortCriterion, { type: 'field' }>['field']
+  label: string
+}> = [
+  { value: 'last_name', label: 'Last name' },
+  { value: 'first_name', label: 'First name' },
+  { value: 'department', label: 'Department' },
+  { value: 'first_in', label: 'First in' },
+  { value: 'last_out', label: 'Last out' },
+  { value: 'sessions', label: 'Sessions' },
+]
+
+function DailyPresenceSortBuilder({
+  rules,
+  tags,
+  onChange,
+}: {
+  rules: DailyPresenceSortRule[]
+  tags: Array<{ id: string; name: string }>
+  onChange: (rules: DailyPresenceSortRule[]) => void
+}) {
+  function replaceRule(ruleId: string, nextRule: DailyPresenceSortRule) {
+    onChange(rules.map((rule) => (rule.id === ruleId ? nextRule : rule)))
+  }
+
+  function updateTagRule(
+    ruleId: string,
+    next: Partial<Omit<Extract<DailyPresenceSortRule, { type: 'tag' }>, 'id' | 'type'>>
+  ) {
+    onChange(
+      rules.map((rule) => {
+        if (rule.id !== ruleId || rule.type !== 'tag') {
+          return rule
+        }
+
+        return { ...rule, ...next }
+      })
+    )
+  }
+
+  function updateFieldRule(
+    ruleId: string,
+    next: Partial<Omit<Extract<DailyPresenceSortRule, { type: 'field' }>, 'id' | 'type'>>
+  ) {
+    onChange(
+      rules.map((rule) => {
+        if (rule.id !== ruleId || rule.type !== 'field') {
+          return rule
+        }
+
+        return { ...rule, ...next }
+      })
+    )
+  }
+
+  function moveRule(ruleId: string, direction: -1 | 1) {
+    const currentIndex = rules.findIndex((rule) => rule.id === ruleId)
+    const nextIndex = currentIndex + direction
+    if (currentIndex < 0 || nextIndex < 0 || nextIndex >= rules.length) {
+      return
+    }
+
+    const nextRules = [...rules]
+    const [rule] = nextRules.splice(currentIndex, 1)
+    if (!rule) {
+      return
+    }
+    nextRules.splice(nextIndex, 0, rule)
+    onChange(nextRules)
+  }
+
+  function removeRule(ruleId: string) {
+    onChange(rules.filter((rule) => rule.id !== ruleId))
+  }
+
+  function addTagRule() {
+    const tag = tags[0]
+    if (!tag) {
+      return
+    }
+
+    const nextRule: DailyPresenceSortRule = {
+      id: createDailyPresenceSortRuleId(),
+      type: 'tag',
+      tagId: tag.id,
+      direction: 'asc',
+    }
+    const firstFieldIndex = rules.findIndex((rule) => rule.type === 'field')
+
+    if (firstFieldIndex === -1) {
+      onChange([...rules, nextRule])
+      return
+    }
+
+    onChange([...rules.slice(0, firstFieldIndex), nextRule, ...rules.slice(firstFieldIndex)])
+  }
+
+  function addFieldRule() {
+    onChange([
+      ...rules,
+      {
+        id: createDailyPresenceSortRuleId(),
+        type: 'field',
+        field: 'last_name',
+        direction: 'asc',
+      },
+    ])
+  }
+
+  return (
+    <fieldset className="rounded-box border border-base-300 bg-base-200/45 p-(--space-3)">
+      <div className="flex flex-wrap items-start justify-between gap-(--space-3)">
+        <div>
+          <legend className="font-semibold">Sort order</legend>
+          <p className="mt-(--space-1) text-sm text-base-content/65">
+            Rules run from top to bottom. Add tag priorities first, then a name or time field.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-(--space-2)">
+          <button
+            type="button"
+            className="btn btn-outline btn-sm"
+            onClick={addTagRule}
+            disabled={tags.length === 0}
+          >
+            <Plus className="h-4 w-4" aria-hidden="true" />
+            Tag priority
+          </button>
+          <button type="button" className="btn btn-outline btn-sm" onClick={addFieldRule}>
+            <Plus className="h-4 w-4" aria-hidden="true" />
+            Field sort
+          </button>
+        </div>
+      </div>
+
+      <div className="mt-(--space-3) space-y-(--space-2)">
+        {rules.length === 0 ? (
+          <p className="rounded-box border border-dashed border-base-300 bg-base-100 p-(--space-3) text-sm text-base-content/60">
+            No custom sort rules. The report will use the backend default order.
+          </p>
+        ) : (
+          rules.map((rule, index) => (
+            <div
+              key={rule.id}
+              className="grid items-center gap-(--space-2) rounded-box border border-base-300 bg-base-100 p-(--space-2) md:grid-cols-[2rem_8rem_minmax(0,1fr)_8rem_auto]"
+            >
+              <span className="text-center text-xs font-semibold text-base-content/55">
+                {index + 1}
+              </span>
+              <select
+                className="select select-bordered select-sm w-full"
+                value={rule.type}
+                onChange={(event) => {
+                  if (event.target.value === 'tag') {
+                    const tag = tags[0]
+                    if (!tag) return
+                    replaceRule(rule.id, {
+                      id: rule.id,
+                      type: 'tag',
+                      tagId: tag.id,
+                      direction: 'asc',
+                    })
+                    return
+                  }
+
+                  replaceRule(rule.id, {
+                    id: rule.id,
+                    type: 'field',
+                    field: 'last_name',
+                    direction: 'asc',
+                  })
+                }}
+              >
+                <option value="tag">Tag</option>
+                <option value="field">Field</option>
+              </select>
+
+              {rule.type === 'tag' ? (
+                <select
+                  className="select select-bordered select-sm w-full"
+                  value={rule.tagId}
+                  onChange={(event) => updateTagRule(rule.id, { tagId: event.target.value })}
+                >
+                  {tags.map((tag) => (
+                    <option key={tag.id} value={tag.id}>
+                      {tag.name}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <select
+                  className="select select-bordered select-sm w-full"
+                  value={rule.field}
+                  onChange={(event) =>
+                    updateFieldRule(rule.id, {
+                      field: event.target.value as Extract<
+                        DailyPresenceSortCriterion,
+                        { type: 'field' }
+                      >['field'],
+                    })
+                  }
+                >
+                  {DAILY_PRESENCE_FIELD_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              )}
+
+              <select
+                className="select select-bordered select-sm w-full"
+                value={rule.direction}
+                onChange={(event) =>
+                  rule.type === 'tag'
+                    ? updateTagRule(rule.id, {
+                        direction: event.target.value as DailyPresenceSortCriterion['direction'],
+                      })
+                    : updateFieldRule(rule.id, {
+                        direction: event.target.value as DailyPresenceSortCriterion['direction'],
+                      })
+                }
+              >
+                <option value="asc">{rule.type === 'tag' ? 'First' : 'A to Z'}</option>
+                <option value="desc">{rule.type === 'tag' ? 'Last' : 'Z to A'}</option>
+              </select>
+
+              <div className="flex items-center justify-end gap-(--space-1)">
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-square btn-sm"
+                  onClick={() => moveRule(rule.id, -1)}
+                  disabled={index === 0}
+                  aria-label="Move sort rule up"
+                >
+                  <ArrowUp className="h-4 w-4" aria-hidden="true" />
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-square btn-sm"
+                  onClick={() => moveRule(rule.id, 1)}
+                  disabled={index === rules.length - 1}
+                  aria-label="Move sort rule down"
+                >
+                  <ArrowDown className="h-4 w-4" aria-hidden="true" />
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-square btn-sm text-error"
+                  onClick={() => removeRule(rule.id)}
+                  aria-label="Remove sort rule"
+                >
+                  <X className="h-4 w-4" aria-hidden="true" />
+                </button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </fieldset>
   )
 }
 
