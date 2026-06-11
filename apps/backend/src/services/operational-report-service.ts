@@ -1,8 +1,10 @@
 import * as v from 'valibot'
 import { DateTime } from 'luxon'
 import type {
+  DailyPresenceRow,
   DailyPresenceReportConfig,
   DailyPresenceReportResponse,
+  DailyPresenceSortCriterion,
   KeyNight,
   MonthlyPresenceReportConfig,
   MonthlyPresenceReportResponse,
@@ -107,6 +109,22 @@ interface LockupCheckedOutMember {
   name: string
 }
 
+export interface DailyPresenceSortableMember {
+  id: string
+  rank: string
+  firstName: string
+  lastName: string
+  displayName: string | null
+  division: { code: string; name: string } | null
+  memberTags: Array<{ tagId: string }>
+  qualifications: Array<{ qualificationType: { tagId: string | null } }>
+}
+
+export interface DailyPresenceSortableRow {
+  memberRecord: DailyPresenceSortableMember
+  row: DailyPresenceRow
+}
+
 export function getScheduledDutyTagRole(
   tag: ReportTagSummary
 ): OperationalReportScheduledDutyRoleCode | null {
@@ -161,6 +179,109 @@ export function filterReportMemberTagsForScheduledDuty(
     return (
       scheduledRoleCodes.has(requiredRoleCode) ||
       (requiredRoleCode !== 'DDS' && scheduledRoleCodes.has('DUTY_WATCH'))
+    )
+  })
+}
+
+export function dailyPresenceSortableMemberHasTag(
+  member: DailyPresenceSortableMember,
+  tagId: string
+): boolean {
+  return (
+    member.memberTags.some((memberTag) => memberTag.tagId === tagId) ||
+    member.qualifications.some((qualification) => qualification.qualificationType.tagId === tagId)
+  )
+}
+
+function compareNullableString(left: string | null | undefined, right: string | null | undefined) {
+  const leftValue = left?.trim() ?? ''
+  const rightValue = right?.trim() ?? ''
+
+  if (leftValue.length === 0 && rightValue.length > 0) return 1
+  if (leftValue.length > 0 && rightValue.length === 0) return -1
+
+  return leftValue.localeCompare(rightValue, undefined, {
+    sensitivity: 'base',
+    numeric: true,
+  })
+}
+
+function compareDailyPresenceField(
+  left: DailyPresenceSortableRow,
+  right: DailyPresenceSortableRow,
+  field: Extract<DailyPresenceSortCriterion, { type: 'field' }>['field']
+): number {
+  switch (field) {
+    case 'first_name':
+      return (
+        compareNullableString(left.memberRecord.firstName, right.memberRecord.firstName) ||
+        compareNullableString(left.memberRecord.lastName, right.memberRecord.lastName)
+      )
+    case 'department':
+      return (
+        compareNullableString(
+          left.memberRecord.division?.code,
+          right.memberRecord.division?.code
+        ) || compareNullableString(left.memberRecord.lastName, right.memberRecord.lastName)
+      )
+    case 'first_in':
+      return compareNullableString(left.row.firstIn, right.row.firstIn)
+    case 'last_out':
+      return compareNullableString(left.row.lastOut, right.row.lastOut)
+    case 'sessions':
+      return left.row.sessionCount - right.row.sessionCount
+    case 'last_name':
+      return (
+        compareNullableString(left.memberRecord.lastName, right.memberRecord.lastName) ||
+        compareNullableString(left.memberRecord.firstName, right.memberRecord.firstName)
+      )
+  }
+}
+
+function compareDailyPresenceCriterion(
+  left: DailyPresenceSortableRow,
+  right: DailyPresenceSortableRow,
+  criterion: DailyPresenceSortCriterion
+): number {
+  const direction = criterion.direction === 'desc' ? -1 : 1
+
+  if (criterion.type === 'tag') {
+    const leftHasTag = dailyPresenceSortableMemberHasTag(left.memberRecord, criterion.tagId)
+    const rightHasTag = dailyPresenceSortableMemberHasTag(right.memberRecord, criterion.tagId)
+
+    if (leftHasTag === rightHasTag) {
+      return 0
+    }
+
+    return (leftHasTag ? -1 : 1) * direction
+  }
+
+  return compareDailyPresenceField(left, right, criterion.field) * direction
+}
+
+export function sortDailyPresenceRows<T extends DailyPresenceSortableRow>(
+  rows: T[],
+  sort: DailyPresenceSortCriterion[] | undefined
+): T[] {
+  const sortCriteria = sort ?? []
+
+  if (sortCriteria.length === 0) {
+    return rows
+  }
+
+  return [...rows].sort((left, right) => {
+    for (const criterion of sortCriteria) {
+      const result = compareDailyPresenceCriterion(left, right, criterion)
+      if (result !== 0) {
+        return result
+      }
+    }
+
+    return (
+      compareNullableString(left.memberRecord.lastName, right.memberRecord.lastName) ||
+      compareNullableString(left.memberRecord.firstName, right.memberRecord.firstName) ||
+      compareNullableString(left.memberRecord.displayName, right.memberRecord.displayName) ||
+      left.memberRecord.id.localeCompare(right.memberRecord.id)
     )
   })
 }
@@ -303,7 +424,7 @@ export class OperationalReportService {
     const sessionsByMember = await this.getSessionsByMember(members, range, warnings)
     const scheduledDutyRolesByMember = await this.getScheduledDutyRolesByMember(members, range)
 
-    const rows = members
+    const sortableRows = members
       .map((member) => {
         const memberSessions = sessionsByMember.get(member.id) ?? []
         const overlappingSessions = memberSessions.filter((session) =>
@@ -317,17 +438,21 @@ export class OperationalReportService {
         const stats = this.getPresenceStats(overlappingSessions, range.start, range.end)
 
         return {
-          member: this.toMemberSummary(member, scheduledDutyRolesByMember.get(member.id)),
-          firstIn: stats.firstIn,
-          lastOut: stats.lastOut,
-          sessionCount: stats.sessionCount,
-          leftAndReturned: stats.sessionCount > 1,
-          sessions: overlappingSessions.map((session) =>
-            this.toPresenceSession(session, range.start, range.end)
-          ),
+          memberRecord: member,
+          row: {
+            member: this.toMemberSummary(member, scheduledDutyRolesByMember.get(member.id)),
+            firstIn: stats.firstIn,
+            lastOut: stats.lastOut,
+            sessionCount: stats.sessionCount,
+            leftAndReturned: stats.sessionCount > 1,
+            sessions: overlappingSessions.map((session) =>
+              this.toPresenceSession(session, range.start, range.end)
+            ),
+          },
         }
       })
       .filter((row): row is NonNullable<typeof row> => row !== null)
+    const rows = sortDailyPresenceRows(sortableRows, config.sort).map(({ row }) => row)
 
     return {
       ...this.getEnvelopeBase('daily_presence', 'Daily Presence Report', actor, range, {

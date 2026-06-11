@@ -1,4 +1,5 @@
 import { addDays, endOfMonth, format, startOfMonth, startOfWeek } from 'date-fns'
+import type { DailyPresenceSortCriterion } from '@sentinel/contracts'
 
 export type AdminReportType =
   | 'daily_presence'
@@ -24,6 +25,17 @@ export type ReportFilterKey =
   | 'eventLinked'
   | 'hostMemberId'
   | 'organization'
+  | 'dailyPresenceSort'
+
+export type DailyPresenceTagSortRule = Extract<DailyPresenceSortCriterion, { type: 'tag' }> & {
+  id: string
+}
+
+export type DailyPresenceFieldSortRule = Extract<DailyPresenceSortCriterion, { type: 'field' }> & {
+  id: string
+}
+
+export type DailyPresenceSortRule = DailyPresenceTagSortRule | DailyPresenceFieldSortRule
 
 export interface ReportFilters {
   reportType: AdminReportType
@@ -40,6 +52,7 @@ export interface ReportFilters {
   eventLinked: 'all' | 'linked' | 'unlinked'
   hostMemberId: string
   organization: string
+  dailyPresenceSort: DailyPresenceSortRule[]
 }
 
 export interface ReportDefinition {
@@ -98,6 +111,14 @@ export function getBaseReportFilters(reportType: AdminReportType): ReportFilters
     eventLinked: 'all',
     hostMemberId: '',
     organization: '',
+    dailyPresenceSort: [
+      {
+        id: 'daily-sort-last-name',
+        type: 'field',
+        field: 'last_name',
+        direction: 'asc',
+      },
+    ],
   }
 }
 
@@ -108,7 +129,7 @@ export const REPORT_DEFINITIONS = [
     description: 'Who was present on a selected day, including first arrival and final departure.',
     defaultFilters: () => getBaseReportFilters('daily_presence'),
     requiredFilters: ['date'],
-    visibleFilters: ['date', 'scopeType', 'divisionId', 'tagId'],
+    visibleFilters: ['date', 'scopeType', 'divisionId', 'tagId', 'dailyPresenceSort'],
     runMutation: 'generateDailyPresence',
     previewComponent: 'DailyPresenceReport',
   },

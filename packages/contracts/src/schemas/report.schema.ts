@@ -56,6 +56,16 @@ export const KeyNightSourceEnum = v.picklist([
 
 export const KeyNightRequirementEnum = v.picklist(['required', 'optional', 'not_expected'])
 
+export const DailyPresenceSortDirectionEnum = v.picklist(
+  ['asc', 'desc'],
+  'Invalid daily presence sort direction'
+)
+
+export const DailyPresenceSortFieldEnum = v.picklist(
+  ['last_name', 'first_name', 'department', 'first_in', 'last_out', 'sessions'],
+  'Invalid daily presence sort field'
+)
+
 const LocalDateSchema = v.pipe(
   v.string('Date is required'),
   v.regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format')
@@ -157,11 +167,36 @@ export const PresenceReportConfigSchema = v.object({
 
 export type PresenceReportConfig = v.InferOutput<typeof PresenceReportConfigSchema>
 
+export const DailyPresenceTagSortCriterionSchema = v.object({
+  type: v.literal('tag'),
+  tagId: UuidSchema,
+  direction: v.optional(DailyPresenceSortDirectionEnum, 'asc'),
+})
+
+export const DailyPresenceFieldSortCriterionSchema = v.object({
+  type: v.literal('field'),
+  field: DailyPresenceSortFieldEnum,
+  direction: v.optional(DailyPresenceSortDirectionEnum, 'asc'),
+})
+
+export const DailyPresenceSortCriterionSchema = v.variant('type', [
+  DailyPresenceTagSortCriterionSchema,
+  DailyPresenceFieldSortCriterionSchema,
+])
+
+export type DailyPresenceSortCriterion = v.InferOutput<typeof DailyPresenceSortCriterionSchema>
+
+export const DailyPresenceSortSchema = v.pipe(
+  v.array(DailyPresenceSortCriterionSchema),
+  v.maxLength(8, 'Daily presence reports support up to 8 sort rules')
+)
+
 export const DailyPresenceReportConfigSchema = v.object({
   date: LocalDateSchema,
   scopeType: v.optional(OperationalReportScopeEnum, 'everyone'),
   divisionId: v.optional(UuidSchema),
   tagId: v.optional(UuidSchema),
+  sort: v.optional(DailyPresenceSortSchema),
 })
 
 export type DailyPresenceReportConfig = v.InferOutput<typeof DailyPresenceReportConfigSchema>

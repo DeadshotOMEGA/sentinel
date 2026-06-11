@@ -266,7 +266,8 @@
 }
 
 @page {
-  margin: 0.45in;
+  size: letter portrait;
+  margin: 0.36in 0.42in;
 }
 
 @page reports-landscape {
@@ -278,6 +279,9 @@
   html,
   body {
     background: white !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
   }
 
   body * {
@@ -297,19 +301,73 @@
     display: inline !important;
   }
 
+  .reports-screen-tag-list {
+    display: none !important;
+  }
+
+  .reports-print-tag-text {
+    display: inline !important;
+  }
+
+  body:has(.reports-print-document)
+    :where(.drawer, .drawer-content, main, section, div):has(.reports-print-document) {
+    display: contents !important;
+    height: auto !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    background: white !important;
+  }
+
+  body:has(.reports-print-document)
+    :not(:has(.reports-print-document)):not(.reports-print-document):not(
+      .reports-print-document *
+    ) {
+    display: none !important;
+  }
+
   .reports-print-document {
-    position: absolute !important;
-    inset: 0 auto auto 0 !important;
+    position: static !important;
     width: 100% !important;
     border: 0 !important;
     border-radius: 0 !important;
     box-shadow: none !important;
     color: black !important;
     background: white !important;
+    font-size: 8.8pt !important;
+    line-height: 1.14 !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
   }
 
   .reports-print-landscape {
     page: reports-landscape;
+  }
+
+  .reports-print-document > div {
+    padding: 0.1in 0 !important;
+  }
+
+  .reports-print-document > div:first-child {
+    padding-top: 0 !important;
+    padding-bottom: 0.1in !important;
+  }
+
+  .reports-print-document h2 {
+    margin-top: 0.02in !important;
+    font-size: 16pt !important;
+    line-height: 1.05 !important;
+  }
+
+  .reports-print-document p,
+  .reports-print-document dd,
+  .reports-print-document dt {
+    line-height: 1.14 !important;
+  }
+
+  .reports-print-document dl {
+    gap: 0.03in !important;
   }
 
   .reports-summary-grid,
@@ -318,20 +376,114 @@
     break-inside: avoid;
   }
 
+  .reports-summary-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    margin-bottom: 0.1in !important;
+    border-radius: 0 !important;
+  }
+
+  .reports-summary-grid > div {
+    padding: 0.06in 0.1in !important;
+  }
+
+  .reports-summary-grid dt {
+    font-size: 7.2pt !important;
+    letter-spacing: 0.02em !important;
+  }
+
+  .reports-summary-grid dd {
+    margin-top: 0.01in !important;
+    font-size: 14pt !important;
+    line-height: 1 !important;
+  }
+
   .reports-table {
     border-collapse: collapse !important;
     width: 100% !important;
-    font-size: 10pt !important;
+    table-layout: fixed !important;
+    font-size: 8pt !important;
+    line-height: 1.12 !important;
   }
 
   .reports-table thead {
     display: table-header-group;
   }
 
+  .reports-table th {
+    color: oklch(37% 0.013 285.805) !important;
+    font-size: 7.4pt !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.02em !important;
+    text-transform: uppercase !important;
+  }
+
   .reports-table th,
   .reports-table td {
     border-bottom: 1px solid oklch(86% 0.005 56.366) !important;
-    padding: 0.18rem 0.25rem !important;
+    padding: 0.038in 0.045in !important;
+    vertical-align: top !important;
+  }
+
+  .reports-table td {
+    overflow-wrap: anywhere !important;
+  }
+
+  .reports-table .reports-time-cell,
+  .reports-table .reports-session-cell {
+    white-space: nowrap !important;
+  }
+
+  .reports-table .reports-member-cell,
+  .reports-table .reports-department-cell,
+  .reports-table .reports-tags-cell {
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+  }
+
+  .reports-table .reports-member-cell p:first-child {
+    font-weight: 700 !important;
+  }
+
+  .reports-table .reports-member-cell p + p {
+    margin-top: 0.01in !important;
+    color: oklch(37% 0.013 285.805) !important;
+    font-size: 6.8pt !important;
+  }
+
+  .reports-daily-member-col {
+    width: 22%;
+  }
+
+  .reports-daily-department-col {
+    width: 11%;
+  }
+
+  .reports-daily-tags-col {
+    width: 23%;
+  }
+
+  .reports-daily-time-col {
+    width: 9%;
+  }
+
+  .reports-daily-last-out-col {
+    width: 11%;
+  }
+
+  .reports-daily-returned-col {
+    width: 12%;
+  }
+
+  .reports-daily-session-col {
+    width: 8%;
+  }
+
+  .reports-daily-presence-table .reports-tags-cell {
+    color: oklch(21% 0.006 285.885) !important;
+  }
+
+  .reports-daily-presence-table .reports-session-cell {
+    text-align: right !important;
   }
 }
 

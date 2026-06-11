@@ -1,10 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import type { ReportTagSummary } from '@sentinel/contracts'
 import {
+  dailyPresenceSortableMemberHasTag,
   isStaleForcedCheckoutSession,
   filterReportMemberTagsForScheduledDuty,
   pairOperationalPresenceSessions,
   presenceSessionOverlapsRange,
+  sortDailyPresenceRows,
+  type DailyPresenceSortableRow,
   type PresenceSessionInternal,
 } from './operational-report-service.js'
 import type { OperationalReportCheckinRecord } from '../repositories/operational-report-repository.js'
@@ -30,6 +33,52 @@ function getSessions(
   memberId: string
 ): PresenceSessionInternal[] {
   return sessionsByMember.get(memberId) ?? []
+}
+
+function sortableDailyPresenceRow(input: {
+  id: string
+  firstName: string
+  lastName: string
+  tags?: string[]
+  qualificationTags?: string[]
+  department?: string
+  sessionCount?: number
+}): DailyPresenceSortableRow {
+  const tags = input.tags ?? []
+  const qualificationTags = input.qualificationTags ?? []
+
+  return {
+    memberRecord: {
+      id: input.id,
+      rank: 'S1',
+      firstName: input.firstName,
+      lastName: input.lastName,
+      displayName: `S1 ${input.lastName}, ${input.firstName}`,
+      division: input.department ? { code: input.department, name: input.department } : null,
+      memberTags: tags.map((tagId) => ({ tagId })),
+      qualifications: qualificationTags.map((tagId) => ({
+        qualificationType: { tagId },
+      })),
+    },
+    row: {
+      member: {
+        id: input.id,
+        displayName: `S1 ${input.lastName}, ${input.firstName}`,
+        rank: 'S1',
+        status: 'Active',
+        division: input.department
+          ? { id: input.department, code: input.department, name: input.department }
+          : null,
+        memberType: 'Class A',
+        tags: [],
+      },
+      firstIn: '2026-06-11T13:00:00.000Z',
+      lastOut: null,
+      sessionCount: input.sessionCount ?? 1,
+      leftAndReturned: false,
+      sessions: [],
+    },
+  }
 }
 
 describe('pairOperationalPresenceSessions', () => {
@@ -178,6 +227,70 @@ describe('presenceSessionOverlapsRange', () => {
         asOf
       )
     ).toBe(false)
+  })
+})
+
+describe('sortDailyPresenceRows', () => {
+  const cmdTagId = '11111111-1111-4111-8111-111111111111'
+  const ftsTagId = '22222222-2222-4222-8222-222222222222'
+
+  it('sorts by selected tag priorities before last name', () => {
+    const sorted = sortDailyPresenceRows(
+      [
+        sortableDailyPresenceRow({
+          id: 'reserve-zulu',
+          firstName: 'Zed',
+          lastName: 'Zulu',
+        }),
+        sortableDailyPresenceRow({
+          id: 'fts-alpha',
+          firstName: 'Amy',
+          lastName: 'Alpha',
+          tags: [ftsTagId],
+        }),
+        sortableDailyPresenceRow({
+          id: 'cmd-smith',
+          firstName: 'Sam',
+          lastName: 'Smith',
+          tags: [cmdTagId],
+        }),
+        sortableDailyPresenceRow({
+          id: 'fts-baker',
+          firstName: 'Bill',
+          lastName: 'Baker',
+          tags: [ftsTagId],
+        }),
+        sortableDailyPresenceRow({
+          id: 'reserve-able',
+          firstName: 'Ann',
+          lastName: 'Able',
+        }),
+      ],
+      [
+        { type: 'tag', tagId: cmdTagId, direction: 'asc' },
+        { type: 'tag', tagId: ftsTagId, direction: 'asc' },
+        { type: 'field', field: 'last_name', direction: 'asc' },
+      ]
+    )
+
+    expect(sorted.map((row) => row.memberRecord.id)).toEqual([
+      'cmd-smith',
+      'fts-alpha',
+      'fts-baker',
+      'reserve-able',
+      'reserve-zulu',
+    ])
+  })
+
+  it('matches qualification-backed tags when sorting by tag priority', () => {
+    const member = sortableDailyPresenceRow({
+      id: 'qualified',
+      firstName: 'Quinn',
+      lastName: 'Qualified',
+      qualificationTags: [ftsTagId],
+    }).memberRecord
+
+    expect(dailyPresenceSortableMemberHasTag(member, ftsTagId)).toBe(true)
   })
 })
 
