@@ -20,6 +20,7 @@ import { getWirelessRecoveryState, resolveWikiBaseUrl } from './app-navbar.logic
 
 const navLinks = [
   { href: '/dashboard', label: 'Dashboard' },
+  { href: '/dds', label: 'DDS' },
   { href: '/checkins', label: 'History' },
   { href: '/members', label: 'Members' },
   { href: '/events', label: 'Events' },
@@ -190,6 +191,11 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
       </div>
 
       <div className="navbar-end gap-1.5 sm:gap-2">
+        <div
+          id="dashboard-dds-checklist-nav-slot"
+          className="hidden lg:flex"
+          data-help-id="nav.dashboard-dds-checklist"
+        />
         <div data-help-id="nav.help">
           <HelpButton />
         </div>

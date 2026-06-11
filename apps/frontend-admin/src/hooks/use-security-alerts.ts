@@ -69,12 +69,18 @@ export function useSecurityAlerts(options?: { enabled?: boolean }) {
   return query
 }
 
+type AcknowledgeAlertVariables = {
+  alertId: string
+  note?: string
+  silent?: boolean
+}
+
 export function useAcknowledgeAlert() {
   const queryClient = useQueryClient()
   const member = useAuthStore((s) => s.member)
 
   return useMutation({
-    mutationFn: async ({ alertId, note }: { alertId: string; note?: string }) => {
+    mutationFn: async ({ alertId, note }: AcknowledgeAlertVariables) => {
       if (!member?.id) {
         throw new Error('Not authenticated')
       }
@@ -87,10 +93,12 @@ export function useAcknowledgeAlert() {
       }
       return response.body
     },
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['security-alerts'] })
       void invalidateDashboardQueries(queryClient)
-      toast.success('Alert acknowledged')
+      if (!variables.silent) {
+        toast.success('Alert acknowledged')
+      }
     },
     onError: (error) => {
       toast.error(error.message || 'Failed to acknowledge alert')

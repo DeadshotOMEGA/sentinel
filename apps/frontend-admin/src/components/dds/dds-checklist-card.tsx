@@ -60,8 +60,8 @@ export function DdsChecklistCard({
           style={{ padding: 'var(--space-4)', display: 'grid', gap: 'var(--space-3)' }}
         >
           <div className="grid gap-(--space-1)">
-            <h3 className="font-semibold text-sm">{block.timeLabel}</h3>
-            {block.heading ? <p className="text-xs text-base-content/70">{block.heading}</p> : null}
+            <h3 className="text-base font-semibold">{block.timeLabel}</h3>
+            {block.heading ? <p className="text-sm text-base-content/70">{block.heading}</p> : null}
           </div>
 
           {useDaisyTaskList ? (
@@ -88,7 +88,7 @@ export function DdsChecklistCard({
                       />
                       <span
                         className={cn(
-                          'list-col-grow min-w-0 whitespace-normal wrap-break-word text-xs',
+                          'list-col-grow min-w-0 whitespace-normal wrap-break-word text-sm',
                           checked && 'line-through text-base-content/60'
                         )}
                       >
@@ -123,7 +123,7 @@ export function DdsChecklistCard({
                     />
                     <span
                       className={cn(
-                        'min-w-0 flex-1 whitespace-normal wrap-break-word text-xs',
+                        'min-w-0 flex-1 whitespace-normal wrap-break-word text-sm',
                         checked && 'line-through text-base-content/60'
                       )}
                     >
