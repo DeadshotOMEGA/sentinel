@@ -183,6 +183,21 @@ export function filterReportMemberTagsForScheduledDuty(
   })
 }
 
+export function compareReportTagsByPriority(
+  left: ReportTagSummary,
+  right: ReportTagSummary
+): number {
+  return (
+    left.displayOrder - right.displayOrder ||
+    left.name.localeCompare(right.name, undefined, {
+      sensitivity: 'base',
+      numeric: true,
+    }) ||
+    left.source.localeCompare(right.source) ||
+    left.id.localeCompare(right.id)
+  )
+}
+
 export function dailyPresenceSortableMemberHasTag(
   member: DailyPresenceSortableMember,
   tagId: string
@@ -238,6 +253,32 @@ function compareDailyPresenceField(
   }
 }
 
+function getDailyPresenceRowTagPriority(row: DailyPresenceSortableRow): number | null {
+  const firstTag = row.row.member.tags[0]
+  return firstTag ? firstTag.displayOrder : null
+}
+
+function compareDailyPresenceTagPriority(
+  left: DailyPresenceSortableRow,
+  right: DailyPresenceSortableRow,
+  direction: DailyPresenceSortCriterion['direction']
+): number {
+  const leftPriority = getDailyPresenceRowTagPriority(left)
+  const rightPriority = getDailyPresenceRowTagPriority(right)
+
+  if (leftPriority === null && rightPriority === null) {
+    return 0
+  }
+  if (leftPriority === null) {
+    return 1
+  }
+  if (rightPriority === null) {
+    return -1
+  }
+
+  return (leftPriority - rightPriority) * (direction === 'desc' ? -1 : 1)
+}
+
 function compareDailyPresenceCriterion(
   left: DailyPresenceSortableRow,
   right: DailyPresenceSortableRow,
@@ -254,6 +295,10 @@ function compareDailyPresenceCriterion(
     }
 
     return (leftHasTag ? -1 : 1) * direction
+  }
+
+  if (criterion.type === 'tag_priority') {
+    return compareDailyPresenceTagPriority(left, right, criterion.direction)
   }
 
   return compareDailyPresenceField(left, right, criterion.field) * direction
@@ -1438,6 +1483,7 @@ export class OperationalReportService {
     const directTags = member.memberTags.map<ReportTagSummary>((memberTag) => ({
       id: memberTag.tag.id,
       name: memberTag.tag.name,
+      displayOrder: memberTag.tag.displayOrder,
       chipVariant: memberTag.tag.chipVariant,
       chipColor: memberTag.tag.chipColor,
       isPositional: memberTag.tag.isPositional,
@@ -1449,6 +1495,7 @@ export class OperationalReportService {
       .map<ReportTagSummary>((tag) => ({
         id: tag.id,
         name: tag.name,
+        displayOrder: tag.displayOrder,
         chipVariant: tag.chipVariant,
         chipColor: tag.chipColor,
         isPositional: tag.isPositional,
@@ -1722,7 +1769,7 @@ export class OperationalReportService {
       result.push(tag)
     }
 
-    return result.sort((left, right) => left.name.localeCompare(right.name))
+    return result.sort(compareReportTagsByPriority)
   }
 
   private async getScheduledDutyRolesByMember(

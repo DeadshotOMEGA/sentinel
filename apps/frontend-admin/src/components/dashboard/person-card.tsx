@@ -14,6 +14,7 @@ import type { PresentPerson } from '@sentinel/contracts'
 import { TID } from '@/lib/test-ids'
 import { formatPersonLabel } from '@/lib/name-format'
 import { getDashboardVisitorCardDetails } from '@/lib/dashboard-visitor-card-details'
+import { compareTagsByDisplayOrder } from '@/lib/tag-priority'
 
 function formatRelativeTime(isoString: string): string {
   const now = Date.now()
@@ -313,6 +314,7 @@ export const PersonCard = memo(function PersonCard({
                   if (tag.id === avatarTagId) return false
                   return true
                 })
+                .sort(compareTagsByDisplayOrder)
                 .map((tag) => (
                   <Chip
                     key={tag.id}
