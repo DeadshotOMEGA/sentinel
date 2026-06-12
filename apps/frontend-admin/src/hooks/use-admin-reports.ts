@@ -89,7 +89,11 @@ function formatValidationIssue(issue: unknown): string | null {
     return null
   }
 
-  if (message === 'Invalid daily presence sort field' && issueRecord.input === 'rank') {
+  if (
+    (message === 'Invalid daily presence sort field' ||
+      message === 'Invalid attendance report sort field') &&
+    issueRecord.input === 'rank'
+  ) {
     return 'Rank sorting requires the updated reports API. Restart or rebuild the backend with the latest report contract, or remove Rank from the sort order.'
   }
 

@@ -8,12 +8,15 @@ import {
   pairOperationalPresenceSessions,
   presenceSessionOverlapsRange,
   sortDailyPresenceRows,
+  sortMemberReportRows,
   type DailyPresenceSortableRow,
+  type MemberReportSortableRow,
   type PresenceSessionInternal,
   OperationalReportService,
 } from './operational-report-service.js'
 import type {
   OperationalReportCheckinRecord,
+  OperationalReportMemberFilters,
   OperationalReportMemberRecord,
   OperationalReportRepository,
 } from '../repositories/operational-report-repository.js'
@@ -142,6 +145,81 @@ function sortableDailyPresenceRow(input: {
   }
 }
 
+function sortableWeeklyPresenceRow(input: {
+  id: string
+  firstName: string
+  lastName: string
+  totalDaysPresent: number
+  totalSessions?: number
+}): MemberReportSortableRow {
+  return {
+    memberRecord: {
+      id: input.id,
+      rank: 'S1',
+      firstName: input.firstName,
+      lastName: input.lastName,
+      displayName: `S1 ${input.lastName}, ${input.firstName}`,
+      rankRef: { displayOrder: 3 },
+      division: null,
+      memberTags: [],
+      qualifications: [],
+    },
+    row: {
+      member: {
+        id: input.id,
+        displayName: `S1 ${input.lastName}, ${input.firstName}`,
+        rank: 'S1',
+        status: 'Active',
+        division: null,
+        memberType: 'Class A',
+        tags: [],
+      },
+      days: [],
+      trainingNightPresent: null,
+      adminNightPresent: null,
+      keyNights: [],
+      totalDaysPresent: input.totalDaysPresent,
+      totalSessions: input.totalSessions ?? input.totalDaysPresent,
+    },
+  }
+}
+
+function sortableTrainingNightMonthlyRow(input: {
+  id: string
+  firstName: string
+  lastName: string
+  percentage: number
+}): MemberReportSortableRow {
+  return {
+    memberRecord: {
+      id: input.id,
+      rank: 'S1',
+      firstName: input.firstName,
+      lastName: input.lastName,
+      displayName: `S1 ${input.lastName}, ${input.firstName}`,
+      rankRef: { displayOrder: 3 },
+      division: null,
+      memberTags: [],
+      qualifications: [],
+    },
+    row: {
+      member: {
+        id: input.id,
+        displayName: `S1 ${input.lastName}, ${input.firstName}`,
+        rank: 'S1',
+        status: 'Active',
+        division: null,
+        memberType: 'Class A',
+        tags: [],
+      },
+      nights: [],
+      attended: input.percentage,
+      possible: 100,
+      percentage: input.percentage,
+    },
+  }
+}
+
 describe('pairOperationalPresenceSessions', () => {
   it('pairs each check-in with the next valid checkout for the same member', () => {
     const warnings = new Set<string>()
@@ -230,6 +308,31 @@ describe('pairOperationalPresenceSessions', () => {
       )
     ).toEqual(['member-1', 'member-2'])
   })
+
+  it('suppresses unmatched checkout warnings outside the selected warning range', () => {
+    const warnings = new Set<string>()
+    const warningMemberIds = new Map<string, Set<string>>()
+    const sessionsByMember = pairOperationalPresenceSessions(
+      [
+        checkin('1', 'member-1', 'out', '2026-06-11T08:00:00.000Z'),
+        checkin('2', 'member-1', 'in', '2026-06-12T13:00:00.000Z'),
+      ],
+      warnings,
+      {
+        warningMemberIds,
+        warningRange: {
+          start: new Date('2026-06-12T08:00:00.000Z'),
+          end: new Date('2026-06-13T08:00:00.000Z'),
+        },
+      }
+    )
+
+    expect(getSessions(sessionsByMember, 'member-1')).toHaveLength(1)
+    expect(Array.from(warnings)).not.toContain(
+      'Some checkout records could not be paired with a prior check-in and were ignored.'
+    )
+    expect(warningMemberIds.size).toBe(0)
+  })
 })
 
 describe('generateDailyPresence', () => {
@@ -252,6 +355,8 @@ describe('generateDailyPresence', () => {
         ),
       ],
       findScheduledDutyAssignmentsForMembers: async () => [],
+      findDdsAssignmentsForMembers: async () => [],
+      findLiveDutyAssignmentsForMembers: async () => [],
     } as unknown as OperationalReportRepository
     const service = new OperationalReportService(undefined, repository)
 
@@ -277,6 +382,90 @@ describe('generateDailyPresence', () => {
         ],
       },
     ])
+  })
+
+  it('does not warn about unmatched checkouts that only belong to the report lookback', async () => {
+    const member = operationalReportMember({
+      id: '11111111-1111-4111-8111-111111111111',
+      displayName: 'S1 Example, A',
+      rank: 'S1',
+      firstName: 'Alex',
+      lastName: 'Example',
+    })
+    const repository = {
+      findActiveMembers: async () => [member],
+      findCheckinsForMembers: async () => [
+        checkin(
+          'checkin-1',
+          '11111111-1111-4111-8111-111111111111',
+          'out',
+          '2026-06-11T08:00:00.000Z',
+          'SYSTEM'
+        ),
+      ],
+      findScheduledDutyAssignmentsForMembers: async () => [],
+      findDdsAssignmentsForMembers: async () => [],
+      findLiveDutyAssignmentsForMembers: async () => [],
+    } as unknown as OperationalReportRepository
+    const service = new OperationalReportService(undefined, repository)
+
+    const report = await service.generateDailyPresence(
+      { date: '2026-06-12', scopeType: 'everyone' },
+      { id: 'actor-1', rank: 'MS', firstName: 'Report', lastName: 'Runner' }
+    )
+
+    expect(report.warnings).not.toContain(
+      'Some checkout records could not be paired with a prior check-in and were ignored.'
+    )
+    expect(report.warningDetails).toEqual([])
+  })
+})
+
+describe('generateTrainingNightMonthly', () => {
+  it('runs against all selected departments', async () => {
+    const adminDivision = {
+      id: '11111111-1111-4111-8111-111111111111',
+      code: 'ADMIN',
+      name: 'Administration',
+    }
+    const bandDivision = {
+      id: '22222222-2222-4222-8222-222222222222',
+      code: 'BAND',
+      name: 'Band',
+    }
+    const divisions = new Map([
+      [adminDivision.id, adminDivision],
+      [bandDivision.id, bandDivision],
+    ])
+    let activeMemberFilters: OperationalReportMemberFilters | null = null
+    const repository = {
+      findDivisionById: async (divisionId: string) => divisions.get(divisionId) ?? null,
+      findActiveMembers: async (filters: OperationalReportMemberFilters) => {
+        activeMemberFilters = filters
+        return []
+      },
+      findCheckinsForMembers: async () => [],
+      findUnitEvents: async () => [],
+      findAppSettingValue: async () => null,
+      findReportSettingValue: async () => null,
+    } as unknown as OperationalReportRepository
+    const service = new OperationalReportService(undefined, repository)
+
+    const report = await service.generateTrainingNightMonthly(
+      {
+        month: '2026-06',
+        divisionIds: [adminDivision.id, bandDivision.id],
+      },
+      { id: 'actor-1', rank: 'MS', firstName: 'Report', lastName: 'Runner' }
+    )
+
+    expect(activeMemberFilters).toEqual({
+      divisionIds: [adminDivision.id, bandDivision.id],
+    })
+    expect(report.filters.scopeLabel).toBe('Administration, Band')
+    expect(report.filters.divisionId).toBe(adminDivision.id)
+    expect(report.filters.divisionIds).toEqual([adminDivision.id, bandDivision.id])
+    expect(report.data.department).toBeNull()
   })
 })
 
@@ -530,6 +719,65 @@ describe('sortDailyPresenceRows', () => {
       'admin-carter',
       'untagged-able',
     ])
+  })
+})
+
+describe('sortMemberReportRows', () => {
+  it('sorts weekly-style attendance rows by days present before last name', () => {
+    const sorted = sortMemberReportRows(
+      [
+        sortableWeeklyPresenceRow({
+          id: 'low-zulu',
+          firstName: 'Zed',
+          lastName: 'Zulu',
+          totalDaysPresent: 1,
+        }),
+        sortableWeeklyPresenceRow({
+          id: 'high-baker',
+          firstName: 'Bill',
+          lastName: 'Baker',
+          totalDaysPresent: 4,
+        }),
+        sortableWeeklyPresenceRow({
+          id: 'high-alpha',
+          firstName: 'Amy',
+          lastName: 'Alpha',
+          totalDaysPresent: 4,
+        }),
+      ],
+      [
+        { type: 'field', field: 'total_days_present', direction: 'desc' },
+        { type: 'field', field: 'last_name', direction: 'asc' },
+      ]
+    )
+
+    expect(sorted.map((row) => row.memberRecord.id)).toEqual([
+      'high-alpha',
+      'high-baker',
+      'low-zulu',
+    ])
+  })
+
+  it('sorts training night monthly rows by attendance percentage', () => {
+    const sorted = sortMemberReportRows(
+      [
+        sortableTrainingNightMonthlyRow({
+          id: 'half',
+          firstName: 'Hal',
+          lastName: 'Half',
+          percentage: 50,
+        }),
+        sortableTrainingNightMonthlyRow({
+          id: 'full',
+          firstName: 'Faye',
+          lastName: 'Full',
+          percentage: 100,
+        }),
+      ],
+      [{ type: 'field', field: 'percentage', direction: 'desc' }]
+    )
+
+    expect(sorted.map((row) => row.memberRecord.id)).toEqual(['full', 'half'])
   })
 })
 

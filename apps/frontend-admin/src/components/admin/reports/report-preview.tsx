@@ -176,14 +176,18 @@ function ReportDocumentFrame({
         </div>
 
         <div className="mt-(--space-4) flex flex-wrap gap-(--space-2) text-xs text-base-content/65">
-          {report.filters.divisionId && (
+          {(report.filters.divisionId || report.filters.divisionIds?.length) && (
             <span className="rounded-box bg-base-200 px-(--space-2) py-(--space-1)">
-              Department filter
+              {report.filters.divisionIds && report.filters.divisionIds.length > 1
+                ? `${report.filters.divisionIds.length} department filters`
+                : 'Department filter'}
             </span>
           )}
-          {report.filters.tagId && (
+          {(report.filters.tagId || report.filters.tagIds?.length) && (
             <span className="rounded-box bg-base-200 px-(--space-2) py-(--space-1)">
-              Tag filter
+              {report.filters.tagIds && report.filters.tagIds.length > 1
+                ? `${report.filters.tagIds.length} tag filters`
+                : 'Tag filter'}
             </span>
           )}
           {report.filters.visitorType && (

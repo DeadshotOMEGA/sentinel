@@ -199,7 +199,9 @@ export interface OperationalReportScheduledDutyAssignmentRecord {
 
 export interface OperationalReportMemberFilters {
   divisionId?: string
+  divisionIds?: string[]
   tagId?: string
+  tagIds?: string[]
 }
 
 export interface OperationalReportVisitorFilters {
@@ -275,30 +277,50 @@ export class OperationalReportRepository {
       },
     }
 
-    if (filters.divisionId) {
-      where.divisionId = filters.divisionId
+    const divisionIds = filters.divisionIds ?? (filters.divisionId ? [filters.divisionId] : [])
+    const tagIds = filters.tagIds ?? (filters.tagId ? [filters.tagId] : [])
+    const scopeClauses: Prisma.MemberWhereInput[] = []
+
+    if (divisionIds.length > 0) {
+      scopeClauses.push({
+        divisionId: {
+          in: divisionIds,
+        },
+      })
     }
 
-    if (filters.tagId) {
-      where.OR = [
-        {
-          memberTags: {
-            some: {
-              tagId: filters.tagId,
-            },
-          },
-        },
-        {
-          qualifications: {
-            some: {
-              status: 'active',
-              qualificationType: {
-                tagId: filters.tagId,
+    if (tagIds.length > 0) {
+      scopeClauses.push({
+        OR: [
+          {
+            memberTags: {
+              some: {
+                tagId: {
+                  in: tagIds,
+                },
               },
             },
           },
-        },
-      ]
+          {
+            qualifications: {
+              some: {
+                status: 'active',
+                qualificationType: {
+                  tagId: {
+                    in: tagIds,
+                  },
+                },
+              },
+            },
+          },
+        ],
+      })
+    }
+
+    if (scopeClauses.length === 1) {
+      Object.assign(where, scopeClauses[0])
+    } else if (scopeClauses.length > 1) {
+      where.OR = scopeClauses
     }
 
     return this.prisma.member.findMany({

@@ -1,7 +1,17 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { ArrowDown, ArrowUp, FileText, Play, Plus, Printer, RotateCcw, X } from 'lucide-react'
+import {
+  ArrowDown,
+  ArrowUp,
+  ChevronDown,
+  FileText,
+  Play,
+  Plus,
+  Printer,
+  RotateCcw,
+  X,
+} from 'lucide-react'
 import type { DailyPresenceSortCriterion } from '@sentinel/contracts'
 import {
   AppCard,
@@ -35,17 +45,56 @@ import { ReportPreview } from './report-preview'
 
 const SENTINEL_BOOTSTRAP_SERVICE_NUMBER = 'SENTINEL-SYSTEM'
 
+const REPORT_SCOPE_OPTIONS: Array<{ value: ReportScopeType; label: string }> = [
+  { value: 'everyone', label: 'Everyone' },
+  { value: 'department', label: 'Department' },
+  { value: 'tag', label: 'Specific tag' },
+  { value: 'fts', label: 'FTS tag shortcut' },
+  { value: 'geo', label: 'GEO tag shortcut' },
+]
+
 function optionalString(value: string): string | undefined {
   const trimmed = value.trim()
   return trimmed.length > 0 ? trimmed : undefined
 }
 
-function scopeRequiresDepartment(scopeType: ReportScopeType): boolean {
-  return scopeType === 'department'
+function optionalStringArray(values: string[]): string[] | undefined {
+  const normalized = [...new Set(values.map((value) => value.trim()).filter(Boolean))]
+  return normalized.length > 0 ? normalized : undefined
 }
 
-function scopeRequiresTag(scopeType: ReportScopeType): boolean {
-  return scopeType === 'tag'
+function getSelectedScopeTypes(filters: ReportFilters): ReportScopeType[] {
+  const selected = filters.scopeTypes.length > 0 ? filters.scopeTypes : [filters.scopeType]
+  return selected.includes('everyone') ? ['everyone'] : [...new Set(selected)]
+}
+
+function scopeRequiresDepartment(scopeTypes: ReportScopeType[]): boolean {
+  return scopeTypes.includes('department')
+}
+
+function scopeRequiresTag(scopeTypes: ReportScopeType[]): boolean {
+  return scopeTypes.includes('tag')
+}
+
+function reportSupportsMultiScope(reportType: AdminReportType): boolean {
+  return reportType === 'weekly_presence' || reportType === 'monthly_presence'
+}
+
+function reportSupportsMultiDepartment(reportType: AdminReportType): boolean {
+  return (
+    reportType === 'weekly_presence' ||
+    reportType === 'monthly_presence' ||
+    reportType === 'training_night_monthly'
+  )
+}
+
+function reportSupportsMemberSort(reportType: AdminReportType): boolean {
+  return (
+    reportType === 'daily_presence' ||
+    reportType === 'weekly_presence' ||
+    reportType === 'monthly_presence' ||
+    reportType === 'training_night_monthly'
+  )
 }
 
 function createDailyPresenceSortRuleId(): string {
@@ -80,11 +129,18 @@ function toDailyPresenceSortCriteria(rules: DailyPresenceSortRule[]): DailyPrese
 }
 
 function buildRunInput(filters: ReportFilters): RunAdminReportInput {
-  const scopeType = filters.scopeType
-  const divisionId = scopeRequiresDepartment(scopeType)
+  const scopeTypes = reportSupportsMultiScope(filters.reportType)
+    ? getSelectedScopeTypes(filters)
+    : [filters.scopeType]
+  const scopeType = scopeTypes[0] ?? 'everyone'
+  const divisionIds = scopeRequiresDepartment(scopeTypes)
+    ? optionalStringArray(filters.divisionIds)
+    : undefined
+  const divisionId = scopeRequiresDepartment(scopeTypes)
     ? optionalString(filters.divisionId)
     : undefined
-  const tagId = scopeRequiresTag(scopeType) ? optionalString(filters.tagId) : undefined
+  const tagIds = scopeRequiresTag(scopeTypes) ? optionalStringArray(filters.tagIds) : undefined
+  const tagId = scopeRequiresTag(scopeTypes) ? optionalString(filters.tagId) : undefined
 
   switch (filters.reportType) {
     case 'daily_presence':
@@ -104,8 +160,12 @@ function buildRunInput(filters: ReportFilters): RunAdminReportInput {
         body: {
           weekStartDate: filters.weekStartDate,
           scopeType,
+          scopeTypes,
           divisionId,
+          divisionIds,
           tagId,
+          tagIds,
+          sort: toDailyPresenceSortCriteria(filters.dailyPresenceSort),
         },
       }
     case 'monthly_presence':
@@ -114,8 +174,12 @@ function buildRunInput(filters: ReportFilters): RunAdminReportInput {
         body: {
           month: filters.month,
           scopeType,
+          scopeTypes,
           divisionId,
+          divisionIds,
           tagId,
+          tagIds,
+          sort: toDailyPresenceSortCriteria(filters.dailyPresenceSort),
         },
       }
     case 'training_night_monthly':
@@ -123,7 +187,9 @@ function buildRunInput(filters: ReportFilters): RunAdminReportInput {
         reportType: 'training_night_monthly',
         body: {
           month: filters.month,
-          divisionId: filters.divisionId,
+          divisionId: filters.divisionId || filters.divisionIds[0],
+          divisionIds: filters.divisionIds,
+          sort: toDailyPresenceSortCriteria(filters.dailyPresenceSort),
         },
       }
     case 'visitor_activity':
@@ -167,12 +233,15 @@ export function AdminReportsPage() {
   const tags = tagsQuery.data ?? []
   const ftsTag = tags.find((tag) => tag.name.toLowerCase() === 'fts')
   const geoTag = tags.find((tag) => tag.name.toLowerCase() === 'geo')
-  const shortcutWarning =
-    filters.scopeType === 'fts' && !ftsTag
+  const selectedScopeTypes = getSelectedScopeTypes(filters)
+  const shortcutWarnings = [
+    selectedScopeTypes.includes('fts') && !ftsTag
       ? 'FTS tag was not found. The shortcut is disabled until the tag exists.'
-      : filters.scopeType === 'geo' && !geoTag
-        ? 'GEO tag was not found. The shortcut is disabled until the tag exists.'
-        : null
+      : null,
+    selectedScopeTypes.includes('geo') && !geoTag
+      ? 'GEO tag was not found. The shortcut is disabled until the tag exists.'
+      : null,
+  ].filter((message): message is string => message !== null)
 
   const validationMessages = useMemo(() => {
     const messages: string[] = []
@@ -182,27 +251,27 @@ export function AdminReportsPage() {
       }
     }
 
-    if (scopeRequiresDepartment(filters.scopeType) && !filters.divisionId) {
-      messages.push('Select a department for the department scope.')
+    if (scopeRequiresDepartment(selectedScopeTypes) && filters.divisionIds.length === 0) {
+      messages.push('Select at least one department for the department scope.')
     }
 
-    if (scopeRequiresTag(filters.scopeType) && !filters.tagId) {
-      messages.push('Select a tag for the specific tag scope.')
+    if (scopeRequiresTag(selectedScopeTypes) && filters.tagIds.length === 0) {
+      messages.push('Select at least one tag for the specific tag scope.')
     }
 
     if (
-      filters.reportType === 'daily_presence' &&
+      reportSupportsMemberSort(filters.reportType) &&
       filters.dailyPresenceSort.some((rule) => rule.type === 'tag' && !rule.tagId)
     ) {
       messages.push('Select a tag for each tag sort rule.')
     }
 
-    if (shortcutWarning) {
+    for (const shortcutWarning of shortcutWarnings) {
       messages.push(shortcutWarning)
     }
 
     return messages
-  }, [definition.requiredFilters, filters, shortcutWarning])
+  }, [definition.requiredFilters, filters, selectedScopeTypes, shortcutWarnings])
 
   const isRunDisabled = validationMessages.length > 0 || reportRunner.isPending
   const errorMessage = reportRunner.error?.message ?? null
@@ -276,7 +345,7 @@ export function AdminReportsPage() {
               tags={tags}
               visitTypes={visitTypesQuery.data ?? []}
               hostMembers={reportHostMembers}
-              shortcutWarning={shortcutWarning}
+              shortcutWarnings={shortcutWarnings}
             />
           </div>
 
@@ -352,7 +421,7 @@ function ReportsFilterPanel({
   tags,
   visitTypes,
   hostMembers,
-  shortcutWarning,
+  shortcutWarnings,
 }: {
   filters: ReportFilters
   updateFilters: (next: Partial<ReportFilters>) => void
@@ -366,16 +435,65 @@ function ReportsFilterPanel({
     firstName: string
     lastName: string
   }>
-  shortcutWarning: string | null
+  shortcutWarnings: string[]
 }) {
   const definition = getReportDefinition(filters.reportType)
   const visible = new Set(definition.visibleFilters)
   const showScope = visible.has('scopeType')
+  const useMultiScope = reportSupportsMultiScope(filters.reportType)
+  const useMultiDepartment = reportSupportsMultiDepartment(filters.reportType)
+  const selectedScopeTypes = useMultiScope ? getSelectedScopeTypes(filters) : [filters.scopeType]
   const showDepartment =
     visible.has('divisionId') &&
-    (filters.reportType === 'training_night_monthly' || filters.scopeType === 'department')
-  const showTag = visible.has('tagId') && filters.scopeType === 'tag'
+    (filters.reportType === 'training_night_monthly' || selectedScopeTypes.includes('department'))
+  const showTag = visible.has('tagId') && selectedScopeTypes.includes('tag')
   const showDailyPresenceSort = visible.has('dailyPresenceSort')
+
+  function updateScopeTypes(nextScopeTypes: ReportScopeType[]) {
+    const normalized = nextScopeTypes.includes('everyone')
+      ? (['everyone'] as ReportScopeType[])
+      : nextScopeTypes.length > 0
+        ? nextScopeTypes
+        : (['everyone'] as ReportScopeType[])
+    const includesDepartment = normalized.includes('department')
+    const includesTag = normalized.includes('tag')
+
+    updateFilters({
+      scopeType: normalized[0] ?? 'everyone',
+      scopeTypes: normalized,
+      divisionId: includesDepartment ? filters.divisionId : '',
+      divisionIds: includesDepartment ? filters.divisionIds : [],
+      tagId: includesTag ? filters.tagId : '',
+      tagIds: includesTag ? filters.tagIds : [],
+    })
+  }
+
+  function toggleScopeType(scopeType: ReportScopeType) {
+    if (scopeType === 'everyone') {
+      updateScopeTypes(['everyone'])
+      return
+    }
+
+    const withoutEveryone = selectedScopeTypes.filter((value) => value !== 'everyone')
+    const nextScopeTypes = withoutEveryone.includes(scopeType)
+      ? withoutEveryone.filter((value) => value !== scopeType)
+      : [...withoutEveryone, scopeType]
+    updateScopeTypes(nextScopeTypes)
+  }
+
+  function updateDepartmentIds(divisionIds: string[]) {
+    updateFilters({
+      divisionIds,
+      divisionId: divisionIds[0] ?? '',
+    })
+  }
+
+  function updateTagIds(tagIds: string[]) {
+    updateFilters({
+      tagIds,
+      tagId: tagIds[0] ?? '',
+    })
+  }
 
   return (
     <div className="grid gap-(--space-3) md:grid-cols-2 xl:grid-cols-3">
@@ -421,26 +539,42 @@ function ReportsFilterPanel({
           <span className="label pb-(--space-1)">
             <span className="label-text font-semibold">Scope</span>
           </span>
-          <select
-            className="select select-bordered w-full"
-            value={filters.scopeType}
-            onChange={(event) =>
-              updateFilters({
-                scopeType: event.target.value as ReportScopeType,
-                divisionId: '',
-                tagId: '',
-              })
-            }
-          >
-            <option value="everyone">Everyone</option>
-            <option value="department">Department</option>
-            <option value="tag">Specific tag</option>
-            <option value="fts">FTS tag shortcut</option>
-            <option value="geo">GEO tag shortcut</option>
-          </select>
-          {shortcutWarning && (
+          {useMultiScope ? (
+            <MultiSelectDropdown
+              ariaLabel="Scope"
+              options={REPORT_SCOPE_OPTIONS}
+              selectedValues={selectedScopeTypes}
+              emptyLabel="Select scopes"
+              summaryLabel={(count) => `${count} scopes`}
+              onToggle={(value) => toggleScopeType(value as ReportScopeType)}
+            />
+          ) : (
+            <select
+              className="select select-bordered w-full"
+              value={filters.scopeType}
+              onChange={(event) =>
+                updateFilters({
+                  scopeType: event.target.value as ReportScopeType,
+                  scopeTypes: [event.target.value as ReportScopeType],
+                  divisionId: '',
+                  divisionIds: [],
+                  tagId: '',
+                  tagIds: [],
+                })
+              }
+            >
+              {REPORT_SCOPE_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          )}
+          {shortcutWarnings.length > 0 && (
             <span className="label pt-(--space-1)">
-              <span className="label-text-alt text-warning-fadded-content">{shortcutWarning}</span>
+              <span className="label-text-alt text-warning-fadded-content">
+                {shortcutWarnings.join(' ')}
+              </span>
             </span>
           )}
         </label>
@@ -450,18 +584,43 @@ function ReportsFilterPanel({
           <span className="label pb-(--space-1)">
             <span className="label-text font-semibold">Department</span>
           </span>
-          <select
-            className="select select-bordered w-full"
-            value={filters.divisionId}
-            onChange={(event) => updateFilters({ divisionId: event.target.value })}
-          >
-            <option value="">Select department</option>
-            {divisions.map((division) => (
-              <option key={division.id} value={division.id}>
-                {division.code} — {division.name}
-              </option>
-            ))}
-          </select>
+          {useMultiDepartment ? (
+            <MultiSelectDropdown
+              ariaLabel="Department"
+              options={divisions.map((division) => ({
+                value: division.id,
+                label: `${division.code} - ${division.name}`,
+              }))}
+              selectedValues={filters.divisionIds}
+              emptyLabel="Select departments"
+              summaryLabel={(count) => `${count} departments`}
+              onToggle={(divisionId) =>
+                updateDepartmentIds(
+                  filters.divisionIds.includes(divisionId)
+                    ? filters.divisionIds.filter((value) => value !== divisionId)
+                    : [...filters.divisionIds, divisionId]
+                )
+              }
+            />
+          ) : (
+            <select
+              className="select select-bordered w-full"
+              value={filters.divisionId}
+              onChange={(event) =>
+                updateFilters({
+                  divisionId: event.target.value,
+                  divisionIds: event.target.value ? [event.target.value] : [],
+                })
+              }
+            >
+              <option value="">Select department</option>
+              {divisions.map((division) => (
+                <option key={division.id} value={division.id}>
+                  {division.code} - {division.name}
+                </option>
+              ))}
+            </select>
+          )}
         </label>
       )}
       {showTag && (
@@ -469,23 +628,46 @@ function ReportsFilterPanel({
           <span className="label pb-(--space-1)">
             <span className="label-text font-semibold">Tag</span>
           </span>
-          <select
-            className="select select-bordered w-full"
-            value={filters.tagId}
-            onChange={(event) => updateFilters({ tagId: event.target.value })}
-          >
-            <option value="">Select tag</option>
-            {tags.map((tag) => (
-              <option key={tag.id} value={tag.id}>
-                {tag.name}
-              </option>
-            ))}
-          </select>
+          {useMultiScope ? (
+            <MultiSelectDropdown
+              ariaLabel="Tag"
+              options={tags.map((tag) => ({ value: tag.id, label: tag.name }))}
+              selectedValues={filters.tagIds}
+              emptyLabel="Select tags"
+              summaryLabel={(count) => `${count} tags`}
+              onToggle={(tagId) =>
+                updateTagIds(
+                  filters.tagIds.includes(tagId)
+                    ? filters.tagIds.filter((value) => value !== tagId)
+                    : [...filters.tagIds, tagId]
+                )
+              }
+            />
+          ) : (
+            <select
+              className="select select-bordered w-full"
+              value={filters.tagId}
+              onChange={(event) =>
+                updateFilters({
+                  tagId: event.target.value,
+                  tagIds: event.target.value ? [event.target.value] : [],
+                })
+              }
+            >
+              <option value="">Select tag</option>
+              {tags.map((tag) => (
+                <option key={tag.id} value={tag.id}>
+                  {tag.name}
+                </option>
+              ))}
+            </select>
+          )}
         </label>
       )}
       {showDailyPresenceSort && (
         <div className="md:col-span-2 xl:col-span-3">
-          <DailyPresenceSortBuilder
+          <MemberReportSortBuilder
+            reportType={filters.reportType}
             rules={filters.dailyPresenceSort}
             tags={tags}
             onChange={(dailyPresenceSort) => updateFilters({ dailyPresenceSort })}
@@ -578,10 +760,65 @@ function ReportsFilterPanel({
   )
 }
 
-const DAILY_PRESENCE_FIELD_OPTIONS: Array<{
-  value: Extract<DailyPresenceSortCriterion, { type: 'field' }>['field']
-  label: string
-}> = [
+function MultiSelectDropdown({
+  ariaLabel,
+  options,
+  selectedValues,
+  emptyLabel,
+  summaryLabel,
+  onToggle,
+}: {
+  ariaLabel: string
+  options: Array<{ value: string; label: string }>
+  selectedValues: string[]
+  emptyLabel: string
+  summaryLabel: (count: number) => string
+  onToggle: (value: string) => void
+}) {
+  const selectedOptions = options.filter((option) => selectedValues.includes(option.value))
+  const buttonLabel =
+    selectedOptions.length === 0
+      ? emptyLabel
+      : selectedOptions.length === 1
+        ? selectedOptions[0]?.label
+        : summaryLabel(selectedOptions.length)
+
+  return (
+    <details className="dropdown w-full">
+      <summary
+        className="btn btn-outline h-12 w-full justify-between px-(--space-4) font-normal"
+        aria-label={ariaLabel}
+      >
+        <span className="truncate">{buttonLabel}</span>
+        <ChevronDown className="h-4 w-4 shrink-0" aria-hidden="true" />
+      </summary>
+      <div className="dropdown-content z-20 mt-(--space-1) max-h-80 w-full overflow-y-auto rounded-box border border-base-300 bg-base-100 p-(--space-2) shadow-[var(--shadow-2)]">
+        {options.map((option) => {
+          const checked = selectedValues.includes(option.value)
+          return (
+            <label
+              key={option.value}
+              className="flex cursor-pointer items-center gap-(--space-2) rounded-box px-(--space-2) py-(--space-2) text-sm hover:bg-base-200"
+            >
+              <input
+                type="checkbox"
+                className="checkbox checkbox-sm"
+                aria-label={option.label}
+                checked={checked}
+                onChange={() => onToggle(option.value)}
+              />
+              <span className="min-w-0 flex-1 truncate">{option.label}</span>
+            </label>
+          )
+        })}
+      </div>
+    </details>
+  )
+}
+
+type MemberReportSortField = Extract<DailyPresenceSortCriterion, { type: 'field' }>['field']
+
+const DAILY_PRESENCE_FIELD_OPTIONS: Array<{ value: MemberReportSortField; label: string }> = [
   { value: 'rank', label: 'Rank' },
   { value: 'last_name', label: 'Last name' },
   { value: 'first_name', label: 'First name' },
@@ -591,17 +828,149 @@ const DAILY_PRESENCE_FIELD_OPTIONS: Array<{
   { value: 'sessions', label: 'Sessions' },
 ]
 
-function DailyPresenceSortBuilder({
+const WEEKLY_PRESENCE_FIELD_OPTIONS: Array<{ value: MemberReportSortField; label: string }> = [
+  { value: 'rank', label: 'Rank' },
+  { value: 'last_name', label: 'Last name' },
+  { value: 'first_name', label: 'First name' },
+  { value: 'department', label: 'Department' },
+  { value: 'total_days_present', label: 'Days present' },
+  { value: 'total_sessions', label: 'Sessions' },
+  { value: 'training_night_present', label: 'Training night' },
+  { value: 'admin_night_present', label: 'Admin night' },
+]
+
+const MONTHLY_PRESENCE_FIELD_OPTIONS: Array<{ value: MemberReportSortField; label: string }> = [
+  { value: 'rank', label: 'Rank' },
+  { value: 'last_name', label: 'Last name' },
+  { value: 'first_name', label: 'First name' },
+  { value: 'department', label: 'Department' },
+  { value: 'total_days_present', label: 'Days present' },
+  { value: 'total_sessions', label: 'Sessions' },
+  { value: 'training_nights_present', label: 'Training nights' },
+  { value: 'admin_nights_present', label: 'Admin nights' },
+]
+
+const TRAINING_NIGHT_MONTHLY_FIELD_OPTIONS: Array<{
+  value: MemberReportSortField
+  label: string
+}> = [
+  { value: 'rank', label: 'Rank' },
+  { value: 'last_name', label: 'Last name' },
+  { value: 'first_name', label: 'First name' },
+  { value: 'department', label: 'Department' },
+  { value: 'attended', label: 'Attended' },
+  { value: 'possible', label: 'Possible' },
+  { value: 'percentage', label: 'Percentage' },
+]
+
+function getMemberReportFieldOptions(
+  reportType: AdminReportType
+): Array<{ value: MemberReportSortField; label: string }> {
+  switch (reportType) {
+    case 'weekly_presence':
+      return WEEKLY_PRESENCE_FIELD_OPTIONS
+    case 'monthly_presence':
+      return MONTHLY_PRESENCE_FIELD_OPTIONS
+    case 'training_night_monthly':
+      return TRAINING_NIGHT_MONTHLY_FIELD_OPTIONS
+    case 'daily_presence':
+    case 'visitor_activity':
+    case 'operational_exceptions':
+      return DAILY_PRESENCE_FIELD_OPTIONS
+  }
+}
+
+function getDefaultMemberReportSortField(
+  reportType: AdminReportType,
+  group: DailyPresenceSortGroup
+): MemberReportSortField {
+  if (group === 'secondary') {
+    return 'last_name'
+  }
+
+  return getMemberReportFieldOptions(reportType).some((option) => option.value === 'department')
+    ? 'department'
+    : 'rank'
+}
+
+function getDefaultMemberReportFieldDirection(field: MemberReportSortField) {
+  if (
+    field === 'rank' ||
+    field === 'sessions' ||
+    field === 'total_days_present' ||
+    field === 'total_sessions' ||
+    field === 'training_nights_present' ||
+    field === 'admin_nights_present' ||
+    field === 'attended' ||
+    field === 'possible' ||
+    field === 'percentage' ||
+    field === 'training_night_present' ||
+    field === 'admin_night_present'
+  ) {
+    return 'desc'
+  }
+
+  return 'asc'
+}
+
+function getDailyPresenceFieldDirectionLabels(field: MemberReportSortField) {
+  if (field === 'rank') {
+    return {
+      asc: 'Lowest rank first',
+      desc: 'Highest rank first',
+    }
+  }
+
+  if (field === 'first_in' || field === 'last_out') {
+    return {
+      asc: 'Earliest first',
+      desc: 'Latest first',
+    }
+  }
+
+  if (field === 'training_night_present' || field === 'admin_night_present') {
+    return {
+      asc: 'Not present first',
+      desc: 'Present first',
+    }
+  }
+
+  if (
+    field === 'sessions' ||
+    field === 'total_days_present' ||
+    field === 'total_sessions' ||
+    field === 'training_nights_present' ||
+    field === 'admin_nights_present' ||
+    field === 'attended' ||
+    field === 'possible' ||
+    field === 'percentage'
+  ) {
+    return {
+      asc: 'Low to high',
+      desc: 'High to low',
+    }
+  }
+
+  return {
+    asc: 'A to Z',
+    desc: 'Z to A',
+  }
+}
+
+function MemberReportSortBuilder({
+  reportType,
   rules,
   tags,
   onChange,
 }: {
+  reportType: AdminReportType
   rules: DailyPresenceSortRule[]
   tags: Array<{ id: string; name: string }>
   onChange: (rules: DailyPresenceSortRule[]) => void
 }) {
   const primaryRules = rules.filter((rule) => rule.sortGroup === 'primary')
   const secondaryRules = rules.filter((rule) => rule.sortGroup === 'secondary')
+  const fieldOptions = getMemberReportFieldOptions(reportType)
 
   function updateGroupRules(
     group: DailyPresenceSortGroup,
@@ -711,14 +1080,15 @@ function DailyPresenceSortBuilder({
   }
 
   function addFieldRule(group: DailyPresenceSortGroup) {
+    const field = getDefaultMemberReportSortField(reportType, group)
     updateGroupRules(group, [
       ...(group === 'primary' ? primaryRules : secondaryRules),
       {
         id: createDailyPresenceSortRuleId(),
         sortGroup: group,
         type: 'field',
-        field: group === 'secondary' ? 'last_name' : 'department',
-        direction: 'asc',
+        field,
+        direction: getDefaultMemberReportFieldDirection(field),
       },
     ])
   }
@@ -765,8 +1135,10 @@ function DailyPresenceSortBuilder({
               id: rule.id,
               sortGroup: rule.sortGroup,
               type: 'field',
-              field: rule.sortGroup === 'secondary' ? 'last_name' : 'department',
-              direction: 'asc',
+              field: getDefaultMemberReportSortField(reportType, rule.sortGroup),
+              direction: getDefaultMemberReportFieldDirection(
+                getDefaultMemberReportSortField(reportType, rule.sortGroup)
+              ),
             })
           }}
         >
@@ -795,16 +1167,15 @@ function DailyPresenceSortBuilder({
           <select
             className="select select-bordered select-sm w-full"
             value={rule.field}
-            onChange={(event) =>
+            onChange={(event) => {
+              const field = event.target.value as MemberReportSortField
               updateFieldRule(rule.id, {
-                field: event.target.value as Extract<
-                  DailyPresenceSortCriterion,
-                  { type: 'field' }
-                >['field'],
+                field,
+                direction: getDefaultMemberReportFieldDirection(field),
               })
-            }
+            }}
           >
-            {DAILY_PRESENCE_FIELD_OPTIONS.map((option) => (
+            {fieldOptions.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>
@@ -812,30 +1183,35 @@ function DailyPresenceSortBuilder({
           </select>
         )}
 
-        <select
-          className="select select-bordered select-sm w-full"
-          value={rule.direction}
-          onChange={(event) =>
-            rule.type === 'tag'
-              ? updateTagRule(rule.id, {
-                  direction: event.target.value as DailyPresenceSortCriterion['direction'],
-                })
-              : rule.type === 'tag_priority'
-                ? updateTagPriorityRule(rule.id, {
-                    direction: event.target.value as DailyPresenceSortCriterion['direction'],
-                  })
-                : updateFieldRule(rule.id, {
-                    direction: event.target.value as DailyPresenceSortCriterion['direction'],
-                  })
-          }
-        >
-          <option value="asc">
-            {rule.type === 'tag' || rule.type === 'tag_priority' ? 'First' : 'A to Z'}
-          </option>
-          <option value="desc">
-            {rule.type === 'tag' || rule.type === 'tag_priority' ? 'Last' : 'Z to A'}
-          </option>
-        </select>
+        {(() => {
+          const directionLabels =
+            rule.type === 'field'
+              ? getDailyPresenceFieldDirectionLabels(rule.field)
+              : { asc: 'First', desc: 'Last' }
+
+          return (
+            <select
+              className="select select-bordered select-sm w-full"
+              value={rule.direction}
+              onChange={(event) =>
+                rule.type === 'tag'
+                  ? updateTagRule(rule.id, {
+                      direction: event.target.value as DailyPresenceSortCriterion['direction'],
+                    })
+                  : rule.type === 'tag_priority'
+                    ? updateTagPriorityRule(rule.id, {
+                        direction: event.target.value as DailyPresenceSortCriterion['direction'],
+                      })
+                    : updateFieldRule(rule.id, {
+                        direction: event.target.value as DailyPresenceSortCriterion['direction'],
+                      })
+              }
+            >
+              <option value="asc">{directionLabels.asc}</option>
+              <option value="desc">{directionLabels.desc}</option>
+            </select>
+          )
+        })()}
 
         <div className="flex items-center justify-end gap-(--space-1)">
           <button

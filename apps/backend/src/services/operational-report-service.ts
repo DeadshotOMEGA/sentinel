@@ -6,6 +6,7 @@ import type {
   DailyPresenceReportResponse,
   DailyPresenceSortCriterion,
   KeyNight,
+  MonthlyPresenceRow,
   MonthlyPresenceReportConfig,
   MonthlyPresenceReportResponse,
   OperationalNightAudienceTarget,
@@ -21,9 +22,11 @@ import type {
   ReportWarningDetail,
   ReportWarningAccountSummary,
   TrainingNightMonthlyReportConfig,
+  TrainingNightMonthlyRow,
   TrainingNightMonthlyReportResponse,
   VisitorActivityReportConfig,
   VisitorActivityReportResponse,
+  WeeklyPresenceRow,
   WeeklyPresenceReportConfig,
   WeeklyPresenceReportResponse,
 } from '@sentinel/contracts'
@@ -80,7 +83,9 @@ interface DateRange {
 
 interface EffectiveScope {
   divisionId?: string
+  divisionIds?: string[]
   tagId?: string
+  tagIds?: string[]
   scopeLabel: string
   warnings: string[]
   noResults: boolean
@@ -121,9 +126,13 @@ interface LockupCheckedOutMember {
 
 interface PairPresenceSessionsOptions {
   warningMemberIds?: Map<string, Set<string>>
+  warningRange?: {
+    start: Date
+    end: Date
+  }
 }
 
-export interface DailyPresenceSortableMember {
+export interface MemberReportSortableMember {
   id: string
   rank: string
   firstName: string
@@ -135,8 +144,20 @@ export interface DailyPresenceSortableMember {
   qualifications: Array<{ qualificationType: { tagId: string | null } }>
 }
 
-export interface DailyPresenceSortableRow {
-  memberRecord: DailyPresenceSortableMember
+type MemberReportSortableRowData =
+  | DailyPresenceRow
+  | WeeklyPresenceRow
+  | MonthlyPresenceRow
+  | TrainingNightMonthlyRow
+
+export interface MemberReportSortableRow {
+  memberRecord: MemberReportSortableMember
+  row: MemberReportSortableRowData
+}
+
+export type DailyPresenceSortableMember = MemberReportSortableMember
+
+export interface DailyPresenceSortableRow extends MemberReportSortableRow {
   row: DailyPresenceRow
 }
 
@@ -214,7 +235,7 @@ export function compareReportTagsByPriority(
 }
 
 export function dailyPresenceSortableMemberHasTag(
-  member: DailyPresenceSortableMember,
+  member: MemberReportSortableMember,
   tagId: string
 ): boolean {
   return (
@@ -236,9 +257,75 @@ function compareNullableString(left: string | null | undefined, right: string | 
   })
 }
 
-function compareDailyPresenceField(
-  left: DailyPresenceSortableRow,
-  right: DailyPresenceSortableRow,
+function compareBoolean(left: boolean | null | undefined, right: boolean | null | undefined) {
+  const leftValue = left === true ? 1 : left === false ? 0 : -1
+  const rightValue = right === true ? 1 : right === false ? 0 : -1
+  return leftValue - rightValue
+}
+
+function compareNumber(left: number | null | undefined, right: number | null | undefined) {
+  if (left === undefined || left === null) {
+    return right === undefined || right === null ? 0 : 1
+  }
+
+  if (right === undefined || right === null) {
+    return -1
+  }
+
+  return left - right
+}
+
+function getDailyFirstIn(row: MemberReportSortableRowData): string | null | undefined {
+  return 'firstIn' in row ? row.firstIn : undefined
+}
+
+function getDailyLastOut(row: MemberReportSortableRowData): string | null | undefined {
+  return 'lastOut' in row ? row.lastOut : undefined
+}
+
+function getDailySessionCount(row: MemberReportSortableRowData): number | undefined {
+  return 'sessionCount' in row ? row.sessionCount : undefined
+}
+
+function getTotalDaysPresent(row: MemberReportSortableRowData): number | undefined {
+  return 'totalDaysPresent' in row ? row.totalDaysPresent : undefined
+}
+
+function getTotalSessions(row: MemberReportSortableRowData): number | undefined {
+  return 'totalSessions' in row ? row.totalSessions : undefined
+}
+
+function getTrainingNightPresent(row: MemberReportSortableRowData): boolean | null | undefined {
+  return 'trainingNightPresent' in row ? row.trainingNightPresent : undefined
+}
+
+function getAdminNightPresent(row: MemberReportSortableRowData): boolean | null | undefined {
+  return 'adminNightPresent' in row ? row.adminNightPresent : undefined
+}
+
+function getTrainingNightsPresent(row: MemberReportSortableRowData): number | undefined {
+  return 'trainingNightsPresent' in row ? row.trainingNightsPresent : undefined
+}
+
+function getAdminNightsPresent(row: MemberReportSortableRowData): number | undefined {
+  return 'adminNightsPresent' in row ? row.adminNightsPresent : undefined
+}
+
+function getAttended(row: MemberReportSortableRowData): number | undefined {
+  return 'attended' in row ? row.attended : undefined
+}
+
+function getPossible(row: MemberReportSortableRowData): number | undefined {
+  return 'possible' in row ? row.possible : undefined
+}
+
+function getPercentage(row: MemberReportSortableRowData): number | undefined {
+  return 'percentage' in row ? row.percentage : undefined
+}
+
+function compareMemberReportField(
+  left: MemberReportSortableRow,
+  right: MemberReportSortableRow,
   field: Extract<DailyPresenceSortCriterion, { type: 'field' }>['field']
 ): number {
   switch (field) {
@@ -268,11 +355,29 @@ function compareDailyPresenceField(
         ) || compareNullableString(left.memberRecord.lastName, right.memberRecord.lastName)
       )
     case 'first_in':
-      return compareNullableString(left.row.firstIn, right.row.firstIn)
+      return compareNullableString(getDailyFirstIn(left.row), getDailyFirstIn(right.row))
     case 'last_out':
-      return compareNullableString(left.row.lastOut, right.row.lastOut)
+      return compareNullableString(getDailyLastOut(left.row), getDailyLastOut(right.row))
     case 'sessions':
-      return left.row.sessionCount - right.row.sessionCount
+      return compareNumber(getDailySessionCount(left.row), getDailySessionCount(right.row))
+    case 'total_days_present':
+      return compareNumber(getTotalDaysPresent(left.row), getTotalDaysPresent(right.row))
+    case 'total_sessions':
+      return compareNumber(getTotalSessions(left.row), getTotalSessions(right.row))
+    case 'training_night_present':
+      return compareBoolean(getTrainingNightPresent(left.row), getTrainingNightPresent(right.row))
+    case 'admin_night_present':
+      return compareBoolean(getAdminNightPresent(left.row), getAdminNightPresent(right.row))
+    case 'training_nights_present':
+      return compareNumber(getTrainingNightsPresent(left.row), getTrainingNightsPresent(right.row))
+    case 'admin_nights_present':
+      return compareNumber(getAdminNightsPresent(left.row), getAdminNightsPresent(right.row))
+    case 'attended':
+      return compareNumber(getAttended(left.row), getAttended(right.row))
+    case 'possible':
+      return compareNumber(getPossible(left.row), getPossible(right.row))
+    case 'percentage':
+      return compareNumber(getPercentage(left.row), getPercentage(right.row))
     case 'last_name':
       return (
         compareNullableString(left.memberRecord.lastName, right.memberRecord.lastName) ||
@@ -281,18 +386,18 @@ function compareDailyPresenceField(
   }
 }
 
-function getDailyPresenceRowTagPriority(row: DailyPresenceSortableRow): number | null {
+function getMemberReportRowTagPriority(row: MemberReportSortableRow): number | null {
   const firstTag = row.row.member.tags[0]
   return firstTag ? firstTag.displayOrder : null
 }
 
-function compareDailyPresenceTagPriority(
-  left: DailyPresenceSortableRow,
-  right: DailyPresenceSortableRow,
+function compareMemberReportTagPriority(
+  left: MemberReportSortableRow,
+  right: MemberReportSortableRow,
   direction: DailyPresenceSortCriterion['direction']
 ): number {
-  const leftPriority = getDailyPresenceRowTagPriority(left)
-  const rightPriority = getDailyPresenceRowTagPriority(right)
+  const leftPriority = getMemberReportRowTagPriority(left)
+  const rightPriority = getMemberReportRowTagPriority(right)
 
   if (leftPriority === null && rightPriority === null) {
     return 0
@@ -307,9 +412,9 @@ function compareDailyPresenceTagPriority(
   return (leftPriority - rightPriority) * (direction === 'desc' ? -1 : 1)
 }
 
-function compareDailyPresenceCriterion(
-  left: DailyPresenceSortableRow,
-  right: DailyPresenceSortableRow,
+function compareMemberReportCriterion(
+  left: MemberReportSortableRow,
+  right: MemberReportSortableRow,
   criterion: DailyPresenceSortCriterion
 ): number {
   const direction = criterion.direction === 'desc' ? -1 : 1
@@ -326,13 +431,13 @@ function compareDailyPresenceCriterion(
   }
 
   if (criterion.type === 'tag_priority') {
-    return compareDailyPresenceTagPriority(left, right, criterion.direction)
+    return compareMemberReportTagPriority(left, right, criterion.direction)
   }
 
-  return compareDailyPresenceField(left, right, criterion.field) * direction
+  return compareMemberReportField(left, right, criterion.field) * direction
 }
 
-export function sortDailyPresenceRows<T extends DailyPresenceSortableRow>(
+export function sortMemberReportRows<T extends MemberReportSortableRow>(
   rows: T[],
   sort: DailyPresenceSortCriterion[] | undefined
 ): T[] {
@@ -344,7 +449,7 @@ export function sortDailyPresenceRows<T extends DailyPresenceSortableRow>(
 
   return [...rows].sort((left, right) => {
     for (const criterion of sortCriteria) {
-      const result = compareDailyPresenceCriterion(left, right, criterion)
+      const result = compareMemberReportCriterion(left, right, criterion)
       if (result !== 0) {
         return result
       }
@@ -357,6 +462,13 @@ export function sortDailyPresenceRows<T extends DailyPresenceSortableRow>(
       left.memberRecord.id.localeCompare(right.memberRecord.id)
     )
   })
+}
+
+export function sortDailyPresenceRows<T extends DailyPresenceSortableRow>(
+  rows: T[],
+  sort: DailyPresenceSortCriterion[] | undefined
+): T[] {
+  return sortMemberReportRows(rows, sort)
 }
 
 export function presenceSessionOverlapsRange(
@@ -416,7 +528,13 @@ export function pairOperationalPresenceSessions(
 
       if (direction === 'in') {
         if (openIn) {
-          addPresenceWarning(warnings, REPEATED_CHECKIN_WARNING, options, memberId)
+          addPresenceWarning(
+            warnings,
+            REPEATED_CHECKIN_WARNING,
+            options,
+            memberId,
+            record.timestamp
+          )
           sessions.push({
             memberId,
             inAt: openIn.timestamp,
@@ -430,12 +548,18 @@ export function pairOperationalPresenceSessions(
 
       if (direction === 'out') {
         if (!openIn) {
-          addPresenceWarning(warnings, UNMATCHED_CHECKOUT_WARNING, options, memberId)
+          addPresenceWarning(
+            warnings,
+            UNMATCHED_CHECKOUT_WARNING,
+            options,
+            memberId,
+            record.timestamp
+          )
           continue
         }
 
         if (record.timestamp < openIn.timestamp) {
-          addPresenceWarning(warnings, EARLY_CHECKOUT_WARNING, options, memberId)
+          addPresenceWarning(warnings, EARLY_CHECKOUT_WARNING, options, memberId, record.timestamp)
           openIn = null
           continue
         }
@@ -451,7 +575,7 @@ export function pairOperationalPresenceSessions(
         continue
       }
 
-      addPresenceWarning(warnings, UNKNOWN_DIRECTION_WARNING, options, memberId)
+      addPresenceWarning(warnings, UNKNOWN_DIRECTION_WARNING, options, memberId, record.timestamp)
     }
 
     if (openIn) {
@@ -473,8 +597,17 @@ function addPresenceWarning(
   warnings: Set<string>,
   warning: string,
   options: PairPresenceSessionsOptions,
-  memberId?: string | null
+  memberId?: string | null,
+  timestamp?: Date
 ) {
+  if (
+    timestamp &&
+    options.warningRange &&
+    (timestamp < options.warningRange.start || timestamp >= options.warningRange.end)
+  ) {
+    return
+  }
+
   warnings.add(warning)
 
   if (!memberId || !options.warningMemberIds) {
@@ -505,7 +638,9 @@ export class OperationalReportService {
       ? []
       : await this.repository.findActiveMembers({
           divisionId: scope.divisionId,
+          divisionIds: scope.divisionIds,
           tagId: scope.tagId,
+          tagIds: scope.tagIds,
         })
     const sessionsByMember = await this.getSessionsByMember(
       members,
@@ -549,7 +684,9 @@ export class OperationalReportService {
       ...this.getEnvelopeBase('daily_presence', 'Daily Presence Report', actor, range, {
         scopeLabel: scope.scopeLabel,
         divisionId: scope.divisionId,
+        divisionIds: scope.divisionIds,
         tagId: scope.tagId,
+        tagIds: scope.tagIds,
       }),
       warnings: Array.from(warnings),
       warningDetails: this.getWarningDetails(warnings, warningMemberIds, members),
@@ -581,7 +718,9 @@ export class OperationalReportService {
       ? []
       : await this.repository.findActiveMembers({
           divisionId: scope.divisionId,
+          divisionIds: scope.divisionIds,
           tagId: scope.tagId,
+          tagIds: scope.tagIds,
         })
     const sessionsByMember = await this.getSessionsByMember(members, range, warnings)
     const scheduledDutyRolesByMember = await this.getScheduledDutyRolesByMember(members, range)
@@ -597,7 +736,7 @@ export class OperationalReportService {
       ),
     }))
 
-    const rows = members.map((member) => {
+    const sortableRows = members.map((member) => {
       const memberSessions = sessionsByMember.get(member.id) ?? []
       const dayMarkers = days.map((day) =>
         this.getPresenceMarker(day.date, memberSessions, this.formatShortDate(day.date))
@@ -607,23 +746,29 @@ export class OperationalReportService {
       )
 
       return {
-        member: this.toMemberSummary(member, scheduledDutyRolesByMember.get(member.id)),
-        days: dayMarkers,
-        trainingNightPresent: this.getCategoryPresence('training', keyNights, keyNightMarkers),
-        adminNightPresent: this.getCategoryPresence('administrative', keyNights, keyNightMarkers),
-        keyNights: keyNightMarkers,
-        totalDaysPresent: dayMarkers.filter((marker) => marker.present).length,
-        totalSessions: memberSessions.filter((session) =>
-          this.sessionOverlaps(session, range.start, range.end)
-        ).length,
+        memberRecord: member,
+        row: {
+          member: this.toMemberSummary(member, scheduledDutyRolesByMember.get(member.id)),
+          days: dayMarkers,
+          trainingNightPresent: this.getCategoryPresence('training', keyNights, keyNightMarkers),
+          adminNightPresent: this.getCategoryPresence('administrative', keyNights, keyNightMarkers),
+          keyNights: keyNightMarkers,
+          totalDaysPresent: dayMarkers.filter((marker) => marker.present).length,
+          totalSessions: memberSessions.filter((session) =>
+            this.sessionOverlaps(session, range.start, range.end)
+          ).length,
+        },
       }
     })
+    const rows = sortMemberReportRows(sortableRows, config.sort).map(({ row }) => row)
 
     return {
       ...this.getEnvelopeBase('weekly_presence', 'Weekly Presence Report', actor, range, {
         scopeLabel: scope.scopeLabel,
         divisionId: scope.divisionId,
+        divisionIds: scope.divisionIds,
         tagId: scope.tagId,
+        tagIds: scope.tagIds,
       }),
       warnings: Array.from(warnings),
       data: {
@@ -651,7 +796,9 @@ export class OperationalReportService {
       ? []
       : await this.repository.findActiveMembers({
           divisionId: scope.divisionId,
+          divisionIds: scope.divisionIds,
           tagId: scope.tagId,
+          tagIds: scope.tagIds,
         })
     const sessionsByMember = await this.getSessionsByMember(members, range, warnings)
     const keyNights = await this.getKeyNights(range, ['training', 'administrative'], warnings)
@@ -666,7 +813,7 @@ export class OperationalReportService {
       ),
     }))
 
-    const rows = members.map((member) => {
+    const sortableRows = members.map((member) => {
       const memberSessions = sessionsByMember.get(member.id) ?? []
       const dayMarkers = days.map((day) =>
         this.getPresenceMarker(day.date, memberSessions, day.label)
@@ -676,27 +823,33 @@ export class OperationalReportService {
       )
 
       return {
-        member: this.toMemberSummary(member, new Set(), { hideDutyTags: true }),
-        days: dayMarkers,
-        keyNights: keyNightMarkers,
-        totalDaysPresent: dayMarkers.filter((marker) => marker.present).length,
-        totalSessions: memberSessions.filter((session) =>
-          this.sessionOverlaps(session, range.start, range.end)
-        ).length,
-        trainingNightsPresent: this.countCategoryPresence('training', keyNights, keyNightMarkers),
-        adminNightsPresent: this.countCategoryPresence(
-          'administrative',
-          keyNights,
-          keyNightMarkers
-        ),
+        memberRecord: member,
+        row: {
+          member: this.toMemberSummary(member, new Set(), { hideDutyTags: true }),
+          days: dayMarkers,
+          keyNights: keyNightMarkers,
+          totalDaysPresent: dayMarkers.filter((marker) => marker.present).length,
+          totalSessions: memberSessions.filter((session) =>
+            this.sessionOverlaps(session, range.start, range.end)
+          ).length,
+          trainingNightsPresent: this.countCategoryPresence('training', keyNights, keyNightMarkers),
+          adminNightsPresent: this.countCategoryPresence(
+            'administrative',
+            keyNights,
+            keyNightMarkers
+          ),
+        },
       }
     })
+    const rows = sortMemberReportRows(sortableRows, config.sort).map(({ row }) => row)
 
     return {
       ...this.getEnvelopeBase('monthly_presence', 'Monthly Presence Report', actor, range, {
         scopeLabel: scope.scopeLabel,
         divisionId: scope.divisionId,
+        divisionIds: scope.divisionIds,
         tagId: scope.tagId,
+        tagIds: scope.tagIds,
       }),
       warnings: Array.from(warnings),
       data: {
@@ -720,13 +873,29 @@ export class OperationalReportService {
   ): Promise<TrainingNightMonthlyReportResponse> {
     const range = this.getMonthRange(config.month)
     const warnings = new Set<string>()
-    const division = await this.repository.findDivisionById(config.divisionId)
-    if (!division) {
-      warnings.add('Selected department was not found. The report has no department members.')
+    const selectedDivisionIds = this.uniqueIds(config.divisionIds, config.divisionId)
+    const divisions: Array<{ id: string; code: string; name: string }> = []
+
+    if (selectedDivisionIds.length === 0) {
+      warnings.add('No department was selected. The report has no department members.')
     }
-    const members = division
-      ? await this.repository.findActiveMembers({ divisionId: config.divisionId })
-      : []
+
+    for (const divisionId of selectedDivisionIds) {
+      const division = await this.repository.findDivisionById(divisionId)
+      if (!division) {
+        warnings.add('One or more selected departments were not found.')
+        continue
+      }
+
+      divisions.push(division)
+    }
+
+    const members =
+      divisions.length > 0
+        ? await this.repository.findActiveMembers({
+            divisionIds: divisions.map((division) => division.id),
+          })
+        : []
     const sessionsByMember = await this.getSessionsByMember(members, range, warnings)
     const keyNights = await this.getKeyNights(range, ['training'], warnings)
     const trainingNights = keyNights.filter((night) => night.category === 'training')
@@ -735,7 +904,7 @@ export class OperationalReportService {
       warnings.add('No Training Nights were found for the selected month.')
     }
 
-    const rows = members.map((member) => {
+    const sortableRows = members.map((member) => {
       const memberSessions = sessionsByMember.get(member.id) ?? []
       const nightMarkers = trainingNights.map((night) =>
         this.getKeyNightPresenceMarker(night, member, memberSessions)
@@ -746,13 +915,17 @@ export class OperationalReportService {
       const possible = nightMarkers.filter((marker) => marker.requirement === 'required').length
 
       return {
-        member: this.toMemberSummary(member, new Set(), { hideDutyTags: true }),
-        nights: nightMarkers,
-        attended,
-        possible,
-        percentage: possible > 0 ? Math.round((attended / possible) * 100) : 0,
+        memberRecord: member,
+        row: {
+          member: this.toMemberSummary(member, new Set(), { hideDutyTags: true }),
+          nights: nightMarkers,
+          attended,
+          possible,
+          percentage: possible > 0 ? Math.round((attended / possible) * 100) : 0,
+        },
       }
     })
+    const rows = sortMemberReportRows(sortableRows, config.sort).map(({ row }) => row)
 
     return {
       ...this.getEnvelopeBase(
@@ -761,19 +934,24 @@ export class OperationalReportService {
         actor,
         range,
         {
-          scopeLabel: division ? division.name : 'Selected department',
-          divisionId: config.divisionId,
+          scopeLabel:
+            divisions.length > 0
+              ? divisions.map((division) => division.name).join(', ')
+              : 'Selected department',
+          divisionId: divisions[0]?.id ?? config.divisionId,
+          divisionIds: selectedDivisionIds,
         }
       ),
       warnings: Array.from(warnings),
       data: {
-        department: division
-          ? {
-              id: division.id,
-              code: division.code,
-              name: division.name,
-            }
-          : null,
+        department:
+          divisions.length === 1 && divisions[0]
+            ? {
+                id: divisions[0].id,
+                code: divisions[0].code,
+                name: divisions[0].name,
+              }
+            : null,
         trainingNights: trainingNights.map(this.toApiKeyNight),
         rows,
         summary: {
@@ -973,7 +1151,9 @@ export class OperationalReportService {
     filters: {
       scopeLabel: string
       divisionId?: string
+      divisionIds?: string[]
       tagId?: string
+      tagIds?: string[]
       visitorType?: string
       visitorPurpose?: string
       eventCategory?: string
@@ -1001,95 +1181,114 @@ export class OperationalReportService {
   private async resolveScope(
     config: {
       scopeType?: ReportScopeType
+      scopeTypes?: ReportScopeType[]
       divisionId?: string
+      divisionIds?: string[]
       tagId?: string
+      tagIds?: string[]
     },
     warnings: Set<string>
   ): Promise<EffectiveScope> {
-    const scopeType = config.scopeType ?? 'everyone'
+    const scopeTypes = this.normalizeReportScopeTypes(config.scopeTypes, config.scopeType)
 
-    if (scopeType === 'department') {
-      if (!config.divisionId) {
+    if (scopeTypes.includes('everyone')) {
+      return {
+        scopeLabel: 'Everyone',
+        warnings: Array.from(warnings),
+        noResults: false,
+      }
+    }
+
+    const divisionIds = this.uniqueIds(config.divisionIds, config.divisionId)
+    const tagIds = this.uniqueIds(config.tagIds, config.tagId)
+    const resolvedDivisionIds: string[] = []
+    const resolvedTagIds: string[] = []
+    const scopeLabels: string[] = []
+
+    if (scopeTypes.includes('department')) {
+      if (divisionIds.length === 0) {
         warnings.add('Department scope was selected, but no department was provided.')
-        return {
-          scopeLabel: 'Department',
-          warnings: Array.from(warnings),
-          noResults: true,
-        }
-      }
+      } else {
+        for (const divisionId of divisionIds) {
+          const division = await this.repository.findDivisionById(divisionId)
+          if (!division) {
+            warnings.add('One or more selected departments were not found.')
+            continue
+          }
 
-      const division = await this.repository.findDivisionById(config.divisionId)
-      if (!division) {
-        warnings.add('Selected department was not found.')
-        return {
-          divisionId: config.divisionId,
-          scopeLabel: 'Selected department',
-          warnings: Array.from(warnings),
-          noResults: true,
+          resolvedDivisionIds.push(division.id)
+          scopeLabels.push(division.name)
         }
-      }
-
-      return {
-        divisionId: division.id,
-        scopeLabel: division.name,
-        warnings: Array.from(warnings),
-        noResults: false,
       }
     }
 
-    if (scopeType === 'tag') {
-      if (!config.tagId) {
+    if (scopeTypes.includes('tag')) {
+      if (tagIds.length === 0) {
         warnings.add('Tag scope was selected, but no tag was provided.')
-        return {
-          scopeLabel: 'Specific tag',
-          warnings: Array.from(warnings),
-          noResults: true,
-        }
-      }
+      } else {
+        for (const tagId of tagIds) {
+          const tag = await this.repository.findTagById(tagId)
+          if (!tag) {
+            warnings.add('One or more selected tags were not found.')
+            continue
+          }
 
-      const tag = await this.repository.findTagById(config.tagId)
-      if (!tag) {
-        warnings.add('Selected tag was not found.')
-        return {
-          tagId: config.tagId,
-          scopeLabel: 'Specific tag',
-          warnings: Array.from(warnings),
-          noResults: true,
+          resolvedTagIds.push(tag.id)
+          scopeLabels.push(tag.name)
         }
-      }
-
-      return {
-        tagId: tag.id,
-        scopeLabel: tag.name,
-        warnings: Array.from(warnings),
-        noResults: false,
       }
     }
 
-    if (scopeType === 'fts' || scopeType === 'geo') {
-      const tag = await this.repository.findTagShortcut(scopeType)
-      if (!tag) {
-        warnings.add(`${scopeType.toUpperCase()} tag was not found. No tag IDs were hardcoded.`)
-        return {
-          scopeLabel: `${scopeType.toUpperCase()} tag shortcut`,
-          warnings: Array.from(warnings),
-          noResults: true,
-        }
+    for (const shortcut of ['fts', 'geo'] as const) {
+      if (!scopeTypes.includes(shortcut)) {
+        continue
       }
 
+      const tag = await this.repository.findTagShortcut(shortcut)
+      if (!tag) {
+        warnings.add(`${shortcut.toUpperCase()} tag was not found. No tag IDs were hardcoded.`)
+        continue
+      }
+
+      resolvedTagIds.push(tag.id)
+      scopeLabels.push(tag.name)
+    }
+
+    const finalDivisionIds = this.uniqueIds(resolvedDivisionIds)
+    const finalTagIds = this.uniqueIds(resolvedTagIds)
+    const finalScopeLabels = [...new Set(scopeLabels)]
+
+    if (finalDivisionIds.length === 0 && finalTagIds.length === 0) {
       return {
-        tagId: tag.id,
-        scopeLabel: tag.name,
+        scopeLabel: finalScopeLabels.length > 0 ? finalScopeLabels.join(', ') : 'Selected scope',
         warnings: Array.from(warnings),
-        noResults: false,
+        noResults: true,
       }
     }
 
     return {
-      scopeLabel: 'Everyone',
+      divisionId: finalDivisionIds[0],
+      divisionIds: finalDivisionIds,
+      tagId: finalTagIds[0],
+      tagIds: finalTagIds,
+      scopeLabel: finalScopeLabels.join(', '),
       warnings: Array.from(warnings),
       noResults: false,
     }
+  }
+
+  private normalizeReportScopeTypes(
+    scopeTypes: ReportScopeType[] | undefined,
+    fallbackScopeType: ReportScopeType | undefined
+  ): ReportScopeType[] {
+    const selected =
+      scopeTypes && scopeTypes.length > 0 ? scopeTypes : [fallbackScopeType ?? 'everyone']
+    const unique = [...new Set(selected)]
+    return unique.includes('everyone') ? ['everyone'] : unique
+  }
+
+  private uniqueIds(ids: string[] | undefined, fallbackId?: string): string[] {
+    return [...new Set([...(ids ?? []), fallbackId].filter((id): id is string => Boolean(id)))]
   }
 
   private async getSessionsByMember(
@@ -1103,19 +1302,27 @@ export class OperationalReportService {
       .minus({ days: REPORT_LOOKBACK_DAYS })
       .toJSDate()
     const checkins = await this.repository.findCheckinsForMembers(memberIds, queryStart, range.end)
-    return this.pairSessions(checkins, warnings, warningMemberIds)
+    return this.pairSessions(checkins, range, warnings, warningMemberIds)
   }
 
   private pairSessions(
     checkins: OperationalReportCheckinRecord[],
+    range: DateRange,
     warnings: Set<string>,
     warningMemberIds?: Map<string, Set<string>>
   ): Map<string, PresenceSessionInternal[]> {
-    return pairOperationalPresenceSessions(
-      checkins,
-      warnings,
-      warningMemberIds ? { warningMemberIds } : {}
-    )
+    const options: PairPresenceSessionsOptions = {
+      warningRange: {
+        start: range.start,
+        end: range.end,
+      },
+    }
+
+    if (warningMemberIds) {
+      options.warningMemberIds = warningMemberIds
+    }
+
+    return pairOperationalPresenceSessions(checkins, warnings, options)
   }
 
   private getPresenceMarker(
