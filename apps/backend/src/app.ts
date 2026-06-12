@@ -96,6 +96,7 @@ import { networkSettingsRouter } from './routes/network-settings.js'
 import { systemStatusRouter } from './routes/system-status.js'
 import { systemUpdateRouter } from './routes/system-update.js'
 import { adminNavigationEventsRouter } from './routes/admin-navigation-events.js'
+import { kioskSoundsRouter } from './routes/kiosk-sounds.js'
 import { authRouter } from './routes/auth.js'
 import authRfidRouter from './routes/auth-rfid.js'
 import adminRouter from './routes/admin.js'
@@ -118,6 +119,7 @@ export function createApp(): Express {
           styleSrc: ["'self'", "'unsafe-inline'"],
           scriptSrc: ["'self'"],
           imgSrc: ["'self'", 'data:', 'https:'],
+          mediaSrc: ["'self'", 'data:', 'blob:'],
         },
       },
       crossOriginEmbedderPolicy: false, // Allow loading external resources
@@ -536,6 +538,8 @@ export function createApp(): Express {
       })
     },
   })
+
+  app.use('/api/kiosk-sounds', kioskSoundsRouter)
 
   // Custom auth routes
   app.use('/api/auth', authRfidRouter)

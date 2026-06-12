@@ -105,6 +105,9 @@ describe('ADMIN_NAV_ROUTES', () => {
     expect(resolveLegacyAdminPath('/settings', new URLSearchParams('tab=dashboard-sorting'))).toBe(
       '/admin/dashboard-sorting'
     )
+    expect(resolveLegacyAdminPath('/settings', new URLSearchParams('tab=kiosk-sounds'))).toBe(
+      '/admin/kiosk-sounds'
+    )
     expect(resolveLegacyAdminPath('/settings', new URLSearchParams('tab=tags'))).toBe(
       '/admin/config?tab=tags'
     )

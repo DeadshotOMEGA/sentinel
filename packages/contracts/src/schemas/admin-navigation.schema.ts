@@ -19,6 +19,7 @@ export const AdminNavigationRouteIdValues = [
   'temporary-personnel',
   'config',
   'timings',
+  'kiosk-sounds',
   'account-levels',
   'dashboard-sorting',
   'legacy',

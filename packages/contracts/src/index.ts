@@ -4,4 +4,5 @@
 export * from './schemas/index.js'
 export * from './contracts/index.js'
 export * from './duty-watch-recurrence.js'
+export * from './kiosk-sounds.js'
 export * from './operational-night-recurrence.js'
