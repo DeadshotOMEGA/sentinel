@@ -1,6 +1,6 @@
 {
   "name": "frontend-admin",
-  "version": "3.4.6",
+  "version": "3.4.7",
   "private": true,
   "scripts": {
     "dev": "next dev -p 3001",

@@ -451,31 +451,27 @@
   }
 
   .reports-daily-member-col {
-    width: 22%;
+    width: 24%;
   }
 
   .reports-daily-department-col {
-    width: 11%;
+    width: 10%;
   }
 
   .reports-daily-tags-col {
-    width: 23%;
+    width: 28%;
   }
 
   .reports-daily-time-col {
-    width: 9%;
-  }
-
-  .reports-daily-last-out-col {
-    width: 11%;
-  }
-
-  .reports-daily-returned-col {
     width: 12%;
   }
 
-  .reports-daily-session-col {
-    width: 8%;
+  .reports-daily-last-out-col {
+    width: 12%;
+  }
+
+  .reports-daily-presence-col {
+    width: 14%;
   }
 
   .reports-daily-presence-table .reports-tags-cell {

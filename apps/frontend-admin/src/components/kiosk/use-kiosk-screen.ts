@@ -6,11 +6,20 @@ import { startTransition, useEffect, useMemo, useRef, useState } from 'react'
 import { useReducedMotion } from 'motion/react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAcceptDds, useDdsStatus, useKioskResponsibilityState } from '@/hooks/use-dds'
+import { useKioskSoundSettings } from '@/hooks/use-kiosk-sound-settings'
 import { useCheckoutOptions, useLockupStatus, useOpenBuilding } from '@/hooks/use-lockup'
 import { useCurrentDds, useTonightDutyWatch } from '@/hooks/use-schedules'
 import { useSystemStatus } from '@/hooks/use-system-status'
 import { apiClient } from '@/lib/api-client'
 import { invalidateDashboardQueries } from '@/lib/dashboard-query-invalidation'
+import {
+  getDefaultKioskSoundSettings,
+  playKioskSound,
+  preloadKioskSounds,
+  unlockKioskSoundPlayback,
+  type KioskSoundEvent,
+  type KioskSoundSettings,
+} from '@/lib/kiosk-sound-settings'
 import {
   ASSIGNMENT_SUMMARY_CACHE_MS,
   BADGE_FOCUS_REQUEST_EVENT,
@@ -75,11 +84,13 @@ export function useKioskScreen() {
     lastError: null,
   })
   const replayInFlightRef = useRef(false)
+  const kioskSoundSettingsRef = useRef<KioskSoundSettings>(getDefaultKioskSoundSettings())
 
   const { data: checkoutOptions, isLoading: loadingCheckoutOptions } = useCheckoutOptions(
     pendingLockup?.memberId ?? ''
   )
   const systemStatusQuery = useSystemStatus()
+  const kioskSoundSettingsQuery = useKioskSoundSettings()
   const ddsStatusQuery = useDdsStatus()
   const lockupStatusQuery = useLockupStatus()
   const scheduledDdsQuery = useCurrentDds()
@@ -198,10 +209,23 @@ export function useKioskScreen() {
     ])
   }
 
+  const playScanFeedback = (event: KioskSoundEvent) => {
+    void playKioskSound(kioskSoundSettingsRef.current, event).catch(() => undefined)
+  }
+
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 1000)
     return () => window.clearInterval(timer)
   }, [])
+
+  useEffect(() => {
+    if (!kioskSoundSettingsQuery.data) {
+      return
+    }
+
+    kioskSoundSettingsRef.current = kioskSoundSettingsQuery.data
+    preloadKioskSounds(kioskSoundSettingsQuery.data)
+  }, [kioskSoundSettingsQuery.data])
 
   useEffect(() => {
     const currentQueue = loadQueuedScans()
@@ -410,6 +434,7 @@ export function useKioskScreen() {
       setResponsibilityContext(null)
 
       if (scanResult.type === 'visitor') {
+        playScanFeedback('warning')
         setPendingLockup(null)
         setShowLockupOptions(false)
         setResult({
@@ -425,6 +450,7 @@ export function useKioskScreen() {
       }
 
       if (scanResult.type === 'lockup') {
+        playScanFeedback('warning')
         setPendingLockup({
           memberId: scanResult.memberId,
           memberName: scanResult.memberName,
@@ -448,6 +474,7 @@ export function useKioskScreen() {
       }
 
       if (scanResult.type === 'queued') {
+        playScanFeedback('warning')
         setPendingLockup(null)
         setShowLockupOptions(false)
         setResult({
@@ -466,6 +493,7 @@ export function useKioskScreen() {
       }
 
       if (scanResult.type === 'temporary_personnel') {
+        playScanFeedback(scanResult.direction === 'in' ? 'scan_in' : 'scan_out')
         setPendingLockup(null)
         setShowLockupOptions(false)
         setResult({
@@ -495,6 +523,7 @@ export function useKioskScreen() {
       }
 
       setPendingLockup(null)
+      playScanFeedback(scanResult.direction === 'in' ? 'scan_in' : 'scan_out')
       setShowLockupOptions(false)
       setResult({
         tone: toneForDirection(scanResult.direction),
@@ -511,6 +540,7 @@ export function useKioskScreen() {
       refocusBadgeInput()
     },
     onError: (error) => {
+      playScanFeedback('error')
       setSerial('')
       setPendingLockup(null)
       setShowLockupOptions(false)
@@ -675,6 +705,7 @@ export function useKioskScreen() {
 
     setPendingLockup(null)
     setShowLockupOptions(false)
+    void unlockKioskSoundPlayback(kioskSoundSettingsRef.current)
     scanMutation.mutate(liveSerial)
   }
 
@@ -684,6 +715,7 @@ export function useKioskScreen() {
     const checkoutContext = pendingLockup
 
     if (action === 'execute') {
+      playScanFeedback('scan_out')
       setPendingLockup(null)
       setShowLockupOptions(false)
       setResult({
@@ -713,6 +745,7 @@ export function useKioskScreen() {
       })
 
       if (createResult.kind === 'lockup') {
+        playScanFeedback('warning')
         setShowLockupOptions(true)
         setResult({
           tone: 'warning',
@@ -728,6 +761,7 @@ export function useKioskScreen() {
         return
       }
 
+      playScanFeedback('scan_out')
       setPendingLockup(null)
       setShowLockupOptions(false)
       setResult({
@@ -744,6 +778,7 @@ export function useKioskScreen() {
       invalidateKioskQueries()
       refocusBadgeInput()
     } catch (error) {
+      playScanFeedback('error')
       setPendingLockup(null)
       setShowLockupOptions(false)
       setResult({

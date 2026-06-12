@@ -62,7 +62,7 @@ export const DailyPresenceSortDirectionEnum = v.picklist(
 )
 
 export const DailyPresenceSortFieldEnum = v.picklist(
-  ['last_name', 'first_name', 'department', 'first_in', 'last_out', 'sessions'],
+  ['last_name', 'first_name', 'rank', 'department', 'first_in', 'last_out', 'sessions'],
   'Invalid daily presence sort field'
 )
 
@@ -339,6 +339,30 @@ export const ReportFilterSummarySchema = v.object({
 
 export type ReportFilterSummary = v.InferOutput<typeof ReportFilterSummarySchema>
 
+export const ReportDivisionSummarySchema = v.object({
+  id: v.nullable(v.string()),
+  code: v.nullable(v.string()),
+  name: v.string(),
+})
+
+export type ReportDivisionSummary = v.InferOutput<typeof ReportDivisionSummarySchema>
+
+export const ReportWarningAccountSummarySchema = v.object({
+  id: v.string(),
+  displayName: v.string(),
+  division: v.nullable(ReportDivisionSummarySchema),
+  memberType: v.nullable(v.string()),
+})
+
+export type ReportWarningAccountSummary = v.InferOutput<typeof ReportWarningAccountSummarySchema>
+
+export const ReportWarningDetailSchema = v.object({
+  message: v.string(),
+  accounts: v.array(ReportWarningAccountSummarySchema),
+})
+
+export type ReportWarningDetail = v.InferOutput<typeof ReportWarningDetailSchema>
+
 const ReportEnvelopeBaseEntries = {
   reportType: OperationalReportTypeEnum,
   title: v.string(),
@@ -348,15 +372,8 @@ const ReportEnvelopeBaseEntries = {
   dateRange: ReportDateRangeSchema,
   filters: ReportFilterSummarySchema,
   warnings: v.array(v.string()),
+  warningDetails: v.optional(v.array(ReportWarningDetailSchema), []),
 }
-
-export const ReportDivisionSummarySchema = v.object({
-  id: v.nullable(v.string()),
-  code: v.nullable(v.string()),
-  name: v.string(),
-})
-
-export type ReportDivisionSummary = v.InferOutput<typeof ReportDivisionSummarySchema>
 
 export const ReportTagSummarySchema = v.object({
   id: v.string(),

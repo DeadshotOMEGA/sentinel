@@ -22,6 +22,7 @@ export type AdminRouteId =
   | 'temporary-personnel'
   | 'config'
   | 'timings'
+  | 'kiosk-sounds'
   | 'account-levels'
   | 'dashboard-sorting'
 
@@ -50,6 +51,7 @@ export type AdminIconKey =
   | 'logs'
   | 'network'
   | 'shield'
+  | 'volume'
   | 'terminal'
   | 'user-plus'
 
@@ -248,6 +250,22 @@ export const ADMIN_NAV_ROUTES = [
     aliases: ['operational timings', 'working hours', 'cutoffs', 'alert limits'],
     keywords: ['timings', 'schedule', 'cutoffs', 'working hours', 'alerts'],
     searchWeight: 79,
+    requiredRole: ADMIN_ROLE_LEVEL.ADMIN,
+    requiredCapabilities: ['admin:view', 'config:manage'],
+    navVisibility: 'sidebar',
+    featureStatus: 'available',
+  },
+  {
+    id: 'kiosk-sounds',
+    label: 'Kiosk Sounds',
+    href: '/admin/kiosk-sounds',
+    group: 'Settings',
+    tier: 1,
+    icon: 'volume',
+    description: 'Choose audio feedback for kiosk badge scan results.',
+    aliases: ['scan sounds', 'audio feedback', 'badge sounds', 'kiosk audio'],
+    keywords: ['kiosk', 'sounds', 'audio', 'scan', 'badge', 'feedback'],
+    searchWeight: 78,
     requiredRole: ADMIN_ROLE_LEVEL.ADMIN,
     requiredCapabilities: ['admin:view', 'config:manage'],
     navVisibility: 'sidebar',
@@ -540,6 +558,11 @@ export function resolveLegacyAdminPath(
   if (requestedTab === 'dashboard-sorting') {
     query.delete('tab')
     return withQuery('/admin/dashboard-sorting', query)
+  }
+
+  if (requestedTab === 'kiosk-sounds') {
+    query.delete('tab')
+    return withQuery('/admin/kiosk-sounds', query)
   }
 
   return withQuery('/admin/config', query)

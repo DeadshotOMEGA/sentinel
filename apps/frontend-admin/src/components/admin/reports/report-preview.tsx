@@ -21,7 +21,6 @@ import { sortTagsByDisplayOrder } from '@/lib/tag-priority'
 import { cn } from '@/lib/utils'
 import {
   formatBooleanPresence,
-  formatDuration,
   formatPercent,
   formatReportDateTime,
   formatReportTime,
@@ -78,18 +77,20 @@ export function ReportPreview({ report, isLoading, errorMessage }: ReportPreview
     )
   }
 
-  if (errorMessage && !report) {
-    return (
-      <section className="rounded-box border border-error/35 bg-error-fadded p-(--space-6) text-error-fadded-content shadow-[var(--shadow-1)]">
-        <div className="flex items-start gap-(--space-3)" role="alert">
-          <AlertTriangle className="mt-1 h-5 w-5 shrink-0" aria-hidden="true" />
-          <div>
-            <h2 className="font-semibold">Report could not be generated</h2>
-            <p className="mt-(--space-1) text-sm">{errorMessage}</p>
-          </div>
+  const errorBanner = errorMessage ? (
+    <section className="rounded-box border border-error/35 bg-error-fadded p-(--space-4) text-error-fadded-content shadow-[var(--shadow-1)]">
+      <div className="flex items-start gap-(--space-3)" role="alert">
+        <AlertTriangle className="mt-1 h-5 w-5 shrink-0" aria-hidden="true" />
+        <div>
+          <h2 className="font-semibold">Report could not be generated</h2>
+          <p className="mt-(--space-1) text-sm">{errorMessage}</p>
         </div>
-      </section>
-    )
+      </div>
+    </section>
+  ) : null
+
+  if (errorMessage && !report) {
+    return errorBanner
   }
 
   if (!report) {
@@ -105,18 +106,21 @@ export function ReportPreview({ report, isLoading, errorMessage }: ReportPreview
   }
 
   return (
-    <ReportDocumentFrame report={report} isRefreshing={isLoading}>
-      {report.reportType === 'daily_presence' && <DailyPresenceReport report={report} />}
-      {report.reportType === 'weekly_presence' && <WeeklyPresenceReport report={report} />}
-      {report.reportType === 'monthly_presence' && <MonthlyPresenceReport report={report} />}
-      {report.reportType === 'training_night_monthly' && (
-        <TrainingNightMonthlyReport report={report} />
-      )}
-      {report.reportType === 'visitor_activity' && <VisitorActivityReport report={report} />}
-      {report.reportType === 'operational_exceptions' && (
-        <OperationalExceptionsReport report={report} />
-      )}
-    </ReportDocumentFrame>
+    <div className="space-y-(--space-3)">
+      {errorBanner}
+      <ReportDocumentFrame report={report} isRefreshing={isLoading}>
+        {report.reportType === 'daily_presence' && <DailyPresenceReport report={report} />}
+        {report.reportType === 'weekly_presence' && <WeeklyPresenceReport report={report} />}
+        {report.reportType === 'monthly_presence' && <MonthlyPresenceReport report={report} />}
+        {report.reportType === 'training_night_monthly' && (
+          <TrainingNightMonthlyReport report={report} />
+        )}
+        {report.reportType === 'visitor_activity' && <VisitorActivityReport report={report} />}
+        {report.reportType === 'operational_exceptions' && (
+          <OperationalExceptionsReport report={report} />
+        )}
+      </ReportDocumentFrame>
+    </div>
   )
 }
 
@@ -129,6 +133,9 @@ function ReportDocumentFrame({
   isRefreshing: boolean
   children: ReactNode
 }) {
+  const warningDetails = report.warningDetails ?? []
+  const detailedWarningMessages = new Set(warningDetails.map((detail) => detail.message))
+
   const isMatrixReport =
     report.reportType === 'weekly_presence' ||
     report.reportType === 'monthly_presence' ||
@@ -169,9 +176,6 @@ function ReportDocumentFrame({
         </div>
 
         <div className="mt-(--space-4) flex flex-wrap gap-(--space-2) text-xs text-base-content/65">
-          <span className="rounded-box bg-base-200 px-(--space-2) py-(--space-1)">
-            {report.dateRange.startDate} to {report.dateRange.endDate}
-          </span>
           {report.filters.divisionId && (
             <span className="rounded-box bg-base-200 px-(--space-2) py-(--space-1)">
               Department filter
@@ -210,9 +214,21 @@ function ReportDocumentFrame({
             <div>
               <p className="font-semibold">Report warnings</p>
               <ul className="mt-(--space-1) list-disc space-y-1 pl-(--space-4)">
-                {report.warnings.map((warning) => (
-                  <li key={warning}>{warning}</li>
+                {warningDetails.map((detail) => (
+                  <li key={detail.message}>
+                    <span>{detail.message}</span>
+                    {detail.accounts.length > 0 && (
+                      <span className="mt-(--space-1) block text-xs">
+                        Accounts: {detail.accounts.map((account) => account.displayName).join(', ')}
+                      </span>
+                    )}
+                  </li>
                 ))}
+                {report.warnings
+                  .filter((warning) => !detailedWarningMessages.has(warning))
+                  .map((warning) => (
+                    <li key={warning}>{warning}</li>
+                  ))}
               </ul>
             </div>
           </div>
@@ -267,72 +283,70 @@ function DailyPresenceReport({ report }: { report: DailyPresenceReportResponse }
               <col className="reports-daily-tags-col" />
               <col className="reports-daily-time-col" />
               <col className="reports-daily-last-out-col" />
-              <col className="reports-daily-returned-col" />
-              <col className="reports-daily-session-col" />
+              <col className="reports-daily-presence-col" />
             </colgroup>
             <thead>
               <tr>
                 <th>Member</th>
                 <th>Department</th>
                 <th>Tags</th>
-                <th>First in</th>
-                <th>Last out</th>
-                <th>Returned</th>
-                <th className="text-right">Sessions</th>
+                <th>Check-In</th>
+                <th>Check-Out</th>
+                <th>Presence</th>
               </tr>
             </thead>
             <tbody>
-              {rows.map((row) => (
-                <tr key={row.member.id}>
-                  <td className="reports-member-cell">
-                    <MemberName member={row.member} />
-                  </td>
-                  <td className="reports-department-cell">
-                    {row.member.division?.code ?? row.member.division?.name ?? 'Unassigned'}
-                  </td>
-                  <td className="reports-tags-cell">
-                    <TagList tags={row.member.tags} />
-                  </td>
-                  <td className="reports-time-cell font-mono">{formatReportTime(row.firstIn)}</td>
-                  <td className="reports-time-cell font-mono">
-                    {row.lastOut ? (
-                      formatReportTime(row.lastOut)
-                    ) : (
-                      <>
-                        <span className="reports-screen-only">Still present</span>
-                        <span className="hidden reports-print-inline">Present</span>
-                      </>
-                    )}
-                  </td>
-                  <td>
-                    <span className="reports-screen-only">
-                      <AppBadge status={row.leftAndReturned ? 'warning' : 'neutral'} size="sm">
-                        {row.leftAndReturned ? `Yes — ${row.sessionCount} sessions` : 'No'}
-                      </AppBadge>
-                    </span>
-                    <span className="hidden reports-print-inline font-mono">
-                      {row.leftAndReturned ? 'Yes' : 'No'}
-                    </span>
-                  </td>
-                  <td className="reports-session-cell text-right font-mono">
-                    <details className="reports-screen-only">
-                      <summary className="cursor-pointer text-sm font-semibold text-info">
-                        {row.sessionCount}
-                      </summary>
-                      <div className="mt-(--space-2) space-y-(--space-1) text-xs text-base-content/70">
-                        {row.sessions.map((session) => (
-                          <p key={`${row.member.id}-${session.inAt}`}>
-                            {formatReportTime(session.inAt)} -{' '}
-                            {session.outAt ? formatReportTime(session.outAt) : 'Open'} ·{' '}
-                            {formatDuration(session.durationMinutes)}
-                          </p>
+              {rows.map((row) => {
+                const isPresent = row.sessions.some((session) => session.status === 'open')
+
+                return (
+                  <tr key={row.member.id}>
+                    <td className="reports-member-cell">
+                      <MemberName member={row.member} />
+                    </td>
+                    <td className="reports-department-cell">
+                      {row.member.division?.code ?? row.member.division?.name ?? 'Unassigned'}
+                    </td>
+                    <td className="reports-tags-cell">
+                      <TagList tags={row.member.tags} />
+                    </td>
+                    <td className="reports-time-cell font-mono">
+                      <div className="grid gap-(--space-1)">
+                        {row.sessions.map((session, sessionIndex) => (
+                          <span key={`${row.member.id}-in-${session.inAt}-${sessionIndex}`}>
+                            {formatReportTime(session.inAt)}
+                          </span>
                         ))}
                       </div>
-                    </details>
-                    <span className="hidden reports-print-inline">{row.sessionCount}</span>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td className="reports-time-cell font-mono">
+                      <div className="grid gap-(--space-1)">
+                        {row.sessions.map((session, sessionIndex) => (
+                          <span key={`${row.member.id}-out-${session.inAt}-${sessionIndex}`}>
+                            {session.outAt ? (
+                              formatReportTime(session.outAt)
+                            ) : session.status === 'degraded' ? (
+                              <span className="text-warning-fadded-content">Missing</span>
+                            ) : (
+                              <span className="text-base-content/45">—</span>
+                            )}
+                          </span>
+                        ))}
+                      </div>
+                    </td>
+                    <td>
+                      <span className="reports-screen-only">
+                        <AppBadge status={isPresent ? 'success' : 'neutral'} size="sm">
+                          {isPresent ? 'Present' : 'Out'}
+                        </AppBadge>
+                      </span>
+                      <span className="hidden reports-print-inline font-mono">
+                        {isPresent ? 'Present' : 'Out'}
+                      </span>
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>
@@ -776,9 +790,7 @@ function MemberName({ member }: { member: ReportMemberSummary }) {
   return (
     <div>
       <p className="font-semibold leading-tight">{member.displayName}</p>
-      <p className="text-xs text-base-content/55">
-        {member.memberType ?? 'Member'} · {member.status}
-      </p>
+      <p className="text-xs text-base-content/55">{member.memberType ?? 'Member'}</p>
     </div>
   )
 }

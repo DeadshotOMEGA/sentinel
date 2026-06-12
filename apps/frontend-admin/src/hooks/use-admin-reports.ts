@@ -52,16 +52,68 @@ export type RunAdminReportInput =
     }
 
 function getApiErrorMessage(body: unknown, fallback: string): string {
-  if (
+  const message =
     typeof body === 'object' &&
     body !== null &&
     'message' in body &&
     typeof (body as { message?: unknown }).message === 'string'
+      ? (body as { message: string }).message
+      : fallback
+
+  if (
+    typeof body === 'object' &&
+    body !== null &&
+    'issues' in body &&
+    Array.isArray((body as { issues?: unknown }).issues)
   ) {
-    return (body as { message: string }).message
+    const issueMessages = (body as { issues: unknown[] }).issues
+      .map((issue) => formatValidationIssue(issue))
+      .filter((issueMessage): issueMessage is string => Boolean(issueMessage))
+
+    if (issueMessages.length > 0) {
+      return `${message}: ${issueMessages.join('; ')}`
+    }
   }
 
-  return fallback
+  return message
+}
+
+function formatValidationIssue(issue: unknown): string | null {
+  if (typeof issue !== 'object' || issue === null) {
+    return null
+  }
+
+  const issueRecord = issue as { input?: unknown; message?: unknown; path?: unknown }
+  const message = typeof issueRecord.message === 'string' ? issueRecord.message : null
+  if (!message) {
+    return null
+  }
+
+  if (message === 'Invalid daily presence sort field' && issueRecord.input === 'rank') {
+    return 'Rank sorting requires the updated reports API. Restart or rebuild the backend with the latest report contract, or remove Rank from the sort order.'
+  }
+
+  const path = formatValidationIssuePath(issueRecord.path)
+  return path ? `${path}: ${message}` : message
+}
+
+function formatValidationIssuePath(path: unknown): string | null {
+  if (!Array.isArray(path)) {
+    return null
+  }
+
+  const keys = path
+    .map((segment) => {
+      if (typeof segment !== 'object' || segment === null || !('key' in segment)) {
+        return null
+      }
+
+      const key = (segment as { key?: unknown }).key
+      return typeof key === 'string' || typeof key === 'number' ? String(key) : null
+    })
+    .filter((key): key is string => key !== null)
+
+  return keys.length > 0 ? keys.join('.') : null
 }
 
 export function useAdminReportRunner() {

@@ -14,6 +14,7 @@ import {
   Shield,
   Terminal,
   UserPlus,
+  Volume2,
 } from 'lucide-react'
 import type { AdminIconKey } from '@/lib/admin-routes'
 
@@ -47,6 +48,8 @@ export function AdminIcon({ icon, ...props }: AdminIconProps) {
       return <Network {...props} />
     case 'shield':
       return <Shield {...props} />
+    case 'volume':
+      return <Volume2 {...props} />
     case 'terminal':
       return <Terminal {...props} />
     case 'user-plus':

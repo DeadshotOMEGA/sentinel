@@ -18,6 +18,8 @@ import type {
   ReportDutyPerson,
   ReportMemberSummary,
   ReportTagSummary,
+  ReportWarningDetail,
+  ReportWarningAccountSummary,
   TrainingNightMonthlyReportConfig,
   TrainingNightMonthlyReportResponse,
   VisitorActivityReportConfig,
@@ -48,6 +50,14 @@ import { isSentinelBootstrapMember } from '../lib/system-bootstrap.js'
 const UNIT_NAME = 'HMCS Chippawa'
 const REPORT_LOOKBACK_DAYS = 1
 const OPERATIONAL_TIMINGS_SETTING_KEY_V3 = 'operational.timings.v3'
+const REPEATED_CHECKIN_WARNING =
+  'Some members have multiple check-ins without an intervening checkout; affected sessions are marked as degraded.'
+const UNMATCHED_CHECKOUT_WARNING =
+  'Some checkout records could not be paired with a prior check-in and were ignored.'
+const EARLY_CHECKOUT_WARNING =
+  'Some checkout records were earlier than their paired check-in and were ignored.'
+const UNKNOWN_DIRECTION_WARNING =
+  'Some check-in records used an unknown direction and were ignored.'
 
 type ReportScopeType = 'everyone' | 'department' | 'tag' | 'fts' | 'geo'
 type KeyNightCategory = 'training' | 'administrative'
@@ -109,12 +119,17 @@ interface LockupCheckedOutMember {
   name: string
 }
 
+interface PairPresenceSessionsOptions {
+  warningMemberIds?: Map<string, Set<string>>
+}
+
 export interface DailyPresenceSortableMember {
   id: string
   rank: string
   firstName: string
   lastName: string
   displayName: string | null
+  rankRef?: { displayOrder: number } | null
   division: { code: string; name: string } | null
   memberTags: Array<{ tagId: string }>
   qualifications: Array<{ qualificationType: { tagId: string | null } }>
@@ -232,6 +247,19 @@ function compareDailyPresenceField(
         compareNullableString(left.memberRecord.firstName, right.memberRecord.firstName) ||
         compareNullableString(left.memberRecord.lastName, right.memberRecord.lastName)
       )
+    case 'rank': {
+      const leftRankOrder = left.memberRecord.rankRef?.displayOrder ?? null
+      const rightRankOrder = right.memberRecord.rankRef?.displayOrder ?? null
+
+      if (leftRankOrder !== null && rightRankOrder !== null && leftRankOrder !== rightRankOrder) {
+        return leftRankOrder - rightRankOrder
+      }
+
+      return (
+        compareNullableString(left.memberRecord.rank, right.memberRecord.rank) ||
+        compareNullableString(left.memberRecord.lastName, right.memberRecord.lastName)
+      )
+    }
     case 'department':
       return (
         compareNullableString(
@@ -361,7 +389,8 @@ export function isStaleForcedCheckoutSession(
 
 export function pairOperationalPresenceSessions(
   checkins: OperationalReportCheckinRecord[],
-  warnings: Set<string>
+  warnings: Set<string>,
+  options: PairPresenceSessionsOptions = {}
 ): Map<string, PresenceSessionInternal[]> {
   const grouped = new Map<string, OperationalReportCheckinRecord[]>()
   for (const checkin of checkins) {
@@ -387,9 +416,7 @@ export function pairOperationalPresenceSessions(
 
       if (direction === 'in') {
         if (openIn) {
-          warnings.add(
-            'Some members have multiple check-ins without an intervening checkout; affected sessions are marked as degraded.'
-          )
+          addPresenceWarning(warnings, REPEATED_CHECKIN_WARNING, options, memberId)
           sessions.push({
             memberId,
             inAt: openIn.timestamp,
@@ -403,16 +430,12 @@ export function pairOperationalPresenceSessions(
 
       if (direction === 'out') {
         if (!openIn) {
-          warnings.add(
-            'Some checkout records could not be paired with a prior check-in and were ignored.'
-          )
+          addPresenceWarning(warnings, UNMATCHED_CHECKOUT_WARNING, options, memberId)
           continue
         }
 
         if (record.timestamp < openIn.timestamp) {
-          warnings.add(
-            'Some checkout records were earlier than their paired check-in and were ignored.'
-          )
+          addPresenceWarning(warnings, EARLY_CHECKOUT_WARNING, options, memberId)
           openIn = null
           continue
         }
@@ -428,7 +451,7 @@ export function pairOperationalPresenceSessions(
         continue
       }
 
-      warnings.add('Some check-in records used an unknown direction and were ignored.')
+      addPresenceWarning(warnings, UNKNOWN_DIRECTION_WARNING, options, memberId)
     }
 
     if (openIn) {
@@ -446,6 +469,23 @@ export function pairOperationalPresenceSessions(
   return sessionsByMember
 }
 
+function addPresenceWarning(
+  warnings: Set<string>,
+  warning: string,
+  options: PairPresenceSessionsOptions,
+  memberId?: string | null
+) {
+  warnings.add(warning)
+
+  if (!memberId || !options.warningMemberIds) {
+    return
+  }
+
+  const memberIds = options.warningMemberIds.get(warning) ?? new Set<string>()
+  memberIds.add(memberId)
+  options.warningMemberIds.set(warning, memberIds)
+}
+
 export class OperationalReportService {
   private repository: OperationalReportRepository
 
@@ -459,6 +499,7 @@ export class OperationalReportService {
   ): Promise<DailyPresenceReportResponse> {
     const range = this.getDayRange(config.date)
     const warnings = new Set<string>()
+    const warningMemberIds = new Map<string, Set<string>>()
     const scope = await this.resolveScope(config, warnings)
     const members = scope.noResults
       ? []
@@ -466,7 +507,12 @@ export class OperationalReportService {
           divisionId: scope.divisionId,
           tagId: scope.tagId,
         })
-    const sessionsByMember = await this.getSessionsByMember(members, range, warnings)
+    const sessionsByMember = await this.getSessionsByMember(
+      members,
+      range,
+      warnings,
+      warningMemberIds
+    )
     const scheduledDutyRolesByMember = await this.getScheduledDutyRolesByMember(members, range)
 
     const sortableRows = members
@@ -506,6 +552,7 @@ export class OperationalReportService {
         tagId: scope.tagId,
       }),
       warnings: Array.from(warnings),
+      warningDetails: this.getWarningDetails(warnings, warningMemberIds, members),
       data: {
         summary: {
           totalScopedMembers: members.length,
@@ -947,6 +994,7 @@ export class OperationalReportService {
         label: range.label,
       },
       filters,
+      warningDetails: [],
     }
   }
 
@@ -1047,21 +1095,27 @@ export class OperationalReportService {
   private async getSessionsByMember(
     members: OperationalReportMemberRecord[],
     range: DateRange,
-    warnings: Set<string>
+    warnings: Set<string>,
+    warningMemberIds?: Map<string, Set<string>>
   ): Promise<Map<string, PresenceSessionInternal[]>> {
     const memberIds = members.map((member) => member.id)
     const queryStart = DateTime.fromJSDate(range.start, { zone: DEFAULT_TIMEZONE })
       .minus({ days: REPORT_LOOKBACK_DAYS })
       .toJSDate()
     const checkins = await this.repository.findCheckinsForMembers(memberIds, queryStart, range.end)
-    return this.pairSessions(checkins, warnings)
+    return this.pairSessions(checkins, warnings, warningMemberIds)
   }
 
   private pairSessions(
     checkins: OperationalReportCheckinRecord[],
-    warnings: Set<string>
+    warnings: Set<string>,
+    warningMemberIds?: Map<string, Set<string>>
   ): Map<string, PresenceSessionInternal[]> {
-    return pairOperationalPresenceSessions(checkins, warnings)
+    return pairOperationalPresenceSessions(
+      checkins,
+      warnings,
+      warningMemberIds ? { warningMemberIds } : {}
+    )
   }
 
   private getPresenceMarker(
@@ -1473,6 +1527,53 @@ export class OperationalReportService {
       member.memberTags.some((memberTag) => memberTag.tagId === tagId) ||
       member.qualifications.some((qualification) => qualification.qualificationType.tagId === tagId)
     )
+  }
+
+  private getWarningDetails(
+    warnings: ReadonlySet<string>,
+    warningMemberIds: ReadonlyMap<string, ReadonlySet<string>>,
+    members: OperationalReportMemberRecord[]
+  ): ReportWarningDetail[] {
+    const memberById = new Map(members.map((member) => [member.id, member]))
+
+    return Array.from(warnings)
+      .map((warning) => {
+        const accounts = Array.from(warningMemberIds.get(warning) ?? [])
+          .map((memberId) => memberById.get(memberId))
+          .filter((member): member is OperationalReportMemberRecord => member !== undefined)
+          .map((member) => this.toWarningAccountSummary(member))
+          .sort((left, right) =>
+            left.displayName.localeCompare(right.displayName, undefined, {
+              sensitivity: 'base',
+              numeric: true,
+            })
+          )
+
+        return {
+          message: warning,
+          accounts,
+        }
+      })
+      .filter((detail) => detail.accounts.length > 0)
+  }
+
+  private toWarningAccountSummary(
+    member: OperationalReportMemberRecord
+  ): ReportWarningAccountSummary {
+    return {
+      id: member.id,
+      displayName:
+        member.displayName ??
+        [member.rank, member.firstName, member.lastName].filter(Boolean).join(' '),
+      division: member.division
+        ? {
+            id: member.division.id,
+            code: member.division.code,
+            name: member.division.name,
+          }
+        : null,
+      memberType: member.memberTypeRef?.name ?? member.memberType,
+    }
   }
 
   private toMemberSummary(
