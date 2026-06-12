@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useSyncExternalStore } from 'react'
 import type { ReactNode } from 'react'
 import {
   Users,
@@ -36,6 +36,24 @@ const DUTY_WATCH_POSITION_ORDER = ['SWK', 'DSWK', 'QM', 'BM', 'APS'] as const
 const DUTY_WATCH_POSITION_ORDER_INDEX = new Map<string, number>(
   DUTY_WATCH_POSITION_ORDER.map((code, index) => [code, index])
 )
+
+function subscribeToAuthHydration(onStoreChange: () => void): () => void {
+  const unsubscribe = useAuthStore.persist.onFinishHydration(onStoreChange)
+
+  if (useAuthStore.persist.hasHydrated()) {
+    globalThis.queueMicrotask(onStoreChange)
+  }
+
+  return unsubscribe
+}
+
+function getAuthHydrationSnapshot(): boolean {
+  return useAuthStore.persist.hasHydrated()
+}
+
+function getServerAuthHydrationSnapshot(): boolean {
+  return false
+}
 
 function getDutyWatchPositionSortIndex(assignment: DutyWatchTeamResponse['team'][number]): number {
   const code = assignment.position?.code
@@ -699,6 +717,11 @@ function StatusActionsStat({
 
 export function StatusStats() {
   const member = useAuthStore((state) => state.member)
+  const hasHydrated = useSyncExternalStore(
+    subscribeToAuthHydration,
+    getAuthHydrationSnapshot,
+    getServerAuthHydrationSnapshot
+  )
   const [isTransferScanModalOpen, setIsTransferScanModalOpen] = useState(false)
   const [isSetTodayDdsOpen, setIsSetTodayDdsOpen] = useState(false)
   const [isOpenBuildingOpen, setIsOpenBuildingOpen] = useState(false)
@@ -708,7 +731,7 @@ export function StatusStats() {
   const currentHolder = lockupStatus?.currentHolder
   const buildingStatus = lockupStatus?.buildingStatus
   const { data: checkoutOptions } = useCheckoutOptions(currentHolder?.id ?? '')
-  const isAdmin = (member?.accountLevel ?? 0) >= AccountLevel.ADMIN
+  const isAdmin = hasHydrated && (member?.accountLevel ?? 0) >= AccountLevel.ADMIN
   const isSecured = buildingStatus === 'secured'
   const isOpenWithHolder = buildingStatus === 'open' && !!currentHolder
   const isOpenNoHolder = buildingStatus === 'open' && !currentHolder
