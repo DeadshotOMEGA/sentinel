@@ -62,6 +62,11 @@ function toDailyPresenceSortCriteria(rules: DailyPresenceSortRule[]): DailyPrese
       continue
     }
 
+    if (rule.type === 'tag_priority') {
+      criteria.push({ type: 'tag_priority', direction: rule.direction })
+      continue
+    }
+
     criteria.push({ type: 'field', field: rule.field, direction: rule.direction })
   }
 
@@ -618,6 +623,21 @@ function DailyPresenceSortBuilder({
     )
   }
 
+  function updateTagPriorityRule(
+    ruleId: string,
+    next: Partial<Omit<Extract<DailyPresenceSortRule, { type: 'tag_priority' }>, 'id' | 'type'>>
+  ) {
+    onChange(
+      rules.map((rule) => {
+        if (rule.id !== ruleId || rule.type !== 'tag_priority') {
+          return rule
+        }
+
+        return { ...rule, ...next }
+      })
+    )
+  }
+
   function moveRule(ruleId: string, direction: -1 | 1) {
     const currentIndex = rules.findIndex((rule) => rule.id === ruleId)
     const nextIndex = currentIndex + direction
@@ -660,6 +680,22 @@ function DailyPresenceSortBuilder({
     onChange([...rules.slice(0, firstFieldIndex), nextRule, ...rules.slice(firstFieldIndex)])
   }
 
+  function addTagPriorityRule() {
+    const nextRule: DailyPresenceSortRule = {
+      id: createDailyPresenceSortRuleId(),
+      type: 'tag_priority',
+      direction: 'asc',
+    }
+    const firstFieldIndex = rules.findIndex((rule) => rule.type === 'field')
+
+    if (firstFieldIndex === -1) {
+      onChange([...rules, nextRule])
+      return
+    }
+
+    onChange([...rules.slice(0, firstFieldIndex), nextRule, ...rules.slice(firstFieldIndex)])
+  }
+
   function addFieldRule() {
     onChange([
       ...rules,
@@ -688,6 +724,10 @@ function DailyPresenceSortBuilder({
             onClick={addTagRule}
             disabled={tags.length === 0}
           >
+            <Plus className="h-4 w-4" aria-hidden="true" />
+            Specific tag
+          </button>
+          <button type="button" className="btn btn-outline btn-sm" onClick={addTagPriorityRule}>
             <Plus className="h-4 w-4" aria-hidden="true" />
             Tag priority
           </button>
@@ -728,6 +768,15 @@ function DailyPresenceSortBuilder({
                     return
                   }
 
+                  if (event.target.value === 'tag_priority') {
+                    replaceRule(rule.id, {
+                      id: rule.id,
+                      type: 'tag_priority',
+                      direction: 'asc',
+                    })
+                    return
+                  }
+
                   replaceRule(rule.id, {
                     id: rule.id,
                     type: 'field',
@@ -736,7 +785,8 @@ function DailyPresenceSortBuilder({
                   })
                 }}
               >
-                <option value="tag">Tag</option>
+                <option value="tag">Specific tag</option>
+                <option value="tag_priority">Tag priority</option>
                 <option value="field">Field</option>
               </select>
 
@@ -752,6 +802,10 @@ function DailyPresenceSortBuilder({
                     </option>
                   ))}
                 </select>
+              ) : rule.type === 'tag_priority' ? (
+                <div className="rounded-box border border-base-300 bg-base-200 px-(--space-3) py-(--space-2) text-sm font-medium text-base-content/70">
+                  Configured tag order
+                </div>
               ) : (
                 <select
                   className="select select-bordered select-sm w-full"
@@ -781,13 +835,21 @@ function DailyPresenceSortBuilder({
                     ? updateTagRule(rule.id, {
                         direction: event.target.value as DailyPresenceSortCriterion['direction'],
                       })
-                    : updateFieldRule(rule.id, {
-                        direction: event.target.value as DailyPresenceSortCriterion['direction'],
-                      })
+                    : rule.type === 'tag_priority'
+                      ? updateTagPriorityRule(rule.id, {
+                          direction: event.target.value as DailyPresenceSortCriterion['direction'],
+                        })
+                      : updateFieldRule(rule.id, {
+                          direction: event.target.value as DailyPresenceSortCriterion['direction'],
+                        })
                 }
               >
-                <option value="asc">{rule.type === 'tag' ? 'First' : 'A to Z'}</option>
-                <option value="desc">{rule.type === 'tag' ? 'Last' : 'Z to A'}</option>
+                <option value="asc">
+                  {rule.type === 'tag' || rule.type === 'tag_priority' ? 'First' : 'A to Z'}
+                </option>
+                <option value="desc">
+                  {rule.type === 'tag' || rule.type === 'tag_priority' ? 'Last' : 'Z to A'}
+                </option>
               </select>
 
               <div className="flex items-center justify-end gap-(--space-1)">

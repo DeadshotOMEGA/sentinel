@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { ReportTagSummary } from '@sentinel/contracts'
 import {
+  compareReportTagsByPriority,
   dailyPresenceSortableMemberHasTag,
   isStaleForcedCheckoutSession,
   filterReportMemberTagsForScheduledDuty,
@@ -41,11 +42,13 @@ function sortableDailyPresenceRow(input: {
   lastName: string
   tags?: string[]
   qualificationTags?: string[]
+  reportTags?: ReportTagSummary[]
   department?: string
   sessionCount?: number
 }): DailyPresenceSortableRow {
   const tags = input.tags ?? []
   const qualificationTags = input.qualificationTags ?? []
+  const reportTags = input.reportTags ?? []
 
   return {
     memberRecord: {
@@ -70,7 +73,7 @@ function sortableDailyPresenceRow(input: {
           ? { id: input.department, code: input.department, name: input.department }
           : null,
         memberType: 'Class A',
-        tags: [],
+        tags: reportTags,
       },
       firstIn: '2026-06-11T13:00:00.000Z',
       lastOut: null,
@@ -233,6 +236,33 @@ describe('presenceSessionOverlapsRange', () => {
 describe('sortDailyPresenceRows', () => {
   const cmdTagId = '11111111-1111-4111-8111-111111111111'
   const ftsTagId = '22222222-2222-4222-8222-222222222222'
+  const cmdReportTag = {
+    id: cmdTagId,
+    name: 'CMD',
+    displayOrder: 10,
+    chipVariant: 'solid',
+    chipColor: 'blue',
+    isPositional: false,
+    source: 'direct',
+  } satisfies ReportTagSummary
+  const ftsReportTag = {
+    id: ftsTagId,
+    name: 'FTS',
+    displayOrder: 20,
+    chipVariant: 'solid',
+    chipColor: 'green',
+    isPositional: false,
+    source: 'direct',
+  } satisfies ReportTagSummary
+  const adminReportTag = {
+    id: '33333333-3333-4333-8333-333333333333',
+    name: 'Admin',
+    displayOrder: 40,
+    chipVariant: 'solid',
+    chipColor: 'purple',
+    isPositional: false,
+    source: 'direct',
+  } satisfies ReportTagSummary
 
   it('sorts by selected tag priorities before last name', () => {
     const sorted = sortDailyPresenceRows(
@@ -292,12 +322,61 @@ describe('sortDailyPresenceRows', () => {
 
     expect(dailyPresenceSortableMemberHasTag(member, ftsTagId)).toBe(true)
   })
+
+  it('sorts by configured tag priority before last name', () => {
+    const sorted = sortDailyPresenceRows(
+      [
+        sortableDailyPresenceRow({
+          id: 'untagged-able',
+          firstName: 'Ann',
+          lastName: 'Able',
+        }),
+        sortableDailyPresenceRow({
+          id: 'fts-zulu',
+          firstName: 'Zed',
+          lastName: 'Zulu',
+          reportTags: [ftsReportTag],
+        }),
+        sortableDailyPresenceRow({
+          id: 'cmd-baker',
+          firstName: 'Bill',
+          lastName: 'Baker',
+          reportTags: [cmdReportTag],
+        }),
+        sortableDailyPresenceRow({
+          id: 'cmd-alpha',
+          firstName: 'Amy',
+          lastName: 'Alpha',
+          reportTags: [cmdReportTag],
+        }),
+        sortableDailyPresenceRow({
+          id: 'admin-carter',
+          firstName: 'Cara',
+          lastName: 'Carter',
+          reportTags: [adminReportTag],
+        }),
+      ],
+      [
+        { type: 'tag_priority', direction: 'asc' },
+        { type: 'field', field: 'last_name', direction: 'asc' },
+      ]
+    )
+
+    expect(sorted.map((row) => row.memberRecord.id)).toEqual([
+      'cmd-alpha',
+      'cmd-baker',
+      'fts-zulu',
+      'admin-carter',
+      'untagged-able',
+    ])
+  })
 })
 
 describe('filterReportMemberTagsForScheduledDuty', () => {
   const baseTag = {
     id: 'tag-other',
     name: 'FTS',
+    displayOrder: 20,
     chipVariant: 'solid',
     chipColor: 'blue',
     isPositional: false,
@@ -306,6 +385,7 @@ describe('filterReportMemberTagsForScheduledDuty', () => {
   const ddsTag = {
     id: 'tag-dds',
     name: 'DDS',
+    displayOrder: 10,
     chipVariant: 'solid',
     chipColor: 'green',
     isPositional: true,
@@ -314,6 +394,7 @@ describe('filterReportMemberTagsForScheduledDuty', () => {
   const dutyWatchTag = {
     id: 'tag-duty-watch',
     name: 'Duty Watch',
+    displayOrder: 30,
     chipVariant: 'solid',
     chipColor: 'purple',
     isPositional: true,
@@ -322,6 +403,7 @@ describe('filterReportMemberTagsForScheduledDuty', () => {
   const qmTag = {
     id: 'tag-qm',
     name: 'QM',
+    displayOrder: 40,
     chipVariant: 'solid',
     chipColor: 'purple',
     isPositional: false,
@@ -371,6 +453,61 @@ describe('filterReportMemberTagsForScheduledDuty', () => {
 
     expect(filterReportMemberTagsForScheduledDuty([qualificationTag], new Set())).toEqual([
       qualificationTag,
+    ])
+  })
+})
+
+describe('compareReportTagsByPriority', () => {
+  it('orders report tags by configured display order before name', () => {
+    const lowPriorityAlphabeticFirst = {
+      id: 'tag-admin',
+      name: 'Admin',
+      displayOrder: 30,
+      chipVariant: 'solid',
+      chipColor: 'blue',
+      isPositional: false,
+      source: 'direct',
+    } satisfies ReportTagSummary
+    const highPriorityAlphabeticLast = {
+      id: 'tag-fts',
+      name: 'FTS',
+      displayOrder: 10,
+      chipVariant: 'solid',
+      chipColor: 'green',
+      isPositional: false,
+      source: 'direct',
+    } satisfies ReportTagSummary
+
+    expect(
+      [lowPriorityAlphabeticFirst, highPriorityAlphabeticLast]
+        .sort(compareReportTagsByPriority)
+        .map((tag) => tag.name)
+    ).toEqual(['FTS', 'Admin'])
+  })
+
+  it('falls back to tag name when display order matches', () => {
+    const bravoTag = {
+      id: 'tag-bravo',
+      name: 'Bravo',
+      displayOrder: 10,
+      chipVariant: 'solid',
+      chipColor: 'blue',
+      isPositional: false,
+      source: 'direct',
+    } satisfies ReportTagSummary
+    const alphaTag = {
+      id: 'tag-alpha',
+      name: 'Alpha',
+      displayOrder: 10,
+      chipVariant: 'solid',
+      chipColor: 'green',
+      isPositional: false,
+      source: 'direct',
+    } satisfies ReportTagSummary
+
+    expect([bravoTag, alphaTag].sort(compareReportTagsByPriority).map((tag) => tag.name)).toEqual([
+      'Alpha',
+      'Bravo',
     ])
   })
 })

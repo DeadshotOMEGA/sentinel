@@ -3,6 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '@/lib/api-client'
 import { invalidateDashboardQueries } from '@/lib/dashboard-query-invalidation'
+import { compareTagsByDisplayOrder, sortTagsByDisplayOrder } from '@/lib/tag-priority'
 import type { AssignTagInput } from '@sentinel/contracts'
 
 // ============================================================================
@@ -17,7 +18,7 @@ export function useTags() {
       if (response.status !== 200) {
         throw new Error('Failed to fetch tags')
       }
-      return response.body.tags
+      return sortTagsByDisplayOrder(response.body.tags)
     },
     staleTime: 10 * 60 * 1000, // 10 minutes - tags rarely change
   })
@@ -37,7 +38,9 @@ export function useMemberTags(memberId: string) {
       if (response.status !== 200) {
         throw new Error('Failed to fetch member tags')
       }
-      return response.body.data
+      return [...response.body.data].sort((left, right) =>
+        compareTagsByDisplayOrder(left.tag, right.tag)
+      )
     },
     enabled: !!memberId,
   })

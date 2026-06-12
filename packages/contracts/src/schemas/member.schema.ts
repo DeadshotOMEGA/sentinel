@@ -116,6 +116,7 @@ export const MemberQualificationSummarySchema = v.object({
 export const MemberTagSummarySchema = v.object({
   id: v.string(),
   name: v.string(),
+  displayOrder: v.optional(v.number()),
   chipVariant: v.string(),
   chipColor: v.string(),
 })

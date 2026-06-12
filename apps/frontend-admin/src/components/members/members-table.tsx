@@ -15,6 +15,7 @@ import {
 import { useMembers, useDeleteMember } from '@/hooks/use-members'
 import { useDivisions } from '@/hooks/use-divisions'
 import { useEnums } from '@/hooks/use-enums'
+import { sortTagsByDisplayOrder } from '@/lib/tag-priority'
 import { MemberFormModal } from './member-form-modal'
 import { DeleteMemberDialog } from './delete-member-dialog'
 import { BulkEditMemberModal } from './bulk-edit-member-modal'
@@ -352,7 +353,7 @@ export function MembersTable({
           const qualTagIds = new Set(quals.map((q) => q.tagId).filter(Boolean))
 
           // Filter out tags that are already represented by a qualification
-          const additionalTags = tags.filter((t) => !qualTagIds.has(t.id))
+          const additionalTags = sortTagsByDisplayOrder(tags.filter((t) => !qualTagIds.has(t.id)))
 
           if (quals.length === 0 && additionalTags.length === 0) {
             return <span className="text-base-content/60">—</span>

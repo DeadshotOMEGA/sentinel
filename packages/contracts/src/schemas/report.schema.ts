@@ -173,6 +173,11 @@ export const DailyPresenceTagSortCriterionSchema = v.object({
   direction: v.optional(DailyPresenceSortDirectionEnum, 'asc'),
 })
 
+export const DailyPresenceTagPrioritySortCriterionSchema = v.object({
+  type: v.literal('tag_priority'),
+  direction: v.optional(DailyPresenceSortDirectionEnum, 'asc'),
+})
+
 export const DailyPresenceFieldSortCriterionSchema = v.object({
   type: v.literal('field'),
   field: DailyPresenceSortFieldEnum,
@@ -181,6 +186,7 @@ export const DailyPresenceFieldSortCriterionSchema = v.object({
 
 export const DailyPresenceSortCriterionSchema = v.variant('type', [
   DailyPresenceTagSortCriterionSchema,
+  DailyPresenceTagPrioritySortCriterionSchema,
   DailyPresenceFieldSortCriterionSchema,
 ])
 
@@ -355,6 +361,7 @@ export type ReportDivisionSummary = v.InferOutput<typeof ReportDivisionSummarySc
 export const ReportTagSummarySchema = v.object({
   id: v.string(),
   name: v.string(),
+  displayOrder: v.number(),
   chipVariant: v.nullable(v.string()),
   chipColor: v.nullable(v.string()),
   isPositional: v.boolean(),

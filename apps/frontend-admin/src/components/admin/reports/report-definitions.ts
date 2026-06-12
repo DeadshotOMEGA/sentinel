@@ -31,11 +31,21 @@ export type DailyPresenceTagSortRule = Extract<DailyPresenceSortCriterion, { typ
   id: string
 }
 
+export type DailyPresenceTagPrioritySortRule = Extract<
+  DailyPresenceSortCriterion,
+  { type: 'tag_priority' }
+> & {
+  id: string
+}
+
 export type DailyPresenceFieldSortRule = Extract<DailyPresenceSortCriterion, { type: 'field' }> & {
   id: string
 }
 
-export type DailyPresenceSortRule = DailyPresenceTagSortRule | DailyPresenceFieldSortRule
+export type DailyPresenceSortRule =
+  | DailyPresenceTagSortRule
+  | DailyPresenceTagPrioritySortRule
+  | DailyPresenceFieldSortRule
 
 export interface ReportFilters {
   reportType: AdminReportType

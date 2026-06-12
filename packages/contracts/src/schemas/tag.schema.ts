@@ -11,6 +11,7 @@ export const MemberTagResponseSchema = v.object({
     id: v.string(),
     name: v.string(),
     description: v.nullable(v.string()),
+    displayOrder: v.optional(v.number()),
     chipVariant: v.string(),
     chipColor: v.string(),
   }),

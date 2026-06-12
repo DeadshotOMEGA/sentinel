@@ -17,6 +17,7 @@ import { Chip, type ChipColor, type ChipVariant } from '@/components/ui/chip'
 import { EmptyState } from '@/components/ui/empty-state'
 import { TableSkeleton } from '@/components/ui/loading-skeleton'
 import type { AdminReportResponse } from '@/hooks/use-admin-reports'
+import { sortTagsByDisplayOrder } from '@/lib/tag-priority'
 import { cn } from '@/lib/utils'
 import {
   formatBooleanPresence,
@@ -787,12 +788,13 @@ function TagList({ tags }: { tags: ReportTagSummary[] }) {
     return <span className="text-xs text-base-content/45">No tags</span>
   }
 
-  const printLabel = tags.map((tag) => tag.name).join(', ')
+  const sortedTags = sortTagsByDisplayOrder(tags)
+  const printLabel = sortedTags.map((tag) => tag.name).join(', ')
 
   return (
     <>
       <div className="reports-screen-tag-list flex max-w-72 flex-wrap gap-(--space-1)">
-        {tags.slice(0, 4).map((tag) => (
+        {sortedTags.slice(0, 4).map((tag) => (
           <Chip
             key={`${tag.id}-${tag.source}`}
             size="sm"
@@ -802,8 +804,8 @@ function TagList({ tags }: { tags: ReportTagSummary[] }) {
             {tag.name}
           </Chip>
         ))}
-        {tags.length > 4 && (
-          <span className="text-xs text-base-content/55">+{tags.length - 4}</span>
+        {sortedTags.length > 4 && (
+          <span className="text-xs text-base-content/55">+{sortedTags.length - 4}</span>
         )}
       </div>
       <span className="reports-print-tag-text hidden">{printLabel}</span>
