@@ -62,8 +62,25 @@ export const DailyPresenceSortDirectionEnum = v.picklist(
 )
 
 export const DailyPresenceSortFieldEnum = v.picklist(
-  ['last_name', 'first_name', 'rank', 'department', 'first_in', 'last_out', 'sessions'],
-  'Invalid daily presence sort field'
+  [
+    'last_name',
+    'first_name',
+    'rank',
+    'department',
+    'first_in',
+    'last_out',
+    'sessions',
+    'total_days_present',
+    'total_sessions',
+    'training_night_present',
+    'admin_night_present',
+    'training_nights_present',
+    'admin_nights_present',
+    'attended',
+    'possible',
+    'percentage',
+  ],
+  'Invalid attendance report sort field'
 )
 
 const LocalDateSchema = v.pipe(
@@ -77,6 +94,7 @@ const LocalMonthSchema = v.pipe(
 )
 
 const UuidSchema = v.pipe(v.string(), v.uuid('Invalid ID format'))
+const UuidArraySchema = v.array(UuidSchema)
 
 // ============================================================================
 // Request Schemas
@@ -161,8 +179,11 @@ export type VisitorSummaryConfig = v.InferOutput<typeof VisitorSummaryConfigSche
  */
 export const PresenceReportConfigSchema = v.object({
   scopeType: v.optional(OperationalReportScopeEnum, 'everyone'),
+  scopeTypes: v.optional(v.array(OperationalReportScopeEnum)),
   divisionId: v.optional(UuidSchema),
+  divisionIds: v.optional(UuidArraySchema),
   tagId: v.optional(UuidSchema),
+  tagIds: v.optional(UuidArraySchema),
 })
 
 export type PresenceReportConfig = v.InferOutput<typeof PresenceReportConfigSchema>
@@ -194,7 +215,7 @@ export type DailyPresenceSortCriterion = v.InferOutput<typeof DailyPresenceSortC
 
 export const DailyPresenceSortSchema = v.pipe(
   v.array(DailyPresenceSortCriterionSchema),
-  v.maxLength(8, 'Daily presence reports support up to 8 sort rules')
+  v.maxLength(8, 'Attendance reports support up to 8 sort rules')
 )
 
 export const DailyPresenceReportConfigSchema = v.object({
@@ -210,8 +231,12 @@ export type DailyPresenceReportConfig = v.InferOutput<typeof DailyPresenceReport
 export const WeeklyPresenceReportConfigSchema = v.object({
   weekStartDate: LocalDateSchema,
   scopeType: v.optional(OperationalReportScopeEnum, 'everyone'),
+  scopeTypes: v.optional(v.array(OperationalReportScopeEnum)),
   divisionId: v.optional(UuidSchema),
+  divisionIds: v.optional(UuidArraySchema),
   tagId: v.optional(UuidSchema),
+  tagIds: v.optional(UuidArraySchema),
+  sort: v.optional(DailyPresenceSortSchema),
 })
 
 export type WeeklyPresenceReportConfig = v.InferOutput<typeof WeeklyPresenceReportConfigSchema>
@@ -219,15 +244,21 @@ export type WeeklyPresenceReportConfig = v.InferOutput<typeof WeeklyPresenceRepo
 export const MonthlyPresenceReportConfigSchema = v.object({
   month: LocalMonthSchema,
   scopeType: v.optional(OperationalReportScopeEnum, 'everyone'),
+  scopeTypes: v.optional(v.array(OperationalReportScopeEnum)),
   divisionId: v.optional(UuidSchema),
+  divisionIds: v.optional(UuidArraySchema),
   tagId: v.optional(UuidSchema),
+  tagIds: v.optional(UuidArraySchema),
+  sort: v.optional(DailyPresenceSortSchema),
 })
 
 export type MonthlyPresenceReportConfig = v.InferOutput<typeof MonthlyPresenceReportConfigSchema>
 
 export const TrainingNightMonthlyReportConfigSchema = v.object({
   month: LocalMonthSchema,
-  divisionId: UuidSchema,
+  divisionId: v.optional(UuidSchema),
+  divisionIds: v.optional(UuidArraySchema),
+  sort: v.optional(DailyPresenceSortSchema),
 })
 
 export type TrainingNightMonthlyReportConfig = v.InferOutput<
@@ -331,7 +362,9 @@ export type ReportDateRange = v.InferOutput<typeof ReportDateRangeSchema>
 export const ReportFilterSummarySchema = v.object({
   scopeLabel: v.string(),
   divisionId: v.optional(v.string()),
+  divisionIds: v.optional(v.array(v.string())),
   tagId: v.optional(v.string()),
+  tagIds: v.optional(v.array(v.string())),
   visitorType: v.optional(v.string()),
   visitorPurpose: v.optional(v.string()),
   eventCategory: v.optional(v.string()),

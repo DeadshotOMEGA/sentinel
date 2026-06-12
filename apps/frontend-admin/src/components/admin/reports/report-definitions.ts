@@ -60,8 +60,11 @@ export interface ReportFilters {
   startDate: string
   endDate: string
   scopeType: ReportScopeType
+  scopeTypes: ReportScopeType[]
   divisionId: string
+  divisionIds: string[]
   tagId: string
+  tagIds: string[]
   visitType: string
   visitorPurpose: string
   eventLinked: 'all' | 'linked' | 'unlinked'
@@ -120,12 +123,15 @@ export function getBaseReportFilters(reportType: AdminReportType): ReportFilters
     endDate: toDateInput(monthEnd < now ? monthEnd : now),
     scopeType: 'everyone',
     divisionId: '',
+    divisionIds: [],
     tagId: '',
+    tagIds: [],
     visitType: '',
     visitorPurpose: '',
     eventLinked: 'all',
     hostMemberId: '',
     organization: '',
+    scopeTypes: ['everyone'],
     dailyPresenceSort: [
       {
         id: 'daily-sort-secondary-last-name',
@@ -155,7 +161,7 @@ export const REPORT_DEFINITIONS = [
     description: 'Presence across a Monday-Sunday week with key night attendance markers.',
     defaultFilters: () => getBaseReportFilters('weekly_presence'),
     requiredFilters: ['weekStartDate'],
-    visibleFilters: ['weekStartDate', 'scopeType', 'divisionId', 'tagId'],
+    visibleFilters: ['weekStartDate', 'scopeType', 'divisionId', 'tagId', 'dailyPresenceSort'],
     runMutation: 'generateWeeklyPresence',
     previewComponent: 'WeeklyPresenceReport',
   },
@@ -165,7 +171,7 @@ export const REPORT_DEFINITIONS = [
     description: 'Monthly attendance overview by member, department, or tag-backed group.',
     defaultFilters: () => getBaseReportFilters('monthly_presence'),
     requiredFilters: ['month'],
-    visibleFilters: ['month', 'scopeType', 'divisionId', 'tagId'],
+    visibleFilters: ['month', 'scopeType', 'divisionId', 'tagId', 'dailyPresenceSort'],
     runMutation: 'generateMonthlyPresence',
     previewComponent: 'MonthlyPresenceReport',
   },
@@ -176,9 +182,10 @@ export const REPORT_DEFINITIONS = [
     defaultFilters: () => ({
       ...getBaseReportFilters('training_night_monthly'),
       scopeType: 'department',
+      scopeTypes: ['department'],
     }),
-    requiredFilters: ['month', 'divisionId'],
-    visibleFilters: ['month', 'divisionId'],
+    requiredFilters: ['month'],
+    visibleFilters: ['month', 'divisionId', 'dailyPresenceSort'],
     runMutation: 'generateTrainingNightMonthly',
     previewComponent: 'TrainingNightMonthlyReport',
   },
