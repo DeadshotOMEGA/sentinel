@@ -12,10 +12,13 @@ query {
     tree {
       locale
       items {
+        id
         kind
         label
         target
         icon
+        visibilityMode
+        visibilityGroups
       }
     }
   }
@@ -156,6 +159,10 @@ function validateNavigationSource(source) {
       const label = String(item.label ?? '').trim()
       const target = normalizeTarget(String(item.target ?? ''))
       const icon = String(item.icon ?? '').trim()
+      const visibilityMode = String(item.visibilityMode ?? 'all').trim()
+      const visibilityGroups = Array.isArray(item.visibilityGroups)
+        ? item.visibilityGroups.map((groupId) => Number(groupId))
+        : []
 
       if (!id) throw new Error(`Navigation item ${index + 1} is missing id`)
       if (ids.has(id)) throw new Error(`Duplicate navigation item id: ${id}`)
@@ -172,8 +179,17 @@ function validateNavigationSource(source) {
       ) {
         throw new Error(`Navigation item "${id}" target must start with /, http://, or https://`)
       }
+      if (!['all', 'groups'].includes(visibilityMode)) {
+        throw new Error(`Navigation item "${id}" uses unsupported visibilityMode "${visibilityMode}"`)
+      }
+      if (visibilityGroups.some((groupId) => !Number.isInteger(groupId) || groupId <= 0)) {
+        throw new Error(`Navigation item "${id}" visibilityGroups must contain positive integers`)
+      }
+      if (visibilityMode === 'groups' && visibilityGroups.length === 0) {
+        throw new Error(`Navigation item "${id}" visibilityMode groups requires visibilityGroups`)
+      }
 
-      return { id, kind, label, target, icon }
+      return { id, kind, label, target, icon, visibilityMode, visibilityGroups }
     }),
   }
 }
@@ -190,7 +206,12 @@ async function loadNavigationSource(sourcePath) {
 function summarizeTree(tree) {
   return tree
     .map((localeTree) => {
-      const labels = localeTree.items.map((item) => `${item.label} -> ${item.target}`).join('; ')
+      const labels = localeTree.items
+        .map((item) => {
+          const visibility = item.visibilityMode ? ` [${item.visibilityMode}]` : ' [hidden]'
+          return `${item.label} -> ${item.target}${visibility}`
+        })
+        .join('; ')
       return `${localeTree.locale}: ${labels}`
     })
     .join('\n')
