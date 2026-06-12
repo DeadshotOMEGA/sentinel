@@ -11,6 +11,8 @@ export type AdminReportType =
 
 export type ReportScopeType = 'everyone' | 'department' | 'tag' | 'fts' | 'geo'
 
+export type DailyPresenceSortGroup = 'primary' | 'secondary'
+
 export type ReportFilterKey =
   | 'date'
   | 'weekStartDate'
@@ -29,6 +31,7 @@ export type ReportFilterKey =
 
 export type DailyPresenceTagSortRule = Extract<DailyPresenceSortCriterion, { type: 'tag' }> & {
   id: string
+  sortGroup: DailyPresenceSortGroup
 }
 
 export type DailyPresenceTagPrioritySortRule = Extract<
@@ -36,10 +39,12 @@ export type DailyPresenceTagPrioritySortRule = Extract<
   { type: 'tag_priority' }
 > & {
   id: string
+  sortGroup: DailyPresenceSortGroup
 }
 
 export type DailyPresenceFieldSortRule = Extract<DailyPresenceSortCriterion, { type: 'field' }> & {
   id: string
+  sortGroup: DailyPresenceSortGroup
 }
 
 export type DailyPresenceSortRule =
@@ -123,7 +128,8 @@ export function getBaseReportFilters(reportType: AdminReportType): ReportFilters
     organization: '',
     dailyPresenceSort: [
       {
-        id: 'daily-sort-last-name',
+        id: 'daily-sort-secondary-last-name',
+        sortGroup: 'secondary',
         type: 'field',
         field: 'last_name',
         direction: 'asc',

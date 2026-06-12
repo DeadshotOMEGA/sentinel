@@ -24,6 +24,11 @@ const reportMemberInclude = {
       name: true,
     },
   },
+  rankRef: {
+    select: {
+      displayOrder: true,
+    },
+  },
   memberTags: {
     include: {
       tag: true,

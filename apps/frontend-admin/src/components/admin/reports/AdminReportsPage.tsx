@@ -26,6 +26,7 @@ import {
   getReportDefinition,
   REPORT_DEFINITIONS,
   type AdminReportType,
+  type DailyPresenceSortGroup,
   type DailyPresenceSortRule,
   type ReportFilters,
   type ReportScopeType,
@@ -54,7 +55,12 @@ function createDailyPresenceSortRuleId(): string {
 function toDailyPresenceSortCriteria(rules: DailyPresenceSortRule[]): DailyPresenceSortCriterion[] {
   const criteria: DailyPresenceSortCriterion[] = []
 
-  for (const rule of rules) {
+  const orderedRules = [
+    ...rules.filter((rule) => rule.sortGroup === 'primary'),
+    ...rules.filter((rule) => rule.sortGroup === 'secondary'),
+  ]
+
+  for (const rule of orderedRules) {
     if (rule.type === 'tag') {
       if (rule.tagId) {
         criteria.push({ type: 'tag', tagId: rule.tagId, direction: rule.direction })
@@ -214,8 +220,12 @@ export function AdminReportsPage() {
   }
 
   async function handleRunReport() {
-    const report = await reportRunner.mutateAsync(buildRunInput(filters))
-    setLastReport(report)
+    try {
+      const report = await reportRunner.mutateAsync(buildRunInput(filters))
+      setLastReport(report)
+    } catch {
+      // The mutation stores the API error; keep the page mounted so ReportPreview can show it.
+    }
   }
 
   function handlePrint() {
@@ -572,6 +582,7 @@ const DAILY_PRESENCE_FIELD_OPTIONS: Array<{
   value: Extract<DailyPresenceSortCriterion, { type: 'field' }>['field']
   label: string
 }> = [
+  { value: 'rank', label: 'Rank' },
   { value: 'last_name', label: 'Last name' },
   { value: 'first_name', label: 'First name' },
   { value: 'department', label: 'Department' },
@@ -589,6 +600,20 @@ function DailyPresenceSortBuilder({
   tags: Array<{ id: string; name: string }>
   onChange: (rules: DailyPresenceSortRule[]) => void
 }) {
+  const primaryRules = rules.filter((rule) => rule.sortGroup === 'primary')
+  const secondaryRules = rules.filter((rule) => rule.sortGroup === 'secondary')
+
+  function updateGroupRules(
+    group: DailyPresenceSortGroup,
+    nextGroupRules: DailyPresenceSortRule[]
+  ) {
+    onChange(
+      group === 'primary'
+        ? [...nextGroupRules, ...secondaryRules]
+        : [...primaryRules, ...nextGroupRules]
+    )
+  }
+
   function replaceRule(ruleId: string, nextRule: DailyPresenceSortRule) {
     onChange(rules.map((rule) => (rule.id === ruleId ? nextRule : rule)))
   }
@@ -638,27 +663,28 @@ function DailyPresenceSortBuilder({
     )
   }
 
-  function moveRule(ruleId: string, direction: -1 | 1) {
-    const currentIndex = rules.findIndex((rule) => rule.id === ruleId)
+  function moveRule(group: DailyPresenceSortGroup, ruleId: string, direction: -1 | 1) {
+    const groupRules = group === 'primary' ? primaryRules : secondaryRules
+    const currentIndex = groupRules.findIndex((rule) => rule.id === ruleId)
     const nextIndex = currentIndex + direction
-    if (currentIndex < 0 || nextIndex < 0 || nextIndex >= rules.length) {
+    if (currentIndex < 0 || nextIndex < 0 || nextIndex >= groupRules.length) {
       return
     }
 
-    const nextRules = [...rules]
+    const nextRules = [...groupRules]
     const [rule] = nextRules.splice(currentIndex, 1)
     if (!rule) {
       return
     }
     nextRules.splice(nextIndex, 0, rule)
-    onChange(nextRules)
+    updateGroupRules(group, nextRules)
   }
 
   function removeRule(ruleId: string) {
     onChange(rules.filter((rule) => rule.id !== ruleId))
   }
 
-  function addTagRule() {
+  function addTagRule(group: DailyPresenceSortGroup) {
     const tag = tags[0]
     if (!tag) {
       return
@@ -666,223 +692,267 @@ function DailyPresenceSortBuilder({
 
     const nextRule: DailyPresenceSortRule = {
       id: createDailyPresenceSortRuleId(),
+      sortGroup: group,
       type: 'tag',
       tagId: tag.id,
       direction: 'asc',
     }
-    const firstFieldIndex = rules.findIndex((rule) => rule.type === 'field')
-
-    if (firstFieldIndex === -1) {
-      onChange([...rules, nextRule])
-      return
-    }
-
-    onChange([...rules.slice(0, firstFieldIndex), nextRule, ...rules.slice(firstFieldIndex)])
+    updateGroupRules(group, [...(group === 'primary' ? primaryRules : secondaryRules), nextRule])
   }
 
-  function addTagPriorityRule() {
+  function addTagPriorityRule(group: DailyPresenceSortGroup) {
     const nextRule: DailyPresenceSortRule = {
       id: createDailyPresenceSortRuleId(),
+      sortGroup: group,
       type: 'tag_priority',
       direction: 'asc',
     }
-    const firstFieldIndex = rules.findIndex((rule) => rule.type === 'field')
-
-    if (firstFieldIndex === -1) {
-      onChange([...rules, nextRule])
-      return
-    }
-
-    onChange([...rules.slice(0, firstFieldIndex), nextRule, ...rules.slice(firstFieldIndex)])
+    updateGroupRules(group, [...(group === 'primary' ? primaryRules : secondaryRules), nextRule])
   }
 
-  function addFieldRule() {
-    onChange([
-      ...rules,
+  function addFieldRule(group: DailyPresenceSortGroup) {
+    updateGroupRules(group, [
+      ...(group === 'primary' ? primaryRules : secondaryRules),
       {
         id: createDailyPresenceSortRuleId(),
+        sortGroup: group,
         type: 'field',
-        field: 'last_name',
+        field: group === 'secondary' ? 'last_name' : 'department',
         direction: 'asc',
       },
     ])
   }
 
-  return (
-    <fieldset className="rounded-box border border-base-300 bg-base-200/45 p-(--space-3)">
-      <div className="flex flex-wrap items-start justify-between gap-(--space-3)">
-        <div>
-          <legend className="font-semibold">Sort order</legend>
-          <p className="mt-(--space-1) text-sm text-base-content/65">
-            Rules run from top to bottom. Add tag priorities first, then a name or time field.
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-(--space-2)">
+  function renderRule(
+    rule: DailyPresenceSortRule,
+    index: number,
+    groupRules: DailyPresenceSortRule[]
+  ) {
+    return (
+      <div
+        key={rule.id}
+        className="grid items-center gap-(--space-2) rounded-box border border-base-300 bg-base-100 p-(--space-2) md:grid-cols-[2rem_8rem_minmax(0,1fr)_8rem_auto]"
+      >
+        <span className="text-center text-xs font-semibold text-base-content/55">{index + 1}</span>
+        <select
+          className="select select-bordered select-sm w-full"
+          value={rule.type}
+          onChange={(event) => {
+            if (event.target.value === 'tag') {
+              const tag = tags[0]
+              if (!tag) return
+              replaceRule(rule.id, {
+                id: rule.id,
+                sortGroup: rule.sortGroup,
+                type: 'tag',
+                tagId: tag.id,
+                direction: 'asc',
+              })
+              return
+            }
+
+            if (event.target.value === 'tag_priority') {
+              replaceRule(rule.id, {
+                id: rule.id,
+                sortGroup: rule.sortGroup,
+                type: 'tag_priority',
+                direction: 'asc',
+              })
+              return
+            }
+
+            replaceRule(rule.id, {
+              id: rule.id,
+              sortGroup: rule.sortGroup,
+              type: 'field',
+              field: rule.sortGroup === 'secondary' ? 'last_name' : 'department',
+              direction: 'asc',
+            })
+          }}
+        >
+          <option value="tag">Specific tag</option>
+          <option value="tag_priority">Tag priority</option>
+          <option value="field">Field</option>
+        </select>
+
+        {rule.type === 'tag' ? (
+          <select
+            className="select select-bordered select-sm w-full"
+            value={rule.tagId}
+            onChange={(event) => updateTagRule(rule.id, { tagId: event.target.value })}
+          >
+            {tags.map((tag) => (
+              <option key={tag.id} value={tag.id}>
+                {tag.name}
+              </option>
+            ))}
+          </select>
+        ) : rule.type === 'tag_priority' ? (
+          <div className="rounded-box border border-base-300 bg-base-200 px-(--space-3) py-(--space-2) text-sm font-medium text-base-content/70">
+            Configured tag order
+          </div>
+        ) : (
+          <select
+            className="select select-bordered select-sm w-full"
+            value={rule.field}
+            onChange={(event) =>
+              updateFieldRule(rule.id, {
+                field: event.target.value as Extract<
+                  DailyPresenceSortCriterion,
+                  { type: 'field' }
+                >['field'],
+              })
+            }
+          >
+            {DAILY_PRESENCE_FIELD_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        )}
+
+        <select
+          className="select select-bordered select-sm w-full"
+          value={rule.direction}
+          onChange={(event) =>
+            rule.type === 'tag'
+              ? updateTagRule(rule.id, {
+                  direction: event.target.value as DailyPresenceSortCriterion['direction'],
+                })
+              : rule.type === 'tag_priority'
+                ? updateTagPriorityRule(rule.id, {
+                    direction: event.target.value as DailyPresenceSortCriterion['direction'],
+                  })
+                : updateFieldRule(rule.id, {
+                    direction: event.target.value as DailyPresenceSortCriterion['direction'],
+                  })
+          }
+        >
+          <option value="asc">
+            {rule.type === 'tag' || rule.type === 'tag_priority' ? 'First' : 'A to Z'}
+          </option>
+          <option value="desc">
+            {rule.type === 'tag' || rule.type === 'tag_priority' ? 'Last' : 'Z to A'}
+          </option>
+        </select>
+
+        <div className="flex items-center justify-end gap-(--space-1)">
           <button
             type="button"
-            className="btn btn-outline btn-sm"
-            onClick={addTagRule}
-            disabled={tags.length === 0}
+            className="btn btn-ghost btn-square btn-sm"
+            onClick={() => moveRule(rule.sortGroup, rule.id, -1)}
+            disabled={index === 0}
+            aria-label="Move sort rule up"
           >
-            <Plus className="h-4 w-4" aria-hidden="true" />
-            Specific tag
+            <ArrowUp className="h-4 w-4" aria-hidden="true" />
           </button>
-          <button type="button" className="btn btn-outline btn-sm" onClick={addTagPriorityRule}>
-            <Plus className="h-4 w-4" aria-hidden="true" />
-            Tag priority
+          <button
+            type="button"
+            className="btn btn-ghost btn-square btn-sm"
+            onClick={() => moveRule(rule.sortGroup, rule.id, 1)}
+            disabled={index === groupRules.length - 1}
+            aria-label="Move sort rule down"
+          >
+            <ArrowDown className="h-4 w-4" aria-hidden="true" />
           </button>
-          <button type="button" className="btn btn-outline btn-sm" onClick={addFieldRule}>
-            <Plus className="h-4 w-4" aria-hidden="true" />
-            Field sort
+          <button
+            type="button"
+            className="btn btn-ghost btn-square btn-sm text-error"
+            onClick={() => removeRule(rule.id)}
+            aria-label="Remove sort rule"
+          >
+            <X className="h-4 w-4" aria-hidden="true" />
           </button>
         </div>
       </div>
+    )
+  }
 
-      <div className="mt-(--space-3) space-y-(--space-2)">
-        {rules.length === 0 ? (
-          <p className="rounded-box border border-dashed border-base-300 bg-base-100 p-(--space-3) text-sm text-base-content/60">
-            No custom sort rules. The report will use the backend default order.
-          </p>
-        ) : (
-          rules.map((rule, index) => (
-            <div
-              key={rule.id}
-              className="grid items-center gap-(--space-2) rounded-box border border-base-300 bg-base-100 p-(--space-2) md:grid-cols-[2rem_8rem_minmax(0,1fr)_8rem_auto]"
+  function renderSortSection(params: {
+    group: DailyPresenceSortGroup
+    title: string
+    description: string
+    rules: DailyPresenceSortRule[]
+    emptyText: string
+  }) {
+    return (
+      <div className="rounded-box border border-base-300 bg-base-100 p-(--space-3)">
+        <div className="flex flex-wrap items-start justify-between gap-(--space-3)">
+          <div>
+            <h3 className="text-sm font-semibold">{params.title}</h3>
+            <p className="mt-(--space-1) text-xs text-base-content/65">{params.description}</p>
+          </div>
+          <div className="flex flex-wrap gap-(--space-2)">
+            <button
+              type="button"
+              className="btn btn-outline btn-sm"
+              onClick={() => addTagRule(params.group)}
+              disabled={tags.length === 0}
             >
-              <span className="text-center text-xs font-semibold text-base-content/55">
-                {index + 1}
-              </span>
-              <select
-                className="select select-bordered select-sm w-full"
-                value={rule.type}
-                onChange={(event) => {
-                  if (event.target.value === 'tag') {
-                    const tag = tags[0]
-                    if (!tag) return
-                    replaceRule(rule.id, {
-                      id: rule.id,
-                      type: 'tag',
-                      tagId: tag.id,
-                      direction: 'asc',
-                    })
-                    return
-                  }
+              <Plus className="h-4 w-4" aria-hidden="true" />
+              Specific tag
+            </button>
+            <button
+              type="button"
+              className="btn btn-outline btn-sm"
+              onClick={() => addTagPriorityRule(params.group)}
+            >
+              <Plus className="h-4 w-4" aria-hidden="true" />
+              Tag priority
+            </button>
+            <button
+              type="button"
+              className="btn btn-outline btn-sm"
+              onClick={() => addFieldRule(params.group)}
+            >
+              <Plus className="h-4 w-4" aria-hidden="true" />
+              Field sort
+            </button>
+          </div>
+        </div>
 
-                  if (event.target.value === 'tag_priority') {
-                    replaceRule(rule.id, {
-                      id: rule.id,
-                      type: 'tag_priority',
-                      direction: 'asc',
-                    })
-                    return
-                  }
+        <div className="mt-(--space-3) space-y-(--space-2)">
+          {params.rules.length === 0 ? (
+            <p className="rounded-box border border-dashed border-base-300 bg-base-200 p-(--space-3) text-sm text-base-content/60">
+              {params.emptyText}
+            </p>
+          ) : (
+            params.rules.map((rule, index) => renderRule(rule, index, params.rules))
+          )}
+        </div>
+      </div>
+    )
+  }
 
-                  replaceRule(rule.id, {
-                    id: rule.id,
-                    type: 'field',
-                    field: 'last_name',
-                    direction: 'asc',
-                  })
-                }}
-              >
-                <option value="tag">Specific tag</option>
-                <option value="tag_priority">Tag priority</option>
-                <option value="field">Field</option>
-              </select>
+  return (
+    <fieldset className="rounded-box border border-base-300 bg-base-200/45 p-(--space-3)">
+      <div>
+        <legend className="font-semibold">Sort order</legend>
+        <p className="mt-(--space-1) text-sm text-base-content/65">
+          Primary rules create the report groups. Secondary rules sort members inside each primary
+          group.
+        </p>
+      </div>
 
-              {rule.type === 'tag' ? (
-                <select
-                  className="select select-bordered select-sm w-full"
-                  value={rule.tagId}
-                  onChange={(event) => updateTagRule(rule.id, { tagId: event.target.value })}
-                >
-                  {tags.map((tag) => (
-                    <option key={tag.id} value={tag.id}>
-                      {tag.name}
-                    </option>
-                  ))}
-                </select>
-              ) : rule.type === 'tag_priority' ? (
-                <div className="rounded-box border border-base-300 bg-base-200 px-(--space-3) py-(--space-2) text-sm font-medium text-base-content/70">
-                  Configured tag order
-                </div>
-              ) : (
-                <select
-                  className="select select-bordered select-sm w-full"
-                  value={rule.field}
-                  onChange={(event) =>
-                    updateFieldRule(rule.id, {
-                      field: event.target.value as Extract<
-                        DailyPresenceSortCriterion,
-                        { type: 'field' }
-                      >['field'],
-                    })
-                  }
-                >
-                  {DAILY_PRESENCE_FIELD_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              )}
-
-              <select
-                className="select select-bordered select-sm w-full"
-                value={rule.direction}
-                onChange={(event) =>
-                  rule.type === 'tag'
-                    ? updateTagRule(rule.id, {
-                        direction: event.target.value as DailyPresenceSortCriterion['direction'],
-                      })
-                    : rule.type === 'tag_priority'
-                      ? updateTagPriorityRule(rule.id, {
-                          direction: event.target.value as DailyPresenceSortCriterion['direction'],
-                        })
-                      : updateFieldRule(rule.id, {
-                          direction: event.target.value as DailyPresenceSortCriterion['direction'],
-                        })
-                }
-              >
-                <option value="asc">
-                  {rule.type === 'tag' || rule.type === 'tag_priority' ? 'First' : 'A to Z'}
-                </option>
-                <option value="desc">
-                  {rule.type === 'tag' || rule.type === 'tag_priority' ? 'Last' : 'Z to A'}
-                </option>
-              </select>
-
-              <div className="flex items-center justify-end gap-(--space-1)">
-                <button
-                  type="button"
-                  className="btn btn-ghost btn-square btn-sm"
-                  onClick={() => moveRule(rule.id, -1)}
-                  disabled={index === 0}
-                  aria-label="Move sort rule up"
-                >
-                  <ArrowUp className="h-4 w-4" aria-hidden="true" />
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-ghost btn-square btn-sm"
-                  onClick={() => moveRule(rule.id, 1)}
-                  disabled={index === rules.length - 1}
-                  aria-label="Move sort rule down"
-                >
-                  <ArrowDown className="h-4 w-4" aria-hidden="true" />
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-ghost btn-square btn-sm text-error"
-                  onClick={() => removeRule(rule.id)}
-                  aria-label="Remove sort rule"
-                >
-                  <X className="h-4 w-4" aria-hidden="true" />
-                </button>
-              </div>
-            </div>
-          ))
-        )}
+      <div className="mt-(--space-3) grid gap-(--space-3)">
+        {renderSortSection({
+          group: 'primary',
+          title: 'Primary sort order',
+          description:
+            'Use tag priority, specific tags, departments, or other fields to build the main buckets.',
+          rules: primaryRules,
+          emptyText: 'No primary grouping. The secondary sort will apply to the full report.',
+        })}
+        {renderSortSection({
+          group: 'secondary',
+          title: 'Secondary sort order',
+          description:
+            'Use rank, last name, or time fields to order members within each primary bucket.',
+          rules: secondaryRules,
+          emptyText:
+            'No secondary sorting. Members inside each primary group will use backend fallback order.',
+        })}
       </div>
     </fieldset>
   )

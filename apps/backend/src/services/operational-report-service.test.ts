@@ -10,8 +10,13 @@ import {
   sortDailyPresenceRows,
   type DailyPresenceSortableRow,
   type PresenceSessionInternal,
+  OperationalReportService,
 } from './operational-report-service.js'
-import type { OperationalReportCheckinRecord } from '../repositories/operational-report-repository.js'
+import type {
+  OperationalReportCheckinRecord,
+  OperationalReportMemberRecord,
+  OperationalReportRepository,
+} from '../repositories/operational-report-repository.js'
 
 function checkin(
   id: string,
@@ -36,10 +41,62 @@ function getSessions(
   return sessionsByMember.get(memberId) ?? []
 }
 
+function operationalReportMember(input: {
+  id: string
+  displayName: string
+  rank: string
+  firstName: string
+  lastName: string
+}): OperationalReportMemberRecord {
+  return {
+    id: input.id,
+    serviceNumber: input.id,
+    employeeNumber: null,
+    displayName: input.displayName,
+    rank: input.rank,
+    firstName: input.firstName,
+    lastName: input.lastName,
+    initials: null,
+    divisionId: null,
+    memberType: 'Class A',
+    memberTypeId: null,
+    memberStatusId: null,
+    status: 'active',
+    memberSource: 'internal',
+    accountLevel: 'member',
+    mustChangePin: false,
+    classDetails: null,
+    mess: null,
+    moc: null,
+    email: null,
+    homePhone: null,
+    mobilePhone: null,
+    badgeId: null,
+    pinHash: null,
+    createdAt: new Date('2026-01-01T00:00:00.000Z'),
+    updatedAt: new Date('2026-01-01T00:00:00.000Z'),
+    division: null,
+    memberTypeRef: {
+      id: 'member-type-class-a',
+      code: 'class_a',
+      name: 'Class A',
+    },
+    memberStatusRef: {
+      id: 'member-status-active',
+      code: 'active',
+      name: 'Active',
+    },
+    memberTags: [],
+    qualifications: [],
+  } as unknown as OperationalReportMemberRecord
+}
+
 function sortableDailyPresenceRow(input: {
   id: string
   firstName: string
   lastName: string
+  rank?: string
+  rankOrder?: number
   tags?: string[]
   qualificationTags?: string[]
   reportTags?: ReportTagSummary[]
@@ -53,10 +110,11 @@ function sortableDailyPresenceRow(input: {
   return {
     memberRecord: {
       id: input.id,
-      rank: 'S1',
+      rank: input.rank ?? 'S1',
       firstName: input.firstName,
       lastName: input.lastName,
       displayName: `S1 ${input.lastName}, ${input.firstName}`,
+      rankRef: typeof input.rankOrder === 'number' ? { displayOrder: input.rankOrder } : undefined,
       division: input.department ? { code: input.department, name: input.department } : null,
       memberTags: tags.map((tagId) => ({ tagId })),
       qualifications: qualificationTags.map((tagId) => ({
@@ -67,7 +125,7 @@ function sortableDailyPresenceRow(input: {
       member: {
         id: input.id,
         displayName: `S1 ${input.lastName}, ${input.firstName}`,
-        rank: 'S1',
+        rank: input.rank ?? 'S1',
         status: 'Active',
         division: input.department
           ? { id: input.department, code: input.department, name: input.department }
@@ -150,6 +208,75 @@ describe('pairOperationalPresenceSessions', () => {
     expect(Array.from(warnings)).toContain(
       'Some checkout records could not be paired with a prior check-in and were ignored.'
     )
+  })
+
+  it('tracks affected member IDs for unmatched checkout warnings', () => {
+    const warnings = new Set<string>()
+    const warningMemberIds = new Map<string, Set<string>>()
+    pairOperationalPresenceSessions(
+      [
+        checkin('1', 'member-1', 'out', '2026-05-05T12:00:00.000Z'),
+        checkin('2', 'member-2', 'out', '2026-05-05T12:05:00.000Z'),
+      ],
+      warnings,
+      { warningMemberIds }
+    )
+
+    expect(
+      Array.from(
+        warningMemberIds.get(
+          'Some checkout records could not be paired with a prior check-in and were ignored.'
+        ) ?? []
+      )
+    ).toEqual(['member-1', 'member-2'])
+  })
+})
+
+describe('generateDailyPresence', () => {
+  it('includes affected account names for unmatched checkout warnings', async () => {
+    const member = operationalReportMember({
+      id: '11111111-1111-4111-8111-111111111111',
+      displayName: 'S1 Example, A',
+      rank: 'S1',
+      firstName: 'Alex',
+      lastName: 'Example',
+    })
+    const repository = {
+      findActiveMembers: async () => [member],
+      findCheckinsForMembers: async () => [
+        checkin(
+          'checkin-1',
+          '11111111-1111-4111-8111-111111111111',
+          'out',
+          '2026-06-12T14:00:00.000Z'
+        ),
+      ],
+      findScheduledDutyAssignmentsForMembers: async () => [],
+    } as unknown as OperationalReportRepository
+    const service = new OperationalReportService(undefined, repository)
+
+    const report = await service.generateDailyPresence(
+      { date: '2026-06-12', scopeType: 'everyone' },
+      { id: 'actor-1', rank: 'MS', firstName: 'Report', lastName: 'Runner' }
+    )
+
+    expect(report.warnings).toContain(
+      'Some checkout records could not be paired with a prior check-in and were ignored.'
+    )
+    expect(report.warningDetails).toEqual([
+      {
+        message:
+          'Some checkout records could not be paired with a prior check-in and were ignored.',
+        accounts: [
+          {
+            id: '11111111-1111-4111-8111-111111111111',
+            displayName: 'S1 Example, A',
+            division: null,
+            memberType: 'Class A',
+          },
+        ],
+      },
+    ])
   })
 })
 
@@ -321,6 +448,40 @@ describe('sortDailyPresenceRows', () => {
     }).memberRecord
 
     expect(dailyPresenceSortableMemberHasTag(member, ftsTagId)).toBe(true)
+  })
+
+  it('sorts by rank display order before last name', () => {
+    const sorted = sortDailyPresenceRows(
+      [
+        sortableDailyPresenceRow({
+          id: 's1-zulu',
+          firstName: 'Zed',
+          lastName: 'Zulu',
+          rank: 'S1',
+          rankOrder: 3,
+        }),
+        sortableDailyPresenceRow({
+          id: 'ms-baker',
+          firstName: 'Bill',
+          lastName: 'Baker',
+          rank: 'MS',
+          rankOrder: 5,
+        }),
+        sortableDailyPresenceRow({
+          id: 's1-able',
+          firstName: 'Ann',
+          lastName: 'Able',
+          rank: 'S1',
+          rankOrder: 3,
+        }),
+      ],
+      [
+        { type: 'field', field: 'rank', direction: 'asc' },
+        { type: 'field', field: 'last_name', direction: 'asc' },
+      ]
+    )
+
+    expect(sorted.map((row) => row.memberRecord.id)).toEqual(['s1-able', 's1-zulu', 'ms-baker'])
   })
 
   it('sorts by configured tag priority before last name', () => {
