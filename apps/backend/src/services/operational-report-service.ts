@@ -40,6 +40,7 @@ import { DEFAULT_TIMEZONE, getOperationalDayStartTime } from '../utils/operation
 import {
   OperationalReportRepository,
   type OperationalReportCheckinRecord,
+  type OperationalReportCheckinTimestampEditRecord,
   type OperationalReportLockupStatusRecord,
   type OperationalReportMemberRecord,
   type OperationalReportMissedCheckoutRecord,
@@ -98,6 +99,10 @@ export interface PresenceSessionInternal {
   inAt: Date
   outAt: Date | null
   status: 'complete' | 'open' | 'degraded'
+  inCheckinId: string
+  outCheckinId?: string | null
+  inMethod?: string | null
+  outMethod?: string | null
   checkoutKioskId?: string | null
 }
 
@@ -538,6 +543,8 @@ export function pairOperationalPresenceSessions(
             inAt: openIn.timestamp,
             outAt: null,
             status: 'degraded',
+            inCheckinId: openIn.id,
+            inMethod: openIn.method,
           })
         }
         openIn = record
@@ -578,6 +585,10 @@ export function pairOperationalPresenceSessions(
           inAt: openIn.timestamp,
           outAt: record.timestamp,
           status: 'complete',
+          inCheckinId: openIn.id,
+          outCheckinId: record.id,
+          inMethod: openIn.method,
+          outMethod: record.method,
           checkoutKioskId: record.kioskId,
         })
         openIn = null
@@ -593,6 +604,8 @@ export function pairOperationalPresenceSessions(
         inAt: openIn.timestamp,
         outAt: null,
         status: 'open',
+        inCheckinId: openIn.id,
+        inMethod: openIn.method,
       })
     }
 
@@ -669,6 +682,10 @@ export class OperationalReportService {
       warnings,
       warningMemberIds
     )
+    const timestampEditNotesByCheckinId = await this.getTimestampEditNotesForSessions(
+      sessionsByMember,
+      range
+    )
     const scheduledDutyRolesByMember = await this.getScheduledDutyRolesByMember(members, range)
 
     const sortableRows = members
@@ -693,7 +710,7 @@ export class OperationalReportService {
             sessionCount: stats.sessionCount,
             leftAndReturned: stats.sessionCount > 1,
             sessions: overlappingSessions.map((session) =>
-              this.toPresenceSession(session, range.start, range.end)
+              this.toPresenceSession(session, range.start, range.end, timestampEditNotesByCheckinId)
             ),
           },
         }
@@ -1346,6 +1363,48 @@ export class OperationalReportService {
     return pairOperationalPresenceSessions(checkins, warnings, options)
   }
 
+  private async getTimestampEditNotesForSessions(
+    sessionsByMember: ReadonlyMap<string, PresenceSessionInternal[]>,
+    range: DateRange
+  ): Promise<Map<string, string>> {
+    const checkinIds = new Set<string>()
+
+    for (const sessions of sessionsByMember.values()) {
+      for (const session of sessions) {
+        if (!this.sessionOverlaps(session, range.start, range.end)) {
+          continue
+        }
+
+        if (session.inAt >= range.start && session.inAt < range.end) {
+          checkinIds.add(session.inCheckinId)
+        }
+        if (session.outAt && session.outAt >= range.start && session.outAt < range.end) {
+          const outCheckinId = session.outCheckinId
+          if (outCheckinId) {
+            checkinIds.add(outCheckinId)
+          }
+        }
+      }
+    }
+
+    const editRecords = await this.repository.findCheckinTimestampEditNotes([...checkinIds])
+    return this.toLatestTimestampEditNoteMap(editRecords)
+  }
+
+  private toLatestTimestampEditNoteMap(
+    editRecords: OperationalReportCheckinTimestampEditRecord[]
+  ): Map<string, string> {
+    const notes = new Map<string, string>()
+
+    for (const record of editRecords) {
+      if (!notes.has(record.checkinId)) {
+        notes.set(record.checkinId, record.editReason ?? '')
+      }
+    }
+
+    return notes
+  }
+
   private getPresenceMarker(
     date: string,
     sessions: PresenceSessionInternal[],
@@ -1858,11 +1917,14 @@ export class OperationalReportService {
   private toPresenceSession(
     session: PresenceSessionInternal,
     start: Date,
-    end: Date
+    end: Date,
+    timestampEditNotesByCheckinId: ReadonlyMap<string, string> = new Map()
   ): PresenceSession {
     const clippedIn = session.inAt < start ? start : session.inAt
     const rawOut = session.outAt && session.outAt > end ? end : session.outAt
     const clippedOut = rawOut && rawOut < start ? start : rawOut
+    const showInDetails = session.inAt >= start && session.inAt < end
+    const showOutDetails = Boolean(session.outAt && session.outAt >= start && session.outAt < end)
 
     return {
       inAt: clippedIn.toISOString(),
@@ -1871,6 +1933,18 @@ export class OperationalReportService {
         ? Math.max(0, Math.round((clippedOut.getTime() - clippedIn.getTime()) / 60_000))
         : null,
       status: session.status,
+      inMethod: showInDetails ? (session.inMethod ?? null) : null,
+      outMethod: showOutDetails ? (session.outMethod ?? null) : null,
+      inEditNote:
+        showInDetails && timestampEditNotesByCheckinId.has(session.inCheckinId)
+          ? (timestampEditNotesByCheckinId.get(session.inCheckinId) ?? '')
+          : null,
+      outEditNote:
+        showOutDetails &&
+        session.outCheckinId &&
+        timestampEditNotesByCheckinId.has(session.outCheckinId)
+          ? (timestampEditNotesByCheckinId.get(session.outCheckinId) ?? '')
+          : null,
     }
   }
 

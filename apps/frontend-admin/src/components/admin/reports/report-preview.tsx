@@ -259,8 +259,72 @@ function SummaryGrid({ items }: { items: Array<{ label: string; value: string | 
   )
 }
 
+type DailyPresenceReportRow = DailyPresenceReportResponse['data']['rows'][number]
+type DailyPresenceReportSession = DailyPresenceReportRow['sessions'][number]
+
+function getDailyPresenceDetailLines(row: DailyPresenceReportRow): string[] {
+  return row.sessions.flatMap((session) => {
+    const lines: string[] = []
+    const inMethodLabel = formatCheckinMethodDetail(session.inMethod)
+    const outMethodLabel = formatCheckinMethodDetail(session.outMethod)
+
+    if (inMethodLabel) {
+      lines.push(`${formatReportTime(session.inAt)} in: ${inMethodLabel}`)
+    }
+    if (session.outAt && outMethodLabel) {
+      lines.push(`${formatReportTime(session.outAt)} out: ${outMethodLabel}`)
+    }
+    if (session.inEditNote !== null) {
+      lines.push(formatSessionEditDetail(session, 'in'))
+    }
+    if (session.outAt && session.outEditNote !== null) {
+      lines.push(formatSessionEditDetail(session, 'out'))
+    }
+
+    return lines
+  })
+}
+
+function formatCheckinMethodDetail(method: string | null | undefined): string | null {
+  const normalized = method?.trim().toLowerCase()
+  if (!normalized || normalized === 'badge') {
+    return null
+  }
+
+  if (normalized === 'manual' || normalized === 'admin_manual') {
+    return 'Manual'
+  }
+  if (normalized === 'override') {
+    return 'Override'
+  }
+  if (normalized === 'login') {
+    return 'Login'
+  }
+
+  return normalized
+    .split(/[_\s-]+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ')
+}
+
+function formatSessionEditDetail(
+  session: DailyPresenceReportSession,
+  direction: 'in' | 'out'
+): string {
+  const timestamp = direction === 'in' ? session.inAt : (session.outAt ?? session.inAt)
+  const note = direction === 'in' ? session.inEditNote : session.outEditNote
+  const trimmedNote = note?.trim() ?? ''
+  return `${formatReportTime(timestamp)} ${direction} edited${trimmedNote ? `: ${trimmedNote}` : ''}`
+}
+
 function DailyPresenceReport({ report }: { report: DailyPresenceReportResponse }) {
   const { summary, rows } = report.data
+  const rowsWithDetails = rows.map((row) => ({
+    row,
+    detailLines: getDailyPresenceDetailLines(row),
+  }))
+  const hasDetails = rowsWithDetails.some(({ detailLines }) => detailLines.length > 0)
 
   return (
     <>
@@ -280,7 +344,12 @@ function DailyPresenceReport({ report }: { report: DailyPresenceReportResponse }
         />
       ) : (
         <div className="overflow-x-auto">
-          <table className="table table-sm reports-table reports-daily-presence-table">
+          <table
+            className={cn(
+              'table table-sm reports-table reports-daily-presence-table',
+              hasDetails && 'reports-daily-presence-table-with-details'
+            )}
+          >
             <colgroup>
               <col className="reports-daily-member-col" />
               <col className="reports-daily-department-col" />
@@ -288,6 +357,7 @@ function DailyPresenceReport({ report }: { report: DailyPresenceReportResponse }
               <col className="reports-daily-time-col" />
               <col className="reports-daily-last-out-col" />
               <col className="reports-daily-presence-col" />
+              {hasDetails && <col className="reports-daily-details-col" />}
             </colgroup>
             <thead>
               <tr>
@@ -297,10 +367,11 @@ function DailyPresenceReport({ report }: { report: DailyPresenceReportResponse }
                 <th>Check-In</th>
                 <th>Check-Out</th>
                 <th>Presence</th>
+                {hasDetails && <th>Details</th>}
               </tr>
             </thead>
             <tbody>
-              {rows.map((row) => {
+              {rowsWithDetails.map(({ row, detailLines }) => {
                 const isPresent = row.sessions.some((session) => session.status === 'open')
 
                 return (
@@ -348,6 +419,17 @@ function DailyPresenceReport({ report }: { report: DailyPresenceReportResponse }
                         {isPresent ? 'Present' : 'Out'}
                       </span>
                     </td>
+                    {hasDetails && (
+                      <td className="reports-details-cell">
+                        {detailLines.length > 0 && (
+                          <div className="grid gap-(--space-1) text-xs leading-tight text-base-content/70">
+                            {detailLines.map((line, lineIndex) => (
+                              <span key={`${row.member.id}-detail-${lineIndex}`}>{line}</span>
+                            ))}
+                          </div>
+                        )}
+                      </td>
+                    )}
                   </tr>
                 )
               })}
