@@ -259,20 +259,77 @@ function SummaryGrid({ items }: { items: Array<{ label: string; value: string | 
   )
 }
 
+function DailyPresenceDayContext({ report }: { report: DailyPresenceReportResponse }) {
+  const { dayContext } = report.data
+  const workingHours = dayContext.workingHours
+  const nightLabels = [
+    dayContext.isTrainingNight ? 'Training Night' : null,
+    dayContext.isAdminNight ? 'Admin Night' : null,
+  ].filter((label): label is string => label !== null)
+
+  return (
+    <div className="mb-(--space-3) flex flex-wrap items-center gap-(--space-2) text-xs text-base-content/65">
+      <span className="rounded-box bg-base-200 px-(--space-2) py-(--space-1)">
+        Working hours:{' '}
+        <span className="font-semibold text-base-content">
+          {workingHours ? formatTimeRangeLabel(workingHours.label) : 'Unavailable'}
+        </span>
+      </span>
+      {nightLabels.length > 0 ? (
+        nightLabels.map((label) => (
+          <span
+            key={label}
+            className="rounded-box border border-info/30 bg-info-fadded px-(--space-2) py-(--space-1) font-semibold text-info-fadded-content"
+          >
+            {label}
+          </span>
+        ))
+      ) : (
+        <span className="rounded-box bg-base-200 px-(--space-2) py-(--space-1)">
+          No Training/Admin Night
+        </span>
+      )}
+    </div>
+  )
+}
+
+function formatTimeRangeLabel(label: string): string {
+  return label.replace(
+    /(\d{2}):(\d{2})-(\d{2}):(\d{2})/,
+    (_match, startHour: string, startMinute: string, endHour: string, endMinute: string) =>
+      `${startHour}${startMinute}-${endHour}${endMinute}`
+  )
+}
+
 type DailyPresenceReportRow = DailyPresenceReportResponse['data']['rows'][number]
 type DailyPresenceReportSession = DailyPresenceReportRow['sessions'][number]
+type DailyPresenceDetailDirection = 'in' | 'out'
 
-function getDailyPresenceDetailLines(row: DailyPresenceReportRow): string[] {
+interface DailyPresenceDetailLine {
+  direction: DailyPresenceDetailDirection
+  time: string
+  text: string
+}
+
+function getDailyPresenceDetailLines(row: DailyPresenceReportRow): DailyPresenceDetailLine[] {
   return row.sessions.flatMap((session) => {
-    const lines: string[] = []
+    const lines: DailyPresenceDetailLine[] = []
     const inMethodLabel = formatCheckinMethodDetail(session.inMethod)
     const outMethodLabel = formatCheckinMethodDetail(session.outMethod)
 
     if (inMethodLabel) {
-      lines.push(`${formatReportTime(session.inAt)} in: ${inMethodLabel}`)
+      lines.push({
+        direction: 'in',
+        time: formatReportTime(session.inAt),
+        text: inMethodLabel,
+      })
     }
     if (session.outAt && outMethodLabel) {
-      lines.push(`${formatReportTime(session.outAt)} out: ${outMethodLabel}`)
+      lines.push({
+        direction: 'out',
+        time: formatReportTime(session.outAt),
+        text: outMethodLabel,
+      })
     }
     if (session.inEditNote !== null) {
       lines.push(formatSessionEditDetail(session, 'in'))
@@ -310,12 +367,16 @@ function formatCheckinMethodDetail(method: string | null | undefined): string | 
 
 function formatSessionEditDetail(
   session: DailyPresenceReportSession,
-  direction: 'in' | 'out'
-): string {
+  direction: DailyPresenceDetailDirection
+): DailyPresenceDetailLine {
   const timestamp = direction === 'in' ? session.inAt : (session.outAt ?? session.inAt)
   const note = direction === 'in' ? session.inEditNote : session.outEditNote
   const trimmedNote = note?.trim() ?? ''
-  return `${formatReportTime(timestamp)} ${direction} edited${trimmedNote ? `: ${trimmedNote}` : ''}`
+  return {
+    direction,
+    time: formatReportTime(timestamp),
+    text: `Edited${trimmedNote ? `: ${trimmedNote}` : ''}`,
+  }
 }
 
 function DailyPresenceReport({ report }: { report: DailyPresenceReportResponse }) {
@@ -328,12 +389,18 @@ function DailyPresenceReport({ report }: { report: DailyPresenceReportResponse }
 
   return (
     <>
+      <DailyPresenceDayContext report={report} />
       <SummaryGrid
         items={[
-          { label: 'Present', value: summary.presentMembers },
           { label: 'Scoped members', value: summary.totalScopedMembers },
-          { label: 'Sessions', value: summary.totalSessions },
-          { label: 'Left and returned', value: summary.leftAndReturnedCount },
+          { label: 'FTS total', value: summary.ftsTotalMembers },
+          {
+            label: 'FTS on time / late',
+            value: report.data.dayContext.workingHours
+              ? `${summary.ftsOnTimeCount} / ${summary.ftsLateCount}`
+              : '— / —',
+          },
+          { label: 'GEO checked in', value: summary.geoCheckedInCount },
         ]}
       />
 
@@ -352,21 +419,21 @@ function DailyPresenceReport({ report }: { report: DailyPresenceReportResponse }
           >
             <colgroup>
               <col className="reports-daily-member-col" />
+              <col className="reports-daily-presence-col" />
               <col className="reports-daily-department-col" />
               <col className="reports-daily-tags-col" />
               <col className="reports-daily-time-col" />
               <col className="reports-daily-last-out-col" />
-              <col className="reports-daily-presence-col" />
               {hasDetails && <col className="reports-daily-details-col" />}
             </colgroup>
             <thead>
               <tr>
                 <th>Member</th>
+                <th>Presence</th>
                 <th>Department</th>
                 <th>Tags</th>
                 <th>Check-In</th>
                 <th>Check-Out</th>
-                <th>Presence</th>
                 {hasDetails && <th>Details</th>}
               </tr>
             </thead>
@@ -378,6 +445,25 @@ function DailyPresenceReport({ report }: { report: DailyPresenceReportResponse }
                   <tr key={row.member.id}>
                     <td className="reports-member-cell">
                       <MemberName member={row.member} />
+                    </td>
+                    <td>
+                      <span className="reports-screen-only">
+                        <span
+                          role="status"
+                          data-slot="daily-presence-status-badge"
+                          className={cn(
+                            'badge badge-sm border',
+                            isPresent
+                              ? 'border-success/35 bg-success-fadded text-success-fadded-content'
+                              : 'border-base-300 bg-neutral-fadded text-neutral-fadded-content'
+                          )}
+                        >
+                          {isPresent ? 'Present' : 'Out'}
+                        </span>
+                      </span>
+                      <span className="hidden reports-print-inline font-mono">
+                        {isPresent ? 'Present' : 'Out'}
+                      </span>
                     </td>
                     <td className="reports-department-cell">
                       {row.member.division?.code ?? row.member.division?.name ?? 'Unassigned'}
@@ -409,22 +495,19 @@ function DailyPresenceReport({ report }: { report: DailyPresenceReportResponse }
                         ))}
                       </div>
                     </td>
-                    <td>
-                      <span className="reports-screen-only">
-                        <AppBadge status={isPresent ? 'success' : 'neutral'} size="sm">
-                          {isPresent ? 'Present' : 'Out'}
-                        </AppBadge>
-                      </span>
-                      <span className="hidden reports-print-inline font-mono">
-                        {isPresent ? 'Present' : 'Out'}
-                      </span>
-                    </td>
                     {hasDetails && (
                       <td className="reports-details-cell">
                         {detailLines.length > 0 && (
                           <div className="grid gap-(--space-1) text-xs leading-tight text-base-content/70">
                             {detailLines.map((line, lineIndex) => (
-                              <span key={`${row.member.id}-detail-${lineIndex}`}>{line}</span>
+                              <span
+                                key={`${row.member.id}-detail-${lineIndex}`}
+                                className="flex flex-wrap items-center gap-x-(--space-1) gap-y-0.5"
+                              >
+                                <span className="font-mono text-base-content/55">{line.time}</span>
+                                <DailyPresenceDetailDirectionBadge direction={line.direction} />
+                                <span>{line.text}</span>
+                              </span>
                             ))}
                           </div>
                         )}
@@ -437,6 +520,30 @@ function DailyPresenceReport({ report }: { report: DailyPresenceReportResponse }
           </table>
         </div>
       )}
+    </>
+  )
+}
+
+function DailyPresenceDetailDirectionBadge({
+  direction,
+}: {
+  direction: DailyPresenceDetailDirection
+}) {
+  const label = direction === 'in' ? 'Check-in' : 'Check-out'
+
+  return (
+    <>
+      <span
+        className={cn(
+          'reports-screen-only badge badge-xs border px-(--space-1) text-[0.625rem] font-semibold uppercase tracking-wide',
+          direction === 'in'
+            ? 'border-info/35 bg-info-fadded text-info-fadded-content'
+            : 'border-base-300 bg-neutral-fadded text-neutral-fadded-content'
+        )}
+      >
+        {label}
+      </span>
+      <span className="hidden reports-print-inline font-semibold">{label}</span>
     </>
   )
 }

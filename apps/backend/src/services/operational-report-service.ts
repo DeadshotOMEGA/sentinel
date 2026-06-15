@@ -12,6 +12,7 @@ import type {
   OperationalNightAudienceTarget,
   OperationalNightOccurrence,
   OperationalNightType,
+  OperationalTimingsWorkingHours,
   OperationalExceptionsReportConfig,
   OperationalExceptionsReportResponse,
   PresenceMarker,
@@ -119,6 +120,30 @@ interface PresenceStats {
   lastOut: string | null
   sessionCount: number
   note: string | null
+}
+
+interface DailyPresenceWorkingHoursDetails {
+  startTime: string
+  endTime: string
+  startAt: string
+  endAt: string
+  label: string
+  start: Date
+  end: Date
+}
+
+interface DailyPresenceDayContextInternal {
+  workingHours: DailyPresenceWorkingHoursDetails | null
+  isTrainingNight: boolean
+  isAdminNight: boolean
+  keyNights: KeyNightWindow[]
+}
+
+interface DailyPresenceAttendanceSummary {
+  ftsTotalMembers: number
+  ftsOnTimeCount: number
+  ftsLateCount: number
+  geoCheckedInCount: number
 }
 
 type ScheduledDutyRolesByMember = Map<string, Set<OperationalReportScheduledDutyRoleCode>>
@@ -668,14 +693,10 @@ export class OperationalReportService {
     const warnings = new Set<string>()
     const warningMemberIds = new Map<string, Set<string>>()
     const scope = await this.resolveScope(config, warnings)
+    const allActiveMembers = await this.repository.findActiveMembers()
     const members = scope.noResults
       ? []
-      : await this.repository.findActiveMembers({
-          divisionId: scope.divisionId,
-          divisionIds: scope.divisionIds,
-          tagId: scope.tagId,
-          tagIds: scope.tagIds,
-        })
+      : this.filterMembersForResolvedScope(allActiveMembers, scope)
     const sessionsByMember = await this.getSessionsByMember(
       members,
       range,
@@ -687,6 +708,19 @@ export class OperationalReportService {
       range
     )
     const scheduledDutyRolesByMember = await this.getScheduledDutyRolesByMember(members, range)
+    const dayContext = await this.getDailyPresenceDayContext(range, warnings)
+    const attendanceSessionsByMember =
+      allActiveMembers.length === members.length &&
+      allActiveMembers.every((member) => sessionsByMember.has(member.id))
+        ? sessionsByMember
+        : await this.getSessionsByMember(allActiveMembers, range, new Set<string>())
+    const attendanceSummary = await this.getDailyPresenceAttendanceSummary(
+      allActiveMembers,
+      attendanceSessionsByMember,
+      range,
+      dayContext.workingHours,
+      warnings
+    )
 
     const sortableRows = members
       .map((member) => {
@@ -739,6 +773,21 @@ export class OperationalReportService {
               total + row.sessions.filter((session) => session.status !== 'complete').length,
             0
           ),
+          ...attendanceSummary,
+        },
+        dayContext: {
+          workingHours: dayContext.workingHours
+            ? {
+                startTime: dayContext.workingHours.startTime,
+                endTime: dayContext.workingHours.endTime,
+                startAt: dayContext.workingHours.startAt,
+                endAt: dayContext.workingHours.endAt,
+                label: dayContext.workingHours.label,
+              }
+            : null,
+          isTrainingNight: dayContext.isTrainingNight,
+          isAdminNight: dayContext.isAdminNight,
+          keyNights: dayContext.keyNights.map(this.toApiKeyNight),
         },
         rows,
       },
@@ -762,8 +811,10 @@ export class OperationalReportService {
         })
     const sessionsByMember = await this.getSessionsByMember(members, range, warnings)
     const scheduledDutyRolesByMember = await this.getScheduledDutyRolesByMember(members, range)
-    const keyNights = await this.getKeyNights(range, ['training', 'administrative'], warnings)
-    const days = this.getDatesInRange(range).map((date) => ({
+    const keyNights = (
+      await this.getKeyNights(range, ['training', 'administrative'], warnings)
+    ).filter((night) => this.isWeekdayDate(night.date))
+    const days = this.getWeekdayDatesInRange(range).map((date) => ({
       date,
       label: this.formatShortDate(date),
       isTrainingNight: keyNights.some(
@@ -792,9 +843,10 @@ export class OperationalReportService {
           adminNightPresent: this.getCategoryPresence('administrative', keyNights, keyNightMarkers),
           keyNights: keyNightMarkers,
           totalDaysPresent: dayMarkers.filter((marker) => marker.present).length,
-          totalSessions: memberSessions.filter((session) =>
-            this.sessionOverlaps(session, range.start, range.end)
-          ).length,
+          totalSessions: this.countSessionsOverlappingDates(
+            memberSessions,
+            days.map((day) => day.date)
+          ),
         },
       }
     })
@@ -839,8 +891,10 @@ export class OperationalReportService {
           tagIds: scope.tagIds,
         })
     const sessionsByMember = await this.getSessionsByMember(members, range, warnings)
-    const keyNights = await this.getKeyNights(range, ['training', 'administrative'], warnings)
-    const days = this.getDatesInRange(range).map((date) => ({
+    const keyNights = (
+      await this.getKeyNights(range, ['training', 'administrative'], warnings)
+    ).filter((night) => this.isWeekdayDate(night.date))
+    const days = this.getWeekdayDatesInRange(range).map((date) => ({
       date,
       label: DateTime.fromISO(date, { zone: DEFAULT_TIMEZONE }).toFormat('d'),
       isTrainingNight: keyNights.some(
@@ -867,9 +921,10 @@ export class OperationalReportService {
           days: dayMarkers,
           keyNights: keyNightMarkers,
           totalDaysPresent: dayMarkers.filter((marker) => marker.present).length,
-          totalSessions: memberSessions.filter((session) =>
-            this.sessionOverlaps(session, range.start, range.end)
-          ).length,
+          totalSessions: this.countSessionsOverlappingDates(
+            memberSessions,
+            days.map((day) => day.date)
+          ),
           trainingNightsPresent: this.countCategoryPresence('training', keyNights, keyNightMarkers),
           adminNightsPresent: this.countCategoryPresence(
             'administrative',
@@ -1329,6 +1384,24 @@ export class OperationalReportService {
     return [...new Set([...(ids ?? []), fallbackId].filter((id): id is string => Boolean(id)))]
   }
 
+  private filterMembersForResolvedScope(
+    members: OperationalReportMemberRecord[],
+    scope: EffectiveScope
+  ): OperationalReportMemberRecord[] {
+    const divisionIds = new Set(this.uniqueIds(scope.divisionIds, scope.divisionId))
+    const tagIds = this.uniqueIds(scope.tagIds, scope.tagId)
+
+    if (divisionIds.size === 0 && tagIds.length === 0) {
+      return members
+    }
+
+    return members.filter((member) => {
+      const matchesDivision = Boolean(member.divisionId && divisionIds.has(member.divisionId))
+      const matchesTag = tagIds.some((tagId) => this.memberHasTag(member, tagId))
+      return matchesDivision || matchesTag
+    })
+  }
+
   private async getSessionsByMember(
     members: OperationalReportMemberRecord[],
     range: DateRange,
@@ -1341,6 +1414,156 @@ export class OperationalReportService {
       .toJSDate()
     const checkins = await this.repository.findCheckinsForMembers(memberIds, queryStart, range.end)
     return this.pairSessions(checkins, range, warnings, warningMemberIds)
+  }
+
+  private async getDailyPresenceDayContext(
+    range: DateRange,
+    warnings: Set<string>
+  ): Promise<DailyPresenceDayContextInternal> {
+    const [workingHours, keyNights] = await Promise.all([
+      this.getDailyPresenceWorkingHours(range, warnings),
+      this.getKeyNights(range, ['training', 'administrative'], warnings, {
+        warnWhenMissing: false,
+      }),
+    ])
+
+    return {
+      workingHours,
+      isTrainingNight: keyNights.some((night) => night.category === 'training'),
+      isAdminNight: keyNights.some((night) => night.category === 'administrative'),
+      keyNights,
+    }
+  }
+
+  private async getDailyPresenceWorkingHours(
+    range: DateRange,
+    warnings: Set<string>
+  ): Promise<DailyPresenceWorkingHoursDetails | null> {
+    const value = await this.repository.findAppSettingValue(OPERATIONAL_TIMINGS_SETTING_KEY_V3)
+    if (!value) {
+      return null
+    }
+
+    const parsed = v.safeParse(OperationalTimingsSettingsSchema, value)
+    if (!parsed.success) {
+      warnings.add(
+        'Operational Timings settings are present but invalid; Daily Presence working hours were omitted.'
+      )
+      return null
+    }
+
+    return this.getWorkingHoursForDate(range.startDate, parsed.output.workingHours)
+  }
+
+  private getWorkingHoursForDate(
+    date: string,
+    workingHours: OperationalTimingsWorkingHours
+  ): DailyPresenceWorkingHoursDetails | null {
+    const weekday = DateTime.fromISO(date, { zone: DEFAULT_TIMEZONE }).weekday
+    if (!workingHours.regularWeekdays.includes(weekday)) {
+      return null
+    }
+
+    const summerHours = this.isWithinMonthDayRange(
+      date,
+      workingHours.summerStartDate,
+      workingHours.summerEndDate
+    )
+    const startTime = summerHours
+      ? workingHours.summerWeekdayStart
+      : workingHours.regularWeekdayStart
+    const endTime = summerHours ? workingHours.summerWeekdayEnd : workingHours.regularWeekdayEnd
+    const start = this.dateTimeFromLocalDateAndTime(date, startTime)
+    const end = this.ensureEndAfterStart(start, this.dateTimeFromLocalDateAndTime(date, endTime))
+
+    return {
+      startTime,
+      endTime,
+      startAt: start.toISOString(),
+      endAt: end.toISOString(),
+      label: `${startTime}-${endTime}`,
+      start,
+      end,
+    }
+  }
+
+  private isWithinMonthDayRange(date: string, startMonthDay: string, endMonthDay: string): boolean {
+    const monthDay = DateTime.fromISO(date, { zone: DEFAULT_TIMEZONE }).toFormat('MM-dd')
+    return monthDay >= startMonthDay && monthDay <= endMonthDay
+  }
+
+  private async getDailyPresenceAttendanceSummary(
+    members: OperationalReportMemberRecord[],
+    sessionsByMember: ReadonlyMap<string, PresenceSessionInternal[]>,
+    range: DateRange,
+    workingHours: DailyPresenceWorkingHoursDetails | null,
+    warnings: Set<string>
+  ): Promise<DailyPresenceAttendanceSummary> {
+    const [ftsTag, geoTag] = await Promise.all([
+      this.repository.findTagShortcut('fts'),
+      this.repository.findTagShortcut('geo'),
+    ])
+    if (!ftsTag) {
+      warnings.add('FTS tag was not found. FTS attendance stats were omitted.')
+    }
+    if (!geoTag) {
+      warnings.add('GEO tag was not found. GEO attendance stats were omitted.')
+    }
+
+    const ftsMembers = ftsTag
+      ? members.filter((member) => this.memberHasTag(member, ftsTag.id))
+      : []
+    const geoMembers = geoTag
+      ? members.filter((member) => this.memberHasTag(member, geoTag.id))
+      : []
+
+    const ftsTimeliness = workingHours
+      ? this.getFtsTimelinessCounts(ftsMembers, sessionsByMember, range, workingHours)
+      : { onTime: 0, late: 0 }
+
+    return {
+      ftsTotalMembers: ftsMembers.length,
+      ftsOnTimeCount: ftsTimeliness.onTime,
+      ftsLateCount: ftsTimeliness.late,
+      geoCheckedInCount: geoMembers.filter(
+        (member) =>
+          this.getPresenceStats(sessionsByMember.get(member.id) ?? [], range.start, range.end)
+            .present
+      ).length,
+    }
+  }
+
+  private getFtsTimelinessCounts(
+    members: OperationalReportMemberRecord[],
+    sessionsByMember: ReadonlyMap<string, PresenceSessionInternal[]>,
+    range: DateRange,
+    workingHours: DailyPresenceWorkingHoursDetails
+  ): { onTime: number; late: number } {
+    const lateCutoff = DateTime.fromJSDate(workingHours.start, { zone: DEFAULT_TIMEZONE })
+      .plus({ minutes: 30 })
+      .toJSDate()
+    let onTime = 0
+    let late = 0
+
+    for (const member of members) {
+      const stats = this.getPresenceStats(
+        sessionsByMember.get(member.id) ?? [],
+        range.start,
+        range.end
+      )
+      if (!stats.firstIn) {
+        continue
+      }
+
+      const firstIn = new Date(stats.firstIn)
+      if (firstIn <= workingHours.start) {
+        onTime += 1
+      } else if (firstIn <= lateCutoff) {
+        late += 1
+      }
+    }
+
+    return { onTime, late }
   }
 
   private pairSessions(
@@ -1475,7 +1698,8 @@ export class OperationalReportService {
   private async getKeyNights(
     range: DateRange,
     categories: KeyNightCategory[],
-    warnings: Set<string>
+    warnings: Set<string>,
+    options: { warnWhenMissing?: boolean } = {}
   ): Promise<KeyNightWindow[]> {
     const events = await this.repository.findUnitEvents(range.start, range.end, categories)
     const eventNights = events.map((event) => this.toKeyNightFromEvent(event))
@@ -1505,11 +1729,13 @@ export class OperationalReportService {
       `${left.date}:${left.category}`.localeCompare(`${right.date}:${right.category}`)
     )
 
-    for (const category of categories) {
-      if (!result.some((night) => night.category === category)) {
-        warnings.add(
-          `No ${category === 'training' ? 'Training' : 'Admin'} Nights were found from Unit Events, Operational Timings rules, or report schedule settings.`
-        )
+    if (options.warnWhenMissing ?? true) {
+      for (const category of categories) {
+        if (!result.some((night) => night.category === category)) {
+          warnings.add(
+            `No ${category === 'training' ? 'Training' : 'Admin'} Nights were found from Unit Events, Operational Timings rules, or report schedule settings.`
+          )
+        }
       }
     }
 
@@ -2331,6 +2557,26 @@ export class OperationalReportService {
     }
 
     return dates
+  }
+
+  private getWeekdayDatesInRange(range: DateRange): string[] {
+    return this.getDatesInRange(range).filter((date) => this.isWeekdayDate(date))
+  }
+
+  private isWeekdayDate(date: string): boolean {
+    const weekday = DateTime.fromISO(date, { zone: DEFAULT_TIMEZONE }).weekday
+    return weekday >= 1 && weekday <= 5
+  }
+
+  private countSessionsOverlappingDates(
+    sessions: PresenceSessionInternal[],
+    dates: string[]
+  ): number {
+    const ranges = dates.map((date) => this.getDayRange(date))
+
+    return sessions.filter((session) =>
+      ranges.some((range) => this.sessionOverlaps(session, range.start, range.end))
+    ).length
   }
 
   private dateTimeFromLocalDateAndTime(date: string, time: string): Date {

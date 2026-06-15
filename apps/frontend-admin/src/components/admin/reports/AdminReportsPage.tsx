@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import {
   ArrowDown,
   ArrowUp,
@@ -17,6 +17,7 @@ import {
   AppCard,
   AppCardContent,
   AppCardDescription,
+  AppCardFooter,
   AppCardHeader,
   AppCardTitle,
 } from '@/components/ui/AppCard'
@@ -221,6 +222,7 @@ export function AdminReportsPage() {
     getBaseReportFilters('daily_presence')
   )
   const [lastReport, setLastReport] = useState<AdminReportResponse | null>(null)
+  const [isReportSetupCollapsed, setIsReportSetupCollapsed] = useState(false)
   const divisionsQuery = useDivisions()
   const tagsQuery = useTags()
   const visitTypesQuery = useVisitTypesForReports()
@@ -303,7 +305,7 @@ export function AdminReportsPage() {
 
   return (
     <div className="space-y-(--space-4)">
-      <header className="flex flex-wrap items-start justify-between gap-(--space-4)">
+      <header>
         <div>
           <h1 id="admin-page-title" className="font-display text-3xl font-bold tracking-normal">
             Reports
@@ -311,9 +313,6 @@ export function AdminReportsPage() {
           <p className="mt-(--space-1) text-sm text-base-content/65">
             Generate printable attendance, presence, and visitor reports.
           </p>
-        </div>
-        <div className="rounded-box border border-base-300 bg-base-100 px-(--space-3) py-(--space-2) text-sm text-base-content/65 shadow-[var(--shadow-1)]">
-          <span className="font-semibold text-base-content">V1 export:</span> browser print
         </div>
       </header>
 
@@ -329,38 +328,58 @@ export function AdminReportsPage() {
                 Choose a report, set only the relevant filters, then preview it below.
               </AppCardDescription>
             </div>
-            <AppBadge status="info" size="sm">
-              Admin / Developer
-            </AppBadge>
+            <div className="flex items-center gap-(--space-2)">
+              <AppBadge status="info" size="sm">
+                Admin / Developer
+              </AppBadge>
+              <button
+                type="button"
+                className="btn btn-ghost btn-sm"
+                aria-expanded={!isReportSetupCollapsed}
+                onClick={() => setIsReportSetupCollapsed((collapsed) => !collapsed)}
+              >
+                <ChevronDown
+                  className={cn(
+                    'h-4 w-4 transition-transform duration-(--duration-fast)',
+                    !isReportSetupCollapsed && 'rotate-180'
+                  )}
+                  aria-hidden="true"
+                />
+                {isReportSetupCollapsed ? 'Expand setup' : 'Collapse setup'}
+              </button>
+            </div>
           </div>
         </AppCardHeader>
-        <AppCardContent className="space-y-(--space-4)">
-          <div className="grid gap-(--space-4) xl:grid-cols-[minmax(18rem,0.7fr)_minmax(0,1.3fr)]">
-            <ReportTypeSelector value={filters.reportType} onChange={handleReportTypeChange} />
-
+        {!isReportSetupCollapsed && (
+          <AppCardContent className="space-y-(--space-4)">
             <ReportsFilterPanel
               filters={filters}
               updateFilters={updateFilters}
+              reportTypeSelector={
+                <ReportTypeSelector value={filters.reportType} onChange={handleReportTypeChange} />
+              }
               divisions={divisionsQuery.data?.divisions ?? []}
               tags={tags}
               visitTypes={visitTypesQuery.data ?? []}
               hostMembers={reportHostMembers}
               shortcutWarnings={shortcutWarnings}
             />
-          </div>
 
-          {validationMessages.length > 0 && (
-            <div className="rounded-box border border-warning/40 bg-warning-fadded p-(--space-3) text-sm text-warning-fadded-content">
-              <p className="font-semibold">Required before running</p>
-              <ul className="mt-(--space-1) list-disc pl-(--space-4)">
-                {validationMessages.map((message) => (
-                  <li key={message}>{message}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-
+            {validationMessages.length > 0 && (
+              <div className="rounded-box border border-warning/40 bg-warning-fadded p-(--space-3) text-sm text-warning-fadded-content">
+                <p className="font-semibold">Required before running</p>
+                <ul className="mt-(--space-1) list-disc pl-(--space-4)">
+                  {validationMessages.map((message) => (
+                    <li key={message}>{message}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </AppCardContent>
+        )}
+        <AppCardFooter className="block">
           <ReportActionBar
+            isSetupCollapsed={isReportSetupCollapsed}
             isRunDisabled={isRunDisabled}
             isRunning={reportRunner.isPending}
             hasReport={lastReport !== null}
@@ -370,7 +389,7 @@ export function AdminReportsPage() {
             onPrint={handlePrint}
             onReset={handleReset}
           />
-        </AppCardContent>
+        </AppCardFooter>
       </AppCard>
 
       <ReportPreview
@@ -417,6 +436,7 @@ function ReportTypeSelector({
 function ReportsFilterPanel({
   filters,
   updateFilters,
+  reportTypeSelector,
   divisions,
   tags,
   visitTypes,
@@ -425,6 +445,7 @@ function ReportsFilterPanel({
 }: {
   filters: ReportFilters
   updateFilters: (next: Partial<ReportFilters>) => void
+  reportTypeSelector: ReactNode
   divisions: Array<{ id: string; code: string; name: string }>
   tags: Array<{ id: string; name: string }>
   visitTypes: Array<{ id: string; code: string; name: string }>
@@ -496,7 +517,8 @@ function ReportsFilterPanel({
   }
 
   return (
-    <div className="grid gap-(--space-3) md:grid-cols-2 xl:grid-cols-3">
+    <div className="grid gap-(--space-3) md:grid-cols-2 xl:grid-cols-[minmax(20rem,1.5fr)_minmax(12rem,1fr)_minmax(12rem,1fr)_minmax(12rem,1fr)]">
+      {reportTypeSelector}
       {visible.has('date') && (
         <DateInput label="Day" value={filters.date} onChange={(date) => updateFilters({ date })} />
       )}
@@ -665,7 +687,7 @@ function ReportsFilterPanel({
         </label>
       )}
       {showDailyPresenceSort && (
-        <div className="md:col-span-2 xl:col-span-3">
+        <div className="md:col-span-2 xl:col-span-4">
           <MemberReportSortBuilder
             reportType={filters.reportType}
             rules={filters.dailyPresenceSort}
@@ -1101,7 +1123,7 @@ function MemberReportSortBuilder({
     return (
       <div
         key={rule.id}
-        className="grid items-center gap-(--space-2) rounded-box border border-base-300 bg-base-100 p-(--space-2) md:grid-cols-[2rem_8rem_minmax(0,1fr)_8rem_auto]"
+        className="grid items-center gap-(--space-2) rounded-box border border-base-300 bg-base-100 p-(--space-2) md:grid-cols-[2rem_8rem_minmax(10rem,1fr)_10rem_auto]"
       >
         <span className="text-center text-xs font-semibold text-base-content/55">{index + 1}</span>
         <select
@@ -1187,7 +1209,9 @@ function MemberReportSortBuilder({
           const directionLabels =
             rule.type === 'field'
               ? getDailyPresenceFieldDirectionLabels(rule.field)
-              : { asc: 'First', desc: 'Last' }
+              : rule.type === 'tag_priority'
+                ? { asc: 'Ascending', desc: 'Descending' }
+                : { asc: 'First', desc: 'Last' }
 
           return (
             <select
@@ -1311,7 +1335,7 @@ function MemberReportSortBuilder({
         </p>
       </div>
 
-      <div className="mt-(--space-3) grid gap-(--space-3)">
+      <div className="mt-(--space-3) grid gap-(--space-3) 2xl:grid-cols-2">
         {renderSortSection({
           group: 'primary',
           title: 'Primary sort order',
@@ -1359,6 +1383,7 @@ function DateInput({
 }
 
 function ReportActionBar({
+  isSetupCollapsed,
   isRunDisabled,
   isRunning,
   hasReport,
@@ -1366,6 +1391,7 @@ function ReportActionBar({
   onPrint,
   onReset,
 }: {
+  isSetupCollapsed: boolean
   isRunDisabled: boolean
   isRunning: boolean
   hasReport: boolean
@@ -1374,15 +1400,24 @@ function ReportActionBar({
   onReset: () => void
 }) {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-(--space-3) border-t border-base-300 pt-(--space-4)">
-      <p className="max-w-2xl text-sm text-base-content/62">
-        Uses your browser print dialog. Choose “Save to PDF” to create a PDF file.
-      </p>
+    <div
+      className={cn(
+        'flex flex-wrap items-center gap-(--space-3) border-t border-base-300 pt-(--space-4)',
+        isSetupCollapsed ? 'justify-end' : 'justify-between'
+      )}
+    >
+      {!isSetupCollapsed && (
+        <p className="max-w-2xl text-sm text-base-content/62">
+          Uses your browser print dialog. Choose “Save to PDF” to create a PDF file.
+        </p>
+      )}
       <div className="flex flex-wrap items-center gap-(--space-2)">
-        <button type="button" className="btn btn-ghost btn-sm" onClick={onReset}>
-          <RotateCcw className="h-4 w-4" aria-hidden="true" />
-          Reset filters
-        </button>
+        {!isSetupCollapsed && (
+          <button type="button" className="btn btn-ghost btn-sm" onClick={onReset}>
+            <RotateCcw className="h-4 w-4" aria-hidden="true" />
+            Reset filters
+          </button>
+        )}
         <button
           type="button"
           className="btn btn-outline btn-sm"
