@@ -52,6 +52,8 @@ import { isSentinelBootstrapMember } from '../lib/system-bootstrap.js'
 
 const UNIT_NAME = 'HMCS Chippawa'
 const REPORT_LOOKBACK_DAYS = 1
+const MISTAKEN_CHECKOUT_GRACE_MINUTES = 5
+const MISTAKEN_CHECKOUT_GRACE_MS = MISTAKEN_CHECKOUT_GRACE_MINUTES * 60 * 1000
 const OPERATIONAL_TIMINGS_SETTING_KEY_V3 = 'operational.timings.v3'
 const REPEATED_CHECKIN_WARNING =
   'Some members have multiple check-ins without an intervening checkout; affected sessions are marked as degraded.'
@@ -330,10 +332,7 @@ function compareMemberReportField(
 ): number {
   switch (field) {
     case 'first_name':
-      return (
-        compareNullableString(left.memberRecord.firstName, right.memberRecord.firstName) ||
-        compareNullableString(left.memberRecord.lastName, right.memberRecord.lastName)
-      )
+      return compareNullableString(left.memberRecord.firstName, right.memberRecord.firstName)
     case 'rank': {
       const leftRankOrder = left.memberRecord.rankRef?.displayOrder ?? null
       const rightRankOrder = right.memberRecord.rankRef?.displayOrder ?? null
@@ -342,17 +341,12 @@ function compareMemberReportField(
         return leftRankOrder - rightRankOrder
       }
 
-      return (
-        compareNullableString(left.memberRecord.rank, right.memberRecord.rank) ||
-        compareNullableString(left.memberRecord.lastName, right.memberRecord.lastName)
-      )
+      return compareNullableString(left.memberRecord.rank, right.memberRecord.rank)
     }
     case 'department':
-      return (
-        compareNullableString(
-          left.memberRecord.division?.code,
-          right.memberRecord.division?.code
-        ) || compareNullableString(left.memberRecord.lastName, right.memberRecord.lastName)
+      return compareNullableString(
+        left.memberRecord.division?.code,
+        right.memberRecord.division?.code
       )
     case 'first_in':
       return compareNullableString(getDailyFirstIn(left.row), getDailyFirstIn(right.row))
@@ -523,7 +517,11 @@ export function pairOperationalPresenceSessions(
     const sessions: PresenceSessionInternal[] = []
     let openIn: OperationalReportCheckinRecord | null = null
 
-    for (const record of sorted) {
+    for (let index = 0; index < sorted.length; index += 1) {
+      const record = sorted[index]
+      if (!record) {
+        continue
+      }
       const direction = record.direction.toLowerCase()
 
       if (direction === 'in') {
@@ -547,7 +545,13 @@ export function pairOperationalPresenceSessions(
       }
 
       if (direction === 'out') {
+        const nextRecord = sorted[index + 1]
+
         if (!openIn) {
+          if (isMistakenCheckoutBeforeNearbyCheckin(record, nextRecord)) {
+            continue
+          }
+
           addPresenceWarning(
             warnings,
             UNMATCHED_CHECKOUT_WARNING,
@@ -555,6 +559,11 @@ export function pairOperationalPresenceSessions(
             memberId,
             record.timestamp
           )
+          continue
+        }
+
+        if (isMistakenCheckoutBeforeNearbyCheckin(record, nextRecord)) {
+          index += 1
           continue
         }
 
@@ -591,6 +600,18 @@ export function pairOperationalPresenceSessions(
   }
 
   return sessionsByMember
+}
+
+function isMistakenCheckoutBeforeNearbyCheckin(
+  checkout: OperationalReportCheckinRecord,
+  nextRecord: OperationalReportCheckinRecord | undefined
+): boolean {
+  if (!nextRecord || nextRecord.direction.toLowerCase() !== 'in') {
+    return false
+  }
+
+  const elapsedMs = nextRecord.timestamp.getTime() - checkout.timestamp.getTime()
+  return elapsedMs >= 0 && elapsedMs <= MISTAKEN_CHECKOUT_GRACE_MS
 }
 
 function addPresenceWarning(
