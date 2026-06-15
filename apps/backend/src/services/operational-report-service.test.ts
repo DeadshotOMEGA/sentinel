@@ -26,7 +26,8 @@ function checkin(
   memberId: string,
   direction: 'in' | 'out',
   timestamp: string,
-  kioskId = 'front'
+  kioskId = 'front',
+  method: string | null = 'badge'
 ): OperationalReportCheckinRecord {
   return {
     id,
@@ -34,6 +35,7 @@ function checkin(
     direction,
     timestamp: new Date(timestamp),
     kioskId,
+    method,
   }
 }
 
@@ -412,6 +414,7 @@ describe('generateDailyPresence', () => {
           '2026-06-12T14:00:00.000Z'
         ),
       ],
+      findCheckinTimestampEditNotes: async () => [],
       findScheduledDutyAssignmentsForMembers: async () => [],
       findDdsAssignmentsForMembers: async () => [],
       findLiveDutyAssignmentsForMembers: async () => [],
@@ -461,6 +464,7 @@ describe('generateDailyPresence', () => {
           'SYSTEM'
         ),
       ],
+      findCheckinTimestampEditNotes: async () => [],
       findScheduledDutyAssignmentsForMembers: async () => [],
       findDdsAssignmentsForMembers: async () => [],
       findLiveDutyAssignmentsForMembers: async () => [],
@@ -476,6 +480,103 @@ describe('generateDailyPresence', () => {
       'Some checkout records could not be paired with a prior check-in and were ignored.'
     )
     expect(report.warningDetails).toEqual([])
+  })
+
+  it('includes session methods and timestamp edit notes', async () => {
+    const member = operationalReportMember({
+      id: '11111111-1111-4111-8111-111111111111',
+      displayName: 'S1 Example, A',
+      rank: 'S1',
+      firstName: 'Alex',
+      lastName: 'Example',
+    })
+    let requestedEditNoteCheckinIds: string[] = []
+    const repository = {
+      findActiveMembers: async () => [member],
+      findCheckinsForMembers: async () => [
+        checkin(
+          'checkin-in-1',
+          '11111111-1111-4111-8111-111111111111',
+          'in',
+          '2026-06-12T14:00:00.000Z',
+          'front',
+          'admin_manual'
+        ),
+        checkin(
+          'checkin-out-1',
+          '11111111-1111-4111-8111-111111111111',
+          'out',
+          '2026-06-12T18:00:00.000Z'
+        ),
+        checkin(
+          'checkin-in-2',
+          '11111111-1111-4111-8111-111111111111',
+          'in',
+          '2026-06-12T19:00:00.000Z'
+        ),
+        checkin(
+          'checkin-out-2',
+          '11111111-1111-4111-8111-111111111111',
+          'out',
+          '2026-06-12T22:00:00.000Z',
+          'front',
+          'manual'
+        ),
+      ],
+      findCheckinTimestampEditNotes: async (checkinIds: string[]) => {
+        requestedEditNoteCheckinIds = checkinIds
+        return [
+          {
+            checkinId: 'checkin-in-1',
+            editReason: 'Corrected missed morning scan',
+            createdAt: new Date('2026-06-12T15:00:00.000Z'),
+          },
+          {
+            checkinId: 'checkin-out-2',
+            editReason: 'Corrected final checkout time',
+            createdAt: new Date('2026-06-12T23:00:00.000Z'),
+          },
+        ]
+      },
+      findScheduledDutyAssignmentsForMembers: async () => [],
+      findDdsAssignmentsForMembers: async () => [],
+      findLiveDutyAssignmentsForMembers: async () => [],
+    } as unknown as OperationalReportRepository
+    const service = new OperationalReportService(undefined, repository)
+
+    const report = await service.generateDailyPresence(
+      { date: '2026-06-12', scopeType: 'everyone' },
+      { id: 'actor-1', rank: 'MS', firstName: 'Report', lastName: 'Runner' }
+    )
+
+    expect(requestedEditNoteCheckinIds.sort()).toEqual([
+      'checkin-in-1',
+      'checkin-in-2',
+      'checkin-out-1',
+      'checkin-out-2',
+    ])
+    expect(report.data.rows[0]?.sessions).toEqual([
+      {
+        inAt: '2026-06-12T14:00:00.000Z',
+        outAt: '2026-06-12T18:00:00.000Z',
+        durationMinutes: 240,
+        status: 'complete',
+        inMethod: 'admin_manual',
+        outMethod: 'badge',
+        inEditNote: 'Corrected missed morning scan',
+        outEditNote: null,
+      },
+      {
+        inAt: '2026-06-12T19:00:00.000Z',
+        outAt: '2026-06-12T22:00:00.000Z',
+        durationMinutes: 180,
+        status: 'complete',
+        inMethod: 'badge',
+        outMethod: 'manual',
+        inEditNote: null,
+        outEditNote: 'Corrected final checkout time',
+      },
+    ])
   })
 })
 
@@ -536,6 +637,8 @@ describe('isStaleForcedCheckoutSession', () => {
           inAt: new Date('2026-05-05T23:00:00.000Z'),
           outAt: new Date('2026-05-06T13:24:00.000Z'),
           status: 'complete',
+          inCheckinId: 'checkin-in',
+          outCheckinId: 'checkin-out',
           checkoutKioskId: 'lockup-force-checkout',
         },
         new Date('2026-05-06T08:00:00.000Z')
@@ -551,6 +654,8 @@ describe('isStaleForcedCheckoutSession', () => {
           inAt: new Date('2026-05-05T23:00:00.000Z'),
           outAt: new Date('2026-05-06T13:24:00.000Z'),
           status: 'complete',
+          inCheckinId: 'checkin-in',
+          outCheckinId: 'checkin-out',
           checkoutKioskId: 'front',
         },
         new Date('2026-05-06T08:00:00.000Z')
@@ -565,6 +670,7 @@ describe('presenceSessionOverlapsRange', () => {
     inAt: new Date('2026-05-05T23:00:00.000Z'),
     outAt: null,
     status: 'open',
+    inCheckinId: 'checkin-in',
   }
   const asOf = new Date('2026-05-06T14:23:00.000Z')
 
@@ -598,6 +704,7 @@ describe('presenceSessionOverlapsRange', () => {
           inAt: new Date('2026-05-06T18:00:00.000Z'),
           outAt: null,
           status: 'open',
+          inCheckinId: 'checkin-in',
         },
         new Date('2026-05-06T05:00:00.000Z'),
         new Date('2026-05-07T05:00:00.000Z'),

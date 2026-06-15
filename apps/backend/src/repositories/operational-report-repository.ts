@@ -161,6 +161,13 @@ export interface OperationalReportCheckinRecord {
   direction: string
   timestamp: Date
   kioskId: string
+  method: string | null
+}
+
+export interface OperationalReportCheckinTimestampEditRecord {
+  checkinId: string
+  editReason: string | null
+  createdAt: Date | null
 }
 
 export type OperationalReportUnitEventRecord = Prisma.UnitEventGetPayload<{
@@ -212,6 +219,37 @@ export interface OperationalReportVisitorFilters {
   eventLinked?: boolean
   hostMemberId?: string
   organization?: string
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function auditDetailsChangedTimestamp(details: Prisma.JsonValue): boolean {
+  if (!isRecord(details)) {
+    return false
+  }
+
+  const changes = details.changes
+  if (!isRecord(changes)) {
+    return false
+  }
+
+  return isRecord(changes.timestamp)
+}
+
+function getAuditEditReason(details: Prisma.JsonValue): string | null {
+  if (!isRecord(details)) {
+    return null
+  }
+
+  const editReason = details.editReason
+  if (typeof editReason !== 'string') {
+    return null
+  }
+
+  const trimmed = editReason.trim()
+  return trimmed.length > 0 ? trimmed : null
 }
 
 export class OperationalReportRepository {
@@ -360,9 +398,50 @@ export class OperationalReportRepository {
         direction: true,
         timestamp: true,
         kioskId: true,
+        method: true,
       },
       orderBy: [{ memberId: 'asc' }, { timestamp: 'asc' }],
     })
+  }
+
+  async findCheckinTimestampEditNotes(
+    checkinIds: string[]
+  ): Promise<OperationalReportCheckinTimestampEditRecord[]> {
+    if (checkinIds.length === 0) {
+      return []
+    }
+
+    const auditLogs = await this.prisma.auditLog.findMany({
+      where: {
+        action: 'checkin_update',
+        entityType: 'checkin',
+        entityId: {
+          in: checkinIds,
+        },
+      },
+      select: {
+        entityId: true,
+        details: true,
+        createdAt: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    })
+
+    return auditLogs
+      .map((log): OperationalReportCheckinTimestampEditRecord | null => {
+        if (!log.entityId || !auditDetailsChangedTimestamp(log.details)) {
+          return null
+        }
+
+        return {
+          checkinId: log.entityId,
+          editReason: getAuditEditReason(log.details),
+          createdAt: log.createdAt,
+        }
+      })
+      .filter((record): record is OperationalReportCheckinTimestampEditRecord => record !== null)
   }
 
   async findScheduledDutyAssignmentsForMembers(

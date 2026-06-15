@@ -437,6 +437,10 @@ export const PresenceSessionSchema = v.object({
   outAt: v.nullable(v.string()),
   durationMinutes: v.nullable(v.number()),
   status: PresenceSessionStatusEnum,
+  inMethod: v.nullable(v.string()),
+  outMethod: v.nullable(v.string()),
+  inEditNote: v.nullable(v.string()),
+  outEditNote: v.nullable(v.string()),
 })
 
 export type PresenceSession = v.InferOutput<typeof PresenceSessionSchema>

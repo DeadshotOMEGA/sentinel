@@ -474,12 +474,44 @@
     width: 14%;
   }
 
+  .reports-daily-presence-table-with-details .reports-daily-member-col {
+    width: 20%;
+  }
+
+  .reports-daily-presence-table-with-details .reports-daily-department-col {
+    width: 8%;
+  }
+
+  .reports-daily-presence-table-with-details .reports-daily-tags-col {
+    width: 23%;
+  }
+
+  .reports-daily-presence-table-with-details .reports-daily-time-col {
+    width: 10%;
+  }
+
+  .reports-daily-presence-table-with-details .reports-daily-last-out-col {
+    width: 10%;
+  }
+
+  .reports-daily-presence-table-with-details .reports-daily-presence-col {
+    width: 9%;
+  }
+
+  .reports-daily-details-col {
+    width: 20%;
+  }
+
   .reports-daily-presence-table .reports-tags-cell {
     color: oklch(21% 0.006 285.885) !important;
   }
 
   .reports-daily-presence-table .reports-session-cell {
     text-align: right !important;
+  }
+
+  .reports-daily-presence-table .reports-details-cell {
+    white-space: normal !important;
   }
 }
 
