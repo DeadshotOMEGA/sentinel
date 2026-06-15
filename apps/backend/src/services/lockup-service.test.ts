@@ -31,6 +31,7 @@ function createService() {
     },
     responsibilityAuditLog: {
       create: vi.fn(),
+      findFirst: vi.fn(),
     },
     $transaction: vi.fn(async (operations: Array<Promise<unknown>>) => Promise.all(operations)),
   }
@@ -132,6 +133,82 @@ describe('LockupService.getPresentMembersForLockup', () => {
     const result = await service.getPresentMembersForLockup({ excludeMemberId: 'member-1' })
 
     expect(result.members.map((member) => member.id)).toEqual(['member-2'])
+  })
+})
+
+describe('LockupService.getFirstOpeningForOperationalDate', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('returns the first building opener from the operational-day audit log', async () => {
+    const { service, prisma } = createService()
+    const openedAt = new Date('2026-03-26T13:16:00.000Z')
+
+    prisma.responsibilityAuditLog.findFirst.mockResolvedValue({
+      memberId: 'member-1',
+      timestamp: openedAt,
+    })
+    prisma.member.findUnique.mockResolvedValue({
+      id: 'member-1',
+      firstName: 'Jordan',
+      lastName: 'Ryu',
+      rank: 'S1',
+      serviceNumber: '12345',
+    })
+
+    const result = await service.getFirstOpeningForOperationalDate(
+      new Date('2026-03-26T00:00:00.000Z')
+    )
+
+    expect(prisma.responsibilityAuditLog.findFirst).toHaveBeenCalledWith({
+      where: {
+        tagName: 'Lockup',
+        action: 'building_opened',
+        timestamp: {
+          gte: expect.any(Date),
+          lt: expect.any(Date),
+        },
+      },
+      orderBy: { timestamp: 'asc' },
+      select: {
+        memberId: true,
+        timestamp: true,
+      },
+    })
+    expect(prisma.member.findUnique).toHaveBeenCalledWith({
+      where: { id: 'member-1' },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        rank: true,
+        serviceNumber: true,
+      },
+    })
+    expect(result).toEqual({
+      openedBy: {
+        id: 'member-1',
+        firstName: 'Jordan',
+        lastName: 'Ryu',
+        rank: 'S1',
+        serviceNumber: '12345',
+      },
+      openedAt,
+    })
+  })
+
+  it('returns null when no building open audit record exists for the day', async () => {
+    const { service, prisma } = createService()
+
+    prisma.responsibilityAuditLog.findFirst.mockResolvedValue(null)
+
+    const result = await service.getFirstOpeningForOperationalDate(
+      new Date('2026-03-26T00:00:00.000Z')
+    )
+
+    expect(result).toBeNull()
+    expect(prisma.member.findUnique).not.toHaveBeenCalled()
   })
 })
 

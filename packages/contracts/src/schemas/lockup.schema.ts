@@ -28,6 +28,8 @@ export const LockupStatusResponseSchema = v.object({
   buildingStatus: BuildingStatusSchema,
   currentHolder: v.nullable(LockupHolderSchema),
   acquiredAt: v.nullable(v.string()), // ISO datetime
+  openedBy: v.nullable(LockupHolderSchema),
+  openedAt: v.nullable(v.string()), // ISO datetime
   securedAt: v.nullable(v.string()), // ISO datetime
   securedBy: v.nullable(LockupHolderSchema),
   isActive: v.boolean(),

@@ -170,6 +170,37 @@ export interface OperationalReportCheckinTimestampEditRecord {
   createdAt: Date | null
 }
 
+export interface OperationalReportDdsResponsibilityRecord {
+  memberId: string
+  acceptedAt: Date | null
+  member: {
+    id: string
+    rank: string
+    firstName: string
+    lastName: string
+    displayName: string | null
+  }
+}
+
+export interface OperationalReportResponsibilityAuditRecord {
+  memberId: string
+  tagName: string
+  action: string
+  fromMemberId: string | null
+  toMemberId: string | null
+  performedBy: string | null
+  performedByType: string
+  timestamp: Date
+  notes: string | null
+}
+
+export type OperationalReportLockupTransferRecord = Prisma.LockupTransferGetPayload<{
+  include: {
+    fromMember: { select: typeof reportDutyMemberSelect }
+    toMember: { select: typeof reportDutyMemberSelect }
+  }
+}>
+
 export type OperationalReportUnitEventRecord = Prisma.UnitEventGetPayload<{
   include: typeof unitEventInclude
 }>
@@ -442,6 +473,136 @@ export class OperationalReportRepository {
         }
       })
       .filter((record): record is OperationalReportCheckinTimestampEditRecord => record !== null)
+  }
+
+  async findFirstCheckinForMembers(
+    memberIds: string[],
+    start: Date,
+    end: Date
+  ): Promise<OperationalReportCheckinRecord | null> {
+    if (memberIds.length === 0) {
+      return null
+    }
+
+    return this.prisma.checkin.findFirst({
+      where: {
+        memberId: {
+          in: memberIds,
+        },
+        direction: 'in',
+        timestamp: {
+          gte: start,
+          lt: end,
+        },
+      },
+      select: {
+        id: true,
+        memberId: true,
+        direction: true,
+        timestamp: true,
+        kioskId: true,
+        method: true,
+      },
+      orderBy: { timestamp: 'asc' },
+    })
+  }
+
+  async findDdsResponsibilityForDate(
+    startDate: Date,
+    endDate: Date
+  ): Promise<OperationalReportDdsResponsibilityRecord[]> {
+    return this.prisma.ddsAssignment.findMany({
+      where: {
+        assignedDate: {
+          gte: startDate,
+          lt: endDate,
+        },
+        acceptedAt: {
+          not: null,
+        },
+      },
+      select: {
+        memberId: true,
+        acceptedAt: true,
+        member: {
+          select: reportDutyMemberSelect,
+        },
+      },
+      orderBy: { acceptedAt: 'asc' },
+    })
+  }
+
+  async findResponsibilityAuditRecords(
+    start: Date,
+    end: Date
+  ): Promise<OperationalReportResponsibilityAuditRecord[]> {
+    return this.prisma.responsibilityAuditLog.findMany({
+      where: {
+        timestamp: {
+          gte: start,
+          lt: end,
+        },
+        OR: [
+          { tagName: 'DDS', action: { in: ['transferred', 'self_accepted', 'accepted'] } },
+          { tagName: 'Lockup', action: 'building_opened' },
+        ],
+      },
+      select: {
+        memberId: true,
+        tagName: true,
+        action: true,
+        fromMemberId: true,
+        toMemberId: true,
+        performedBy: true,
+        performedByType: true,
+        timestamp: true,
+        notes: true,
+      },
+      orderBy: { timestamp: 'asc' },
+    })
+  }
+
+  async findLockupTransfersForRange(
+    start: Date,
+    end: Date
+  ): Promise<OperationalReportLockupTransferRecord[]> {
+    return this.prisma.lockupTransfer.findMany({
+      where: {
+        transferredAt: {
+          gte: start,
+          lt: end,
+        },
+      },
+      include: {
+        fromMember: { select: reportDutyMemberSelect },
+        toMember: { select: reportDutyMemberSelect },
+      },
+      orderBy: { transferredAt: 'asc' },
+    })
+  }
+
+  async findDutyPeopleByIds(memberIds: string[]): Promise<
+    Array<{
+      id: string
+      rank: string
+      firstName: string
+      lastName: string
+      displayName: string | null
+    }>
+  > {
+    const uniqueIds = [...new Set(memberIds.filter((memberId) => memberId.trim().length > 0))]
+    if (uniqueIds.length === 0) {
+      return []
+    }
+
+    return this.prisma.member.findMany({
+      where: {
+        id: {
+          in: uniqueIds,
+        },
+      },
+      select: reportDutyMemberSelect,
+    })
   }
 
   async findScheduledDutyAssignmentsForMembers(

@@ -1,3 +1,17 @@
+const REPORT_LOCALE = 'en-CA'
+
+function formatMilitaryTime(date: Date): string {
+  const parts = new Intl.DateTimeFormat(REPORT_LOCALE, {
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  }).formatToParts(date)
+  const hour = parts.find((part) => part.type === 'hour')?.value ?? '00'
+  const minute = parts.find((part) => part.type === 'minute')?.value ?? '00'
+
+  return `${hour}${minute}`
+}
+
 export function formatReportDateTime(value: string | null | undefined): string {
   if (!value) {
     return '—'
@@ -8,12 +22,12 @@ export function formatReportDateTime(value: string | null | undefined): string {
     return value
   }
 
-  return date.toLocaleString(undefined, {
+  const dateLabel = date.toLocaleDateString(REPORT_LOCALE, {
     month: 'short',
     day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
   })
+
+  return `${dateLabel}, ${formatMilitaryTime(date)}`
 }
 
 export function formatReportTime(value: string | null | undefined): string {
@@ -26,10 +40,7 @@ export function formatReportTime(value: string | null | undefined): string {
     return value
   }
 
-  return date.toLocaleTimeString(undefined, {
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+  return formatMilitaryTime(date)
 }
 
 export function formatDuration(minutes: number | null | undefined): string {

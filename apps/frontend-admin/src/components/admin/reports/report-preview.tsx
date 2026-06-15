@@ -166,7 +166,7 @@ function ReportDocumentFrame({
           <dl className="grid gap-(--space-1) text-right text-xs text-base-content/65">
             <div>
               <dt className="font-semibold uppercase tracking-wide">Generated</dt>
-              <dd className="font-mono">{formatReportDateTime(report.generatedAt)}</dd>
+              <dd className="tabular-nums">{formatReportDateTime(report.generatedAt)}</dd>
             </div>
             <div>
               <dt className="font-semibold uppercase tracking-wide">By</dt>
@@ -262,35 +262,94 @@ function SummaryGrid({ items }: { items: Array<{ label: string; value: string | 
 function DailyPresenceDayContext({ report }: { report: DailyPresenceReportResponse }) {
   const { dayContext } = report.data
   const workingHours = dayContext.workingHours
+  const operationLines = getDailyPresenceOperationLines(dayContext.operations)
   const nightLabels = [
     dayContext.isTrainingNight ? 'Training Night' : null,
     dayContext.isAdminNight ? 'Admin Night' : null,
   ].filter((label): label is string => label !== null)
 
   return (
-    <div className="mb-(--space-3) flex flex-wrap items-center gap-(--space-2) text-xs text-base-content/65">
-      <span className="rounded-box bg-base-200 px-(--space-2) py-(--space-1)">
-        Working hours:{' '}
-        <span className="font-semibold text-base-content">
-          {workingHours ? formatTimeRangeLabel(workingHours.label) : 'Unavailable'}
-        </span>
-      </span>
-      {nightLabels.length > 0 ? (
-        nightLabels.map((label) => (
-          <span
-            key={label}
-            className="rounded-box border border-info/30 bg-info-fadded px-(--space-2) py-(--space-1) font-semibold text-info-fadded-content"
-          >
-            {label}
-          </span>
-        ))
-      ) : (
+    <div className="mb-(--space-3) grid gap-(--space-2) text-xs text-base-content/65">
+      <div className="flex flex-wrap items-center gap-(--space-2)">
         <span className="rounded-box bg-base-200 px-(--space-2) py-(--space-1)">
-          No Training/Admin Night
+          Working hours:{' '}
+          <span className="font-semibold text-base-content">
+            {workingHours ? formatTimeRangeLabel(workingHours.label) : 'Unavailable'}
+          </span>
         </span>
+        {nightLabels.length > 0 ? (
+          nightLabels.map((label) => (
+            <span
+              key={label}
+              className="rounded-box border border-info/30 bg-info-fadded px-(--space-2) py-(--space-1) font-semibold text-info-fadded-content"
+            >
+              {label}
+            </span>
+          ))
+        ) : (
+          <span className="rounded-box bg-base-200 px-(--space-2) py-(--space-1)">
+            No Training/Admin Night
+          </span>
+        )}
+      </div>
+      {operationLines.length > 0 && (
+        <dl className="reports-operations-context grid gap-(--space-1) rounded-box bg-base-200 px-(--space-2) py-(--space-2)">
+          {operationLines.map((line) => (
+            <div key={`${line.label}-${line.value}`} className="flex flex-wrap gap-x-(--space-1)">
+              <dt className="font-semibold text-base-content/60">{line.label}:</dt>
+              <dd className="text-base-content/80">{line.value}</dd>
+            </div>
+          ))}
+        </dl>
       )}
     </div>
   )
+}
+
+function getDailyPresenceOperationLines(
+  operations: DailyPresenceReportResponse['data']['dayContext']['operations']
+): Array<{ label: string; value: string }> {
+  const lines: Array<{ label: string; value: string }> = []
+
+  if (operations.buildingOpening) {
+    lines.push({
+      label:
+        operations.buildingOpening.source === 'building_opened'
+          ? 'Building opened'
+          : 'First check-in',
+      value: `${formatReportTime(operations.buildingOpening.openedAt)} by ${operations.buildingOpening.openedBy.displayName}`,
+    })
+  }
+
+  if (operations.ddsAcceptance) {
+    lines.push({
+      label: 'DDS accepted',
+      value: `${formatReportTime(operations.ddsAcceptance.acceptedAt)} by ${operations.ddsAcceptance.acceptedBy.displayName}`,
+    })
+  }
+
+  for (const transfer of operations.ddsTransfers) {
+    lines.push({
+      label: 'DDS turnover',
+      value: `${formatReportTime(transfer.transferredAt)} ${formatTransferPeople(transfer)}`,
+    })
+  }
+
+  for (const transfer of operations.lockupTransfers) {
+    lines.push({
+      label: 'Lockup transfer',
+      value: `${formatReportTime(transfer.transferredAt)} ${formatTransferPeople(transfer)}`,
+    })
+  }
+
+  return lines
+}
+
+function formatTransferPeople(
+  transfer: DailyPresenceReportResponse['data']['dayContext']['operations']['ddsTransfers'][number]
+): string {
+  const from = transfer.from?.displayName ?? 'Unassigned'
+  return `${from} to ${transfer.to.displayName}`
 }
 
 function formatTimeRangeLabel(label: string): string {
@@ -395,12 +454,12 @@ function DailyPresenceReport({ report }: { report: DailyPresenceReportResponse }
           { label: 'Scoped members', value: summary.totalScopedMembers },
           { label: 'FTS total', value: summary.ftsTotalMembers },
           {
-            label: 'FTS on time / late',
+            label: 'FTS attendance',
             value: report.data.dayContext.workingHours
               ? `${summary.ftsOnTimeCount} / ${summary.ftsLateCount}`
               : '— / —',
           },
-          { label: 'GEO checked in', value: summary.geoCheckedInCount },
+          { label: 'GEO attendance', value: summary.geoCheckedInCount },
         ]}
       />
 
@@ -419,8 +478,7 @@ function DailyPresenceReport({ report }: { report: DailyPresenceReportResponse }
           >
             <colgroup>
               <col className="reports-daily-member-col" />
-              <col className="reports-daily-presence-col" />
-              <col className="reports-daily-department-col" />
+              <col className="reports-daily-presence-col reports-print-hidden" />
               <col className="reports-daily-tags-col" />
               <col className="reports-daily-time-col" />
               <col className="reports-daily-last-out-col" />
@@ -429,8 +487,7 @@ function DailyPresenceReport({ report }: { report: DailyPresenceReportResponse }
             <thead>
               <tr>
                 <th>Member</th>
-                <th>Presence</th>
-                <th>Department</th>
+                <th className="reports-print-hidden">Presence</th>
                 <th>Tags</th>
                 <th>Check-In</th>
                 <th>Check-Out</th>
@@ -444,9 +501,12 @@ function DailyPresenceReport({ report }: { report: DailyPresenceReportResponse }
                 return (
                   <tr key={row.member.id}>
                     <td className="reports-member-cell">
-                      <MemberName member={row.member} />
+                      <MemberName
+                        member={row.member}
+                        secondaryLabel={getMemberDepartmentLabel(row.member)}
+                      />
                     </td>
-                    <td>
+                    <td className="reports-print-hidden">
                       <span className="reports-screen-only">
                         <span
                           role="status"
@@ -461,17 +521,14 @@ function DailyPresenceReport({ report }: { report: DailyPresenceReportResponse }
                           {isPresent ? 'Present' : 'Out'}
                         </span>
                       </span>
-                      <span className="hidden reports-print-inline font-mono">
+                      <span className="hidden reports-print-inline tabular-nums">
                         {isPresent ? 'Present' : 'Out'}
                       </span>
-                    </td>
-                    <td className="reports-department-cell">
-                      {row.member.division?.code ?? row.member.division?.name ?? 'Unassigned'}
                     </td>
                     <td className="reports-tags-cell">
                       <TagList tags={row.member.tags} />
                     </td>
-                    <td className="reports-time-cell font-mono">
+                    <td className="reports-time-cell tabular-nums">
                       <div className="grid gap-(--space-1)">
                         {row.sessions.map((session, sessionIndex) => (
                           <span key={`${row.member.id}-in-${session.inAt}-${sessionIndex}`}>
@@ -480,7 +537,7 @@ function DailyPresenceReport({ report }: { report: DailyPresenceReportResponse }
                         ))}
                       </div>
                     </td>
-                    <td className="reports-time-cell font-mono">
+                    <td className="reports-time-cell tabular-nums">
                       <div className="grid gap-(--space-1)">
                         {row.sessions.map((session, sessionIndex) => (
                           <span key={`${row.member.id}-out-${session.inAt}-${sessionIndex}`}>
@@ -498,15 +555,19 @@ function DailyPresenceReport({ report }: { report: DailyPresenceReportResponse }
                     {hasDetails && (
                       <td className="reports-details-cell">
                         {detailLines.length > 0 && (
-                          <div className="grid gap-(--space-1) text-xs leading-tight text-base-content/70">
+                          <div className="grid gap-(--space-1) leading-tight text-base-content/70">
                             {detailLines.map((line, lineIndex) => (
                               <span
                                 key={`${row.member.id}-detail-${lineIndex}`}
                                 className="flex flex-wrap items-center gap-x-(--space-1) gap-y-0.5"
                               >
-                                <span className="font-mono text-base-content/55">{line.time}</span>
+                                <span className="reports-detail-time tabular-nums text-xs text-base-content/55">
+                                  {line.time}
+                                </span>
                                 <DailyPresenceDetailDirectionBadge direction={line.direction} />
-                                <span>{line.text}</span>
+                                <span className="reports-detail-text text-[0.6875rem] leading-snug">
+                                  {line.text}
+                                </span>
                               </span>
                             ))}
                           </div>
@@ -543,7 +604,9 @@ function DailyPresenceDetailDirectionBadge({
       >
         {label}
       </span>
-      <span className="hidden reports-print-inline font-semibold">{label}</span>
+      <span className="reports-detail-direction-label hidden reports-print-inline font-semibold">
+        {label}
+      </span>
     </>
   )
 }
@@ -677,7 +740,7 @@ function TrainingNightMonthlyReport({ report }: { report: TrainingNightMonthlyRe
                       </td>
                     )
                   })}
-                  <td className="text-right font-mono">
+                  <td className="text-right tabular-nums">
                     {row.attended}/{row.possible} · {formatPercent(row.percentage)}
                   </td>
                 </tr>
@@ -742,8 +805,8 @@ function VisitorActivityReport({ report }: { report: VisitorActivityReportRespon
                     </div>
                   </td>
                   <td>{row.organization ?? '—'}</td>
-                  <td className="font-mono">{formatReportDateTime(row.checkInTime)}</td>
-                  <td className="font-mono">
+                  <td className="tabular-nums">{formatReportDateTime(row.checkInTime)}</td>
+                  <td className="tabular-nums">
                     {row.checkOutTime ? formatReportDateTime(row.checkOutTime) : 'Still present'}
                   </td>
                   <td>{row.event?.name ?? '—'}</td>
@@ -801,10 +864,14 @@ function OperationalExceptionsReport({ report }: { report: OperationalExceptions
                   <tbody>
                     {forcedCheckouts.map((row) => (
                       <tr key={row.id}>
-                        <td className="font-mono">{row.operationalDate}</td>
+                        <td className="tabular-nums">{row.operationalDate}</td>
                         <td className="font-semibold">{row.member.displayName}</td>
-                        <td className="font-mono">{formatReportDateTime(row.originalCheckinAt)}</td>
-                        <td className="font-mono">{formatReportDateTime(row.forcedCheckoutAt)}</td>
+                        <td className="tabular-nums">
+                          {formatReportDateTime(row.originalCheckinAt)}
+                        </td>
+                        <td className="tabular-nums">
+                          {formatReportDateTime(row.forcedCheckoutAt)}
+                        </td>
                         <td>{row.resolverLabel}</td>
                         <td>{row.notes ?? '—'}</td>
                       </tr>
@@ -838,12 +905,12 @@ function OperationalExceptionsReport({ report }: { report: OperationalExceptions
                   <tbody>
                     {lockupExceptions.map((row) => (
                       <tr key={row.id}>
-                        <td className="font-mono">{row.operationalDate}</td>
+                        <td className="tabular-nums">{row.operationalDate}</td>
                         <td>{row.buildingStatus}</td>
                         <td>{row.expectedDds?.displayName ?? '—'}</td>
                         <td>{row.expectedSwk?.displayName ?? '—'}</td>
                         <td>{row.expectedLockupHolder?.displayName ?? '—'}</td>
-                        <td className="font-mono">{row.systemForcedCheckoutCount}</td>
+                        <td className="tabular-nums">{row.systemForcedCheckoutCount}</td>
                         <td>{row.notes.join('; ')}</td>
                       </tr>
                     ))}
@@ -909,7 +976,7 @@ function PresenceMatrixTable({
                   <PresenceSymbol present={day.present} note={day.note} />
                 </td>
               ))}
-              <td className="text-right font-mono">{row.total}</td>
+              <td className="text-right tabular-nums">{row.total}</td>
               {row.trailing.map((value, index) => (
                 <td key={`${row.member.id}-${trailingHeaders[index]}`} className="text-right">
                   {value}
@@ -979,11 +1046,21 @@ function PresenceSymbol({
   )
 }
 
-function MemberName({ member }: { member: ReportMemberSummary }) {
+function getMemberDepartmentLabel(member: ReportMemberSummary): string {
+  return member.division?.code ?? member.division?.name ?? 'Unassigned'
+}
+
+function MemberName({
+  member,
+  secondaryLabel = member.memberType ?? 'Member',
+}: {
+  member: ReportMemberSummary
+  secondaryLabel?: string
+}) {
   return (
     <div>
       <p className="font-semibold leading-tight">{member.displayName}</p>
-      <p className="text-xs text-base-content/55">{member.memberType ?? 'Member'}</p>
+      <p className="text-xs text-base-content/55">{secondaryLabel}</p>
     </div>
   )
 }

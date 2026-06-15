@@ -434,6 +434,10 @@ describe('generateDailyPresence', () => {
       findScheduledDutyAssignmentsForMembers: async () => [],
       findDdsAssignmentsForMembers: async () => [],
       findLiveDutyAssignmentsForMembers: async () => [],
+      findResponsibilityAuditRecords: async () => [],
+      findDdsResponsibilityForDate: async () => [],
+      findLockupTransfersForRange: async () => [],
+      findDutyPeopleByIds: async () => [],
       findTagShortcut: async () => null,
       findUnitEvents: async () => [],
       findAppSettingValue: async () => null,
@@ -487,6 +491,10 @@ describe('generateDailyPresence', () => {
       findScheduledDutyAssignmentsForMembers: async () => [],
       findDdsAssignmentsForMembers: async () => [],
       findLiveDutyAssignmentsForMembers: async () => [],
+      findResponsibilityAuditRecords: async () => [],
+      findDdsResponsibilityForDate: async () => [],
+      findLockupTransfersForRange: async () => [],
+      findDutyPeopleByIds: async () => [],
       findTagShortcut: async () => null,
       findUnitEvents: async () => [],
       findAppSettingValue: async () => null,
@@ -555,6 +563,10 @@ describe('generateDailyPresence', () => {
       findScheduledDutyAssignmentsForMembers: async () => [],
       findDdsAssignmentsForMembers: async () => [],
       findLiveDutyAssignmentsForMembers: async () => [],
+      findResponsibilityAuditRecords: async () => [],
+      findDdsResponsibilityForDate: async () => [],
+      findLockupTransfersForRange: async () => [],
+      findDutyPeopleByIds: async () => [],
       findTagShortcut: async (shortcut: 'fts' | 'geo') =>
         shortcut === 'fts'
           ? { id: ftsTagId, name: 'FTS', chipVariant: 'faded', chipColor: 'success' }
@@ -613,6 +625,173 @@ describe('generateDailyPresence', () => {
     })
     expect(report.data.dayContext.isTrainingNight).toBe(true)
     expect(report.data.dayContext.isAdminNight).toBe(true)
+  })
+
+  it('includes Daily Presence building, DDS, and lockup operations context', async () => {
+    const opener = operationalReportMember({
+      id: '11111111-1111-4111-8111-111111111111',
+      displayName: 'S1 Opener, A',
+      rank: 'S1',
+      firstName: 'Alex',
+      lastName: 'Opener',
+    })
+    const outgoingDds = operationalReportMember({
+      id: '22222222-2222-4222-8222-222222222222',
+      displayName: 'MS Outgoing, B',
+      rank: 'MS',
+      firstName: 'Blair',
+      lastName: 'Outgoing',
+    })
+    const incomingDds = operationalReportMember({
+      id: '33333333-3333-4333-8333-333333333333',
+      displayName: 'PO2 Incoming, C',
+      rank: 'PO2',
+      firstName: 'Casey',
+      lastName: 'Incoming',
+    })
+    const members = [opener, outgoingDds, incomingDds]
+    const repository = {
+      findActiveMembers: async () => members,
+      findCheckinsForMembers: async () => [
+        checkin('opener-in', opener.id, 'in', '2026-06-15T13:00:00.000Z'),
+      ],
+      findCheckinTimestampEditNotes: async () => [],
+      findScheduledDutyAssignmentsForMembers: async () => [],
+      findDdsAssignmentsForMembers: async () => [],
+      findLiveDutyAssignmentsForMembers: async () => [],
+      findResponsibilityAuditRecords: async () => [
+        {
+          memberId: opener.id,
+          tagName: 'Lockup',
+          action: 'building_opened',
+          fromMemberId: null,
+          toMemberId: null,
+          performedBy: opener.id,
+          performedByType: 'member',
+          timestamp: new Date('2026-06-15T13:02:00.000Z'),
+          notes: null,
+        },
+        {
+          memberId: incomingDds.id,
+          tagName: 'DDS',
+          action: 'transferred',
+          fromMemberId: outgoingDds.id,
+          toMemberId: incomingDds.id,
+          performedBy: outgoingDds.id,
+          performedByType: 'member',
+          timestamp: new Date('2026-06-15T20:00:00.000Z'),
+          notes: 'DDS turnover completed',
+        },
+      ],
+      findDdsResponsibilityForDate: async () => [
+        {
+          memberId: outgoingDds.id,
+          acceptedAt: new Date('2026-06-15T13:10:00.000Z'),
+          member: outgoingDds,
+        },
+      ],
+      findLockupTransfersForRange: async () => [
+        {
+          id: 'lockup-transfer-1',
+          lockupStatusId: 'lockup-status-1',
+          fromMemberId: outgoingDds.id,
+          toMemberId: incomingDds.id,
+          transferredAt: new Date('2026-06-15T20:05:00.000Z'),
+          reason: 'dds_handoff',
+          notes: 'Lockup moved with DDS',
+          createdAt: new Date('2026-06-15T20:05:00.000Z'),
+          fromMember: outgoingDds,
+          toMember: incomingDds,
+        },
+      ],
+      findDutyPeopleByIds: async () => [],
+      findTagShortcut: async () => null,
+      findUnitEvents: async () => [],
+      findAppSettingValue: async () => null,
+    } as unknown as OperationalReportRepository
+    const service = new OperationalReportService(undefined, repository)
+
+    const report = await service.generateDailyPresence(
+      { date: '2026-06-15', scopeType: 'everyone' },
+      { id: 'actor-1', rank: 'MS', firstName: 'Report', lastName: 'Runner' }
+    )
+
+    expect(report.data.dayContext.operations).toMatchObject({
+      buildingOpening: {
+        openedAt: '2026-06-15T13:02:00.000Z',
+        openedBy: { id: opener.id, displayName: 'S1 Opener, A', rank: 'S1' },
+        source: 'building_opened',
+      },
+      ddsAcceptance: {
+        acceptedAt: '2026-06-15T13:10:00.000Z',
+        acceptedBy: { id: outgoingDds.id, displayName: 'MS Outgoing, B', rank: 'MS' },
+      },
+      ddsTransfers: [
+        {
+          transferredAt: '2026-06-15T20:00:00.000Z',
+          from: { id: outgoingDds.id, displayName: 'MS Outgoing, B', rank: 'MS' },
+          to: { id: incomingDds.id, displayName: 'PO2 Incoming, C', rank: 'PO2' },
+          reason: 'dds_turnover',
+          notes: 'DDS turnover completed',
+        },
+      ],
+      lockupTransfers: [
+        {
+          transferredAt: '2026-06-15T20:05:00.000Z',
+          from: { id: outgoingDds.id, displayName: 'MS Outgoing, B', rank: 'MS' },
+          to: { id: incomingDds.id, displayName: 'PO2 Incoming, C', rank: 'PO2' },
+          reason: 'dds_handoff',
+          notes: 'Lockup moved with DDS',
+        },
+      ],
+    })
+  })
+
+  it('uses the first check-in as the Daily Presence opening fallback', async () => {
+    const firstMember = operationalReportMember({
+      id: '11111111-1111-4111-8111-111111111111',
+      displayName: 'S1 First, A',
+      rank: 'S1',
+      firstName: 'Alex',
+      lastName: 'First',
+    })
+    const secondMember = operationalReportMember({
+      id: '22222222-2222-4222-8222-222222222222',
+      displayName: 'S1 Second, B',
+      rank: 'S1',
+      firstName: 'Blair',
+      lastName: 'Second',
+    })
+    const repository = {
+      findActiveMembers: async () => [firstMember, secondMember],
+      findCheckinsForMembers: async () => [
+        checkin('second-in', secondMember.id, 'in', '2026-06-15T14:00:00.000Z'),
+        checkin('first-in', firstMember.id, 'in', '2026-06-15T13:00:00.000Z'),
+      ],
+      findCheckinTimestampEditNotes: async () => [],
+      findScheduledDutyAssignmentsForMembers: async () => [],
+      findDdsAssignmentsForMembers: async () => [],
+      findLiveDutyAssignmentsForMembers: async () => [],
+      findResponsibilityAuditRecords: async () => [],
+      findDdsResponsibilityForDate: async () => [],
+      findLockupTransfersForRange: async () => [],
+      findDutyPeopleByIds: async () => [],
+      findTagShortcut: async () => null,
+      findUnitEvents: async () => [],
+      findAppSettingValue: async () => null,
+    } as unknown as OperationalReportRepository
+    const service = new OperationalReportService(undefined, repository)
+
+    const report = await service.generateDailyPresence(
+      { date: '2026-06-15', scopeType: 'everyone' },
+      { id: 'actor-1', rank: 'MS', firstName: 'Report', lastName: 'Runner' }
+    )
+
+    expect(report.data.dayContext.operations.buildingOpening).toEqual({
+      openedAt: '2026-06-15T13:00:00.000Z',
+      openedBy: { id: firstMember.id, displayName: 'S1 First, A', rank: 'S1' },
+      source: 'first_checkin',
+    })
   })
 
   it('includes session methods and timestamp edit notes', async () => {
@@ -674,6 +853,10 @@ describe('generateDailyPresence', () => {
       findScheduledDutyAssignmentsForMembers: async () => [],
       findDdsAssignmentsForMembers: async () => [],
       findLiveDutyAssignmentsForMembers: async () => [],
+      findResponsibilityAuditRecords: async () => [],
+      findDdsResponsibilityForDate: async () => [],
+      findLockupTransfersForRange: async () => [],
+      findDutyPeopleByIds: async () => [],
       findTagShortcut: async () => null,
       findUnitEvents: async () => [],
       findAppSettingValue: async () => null,
@@ -756,6 +939,10 @@ describe('generateWeeklyPresence', () => {
       findScheduledDutyAssignmentsForMembers: async () => [],
       findDdsAssignmentsForMembers: async () => [],
       findLiveDutyAssignmentsForMembers: async () => [],
+      findResponsibilityAuditRecords: async () => [],
+      findDdsResponsibilityForDate: async () => [],
+      findLockupTransfersForRange: async () => [],
+      findDutyPeopleByIds: async () => [],
       findUnitEvents: async () => [],
       findAppSettingValue: async () => null,
       findReportSettingValue: async () => null,
