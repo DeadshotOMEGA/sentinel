@@ -1,10 +1,11 @@
 import { initServer } from '@ts-rest/express'
-import { lockupContract } from '@sentinel/contracts'
+import { lockupContract, type LockupStatusResponse } from '@sentinel/contracts'
 import { formatAuditMemberName, logRequestAudit } from '../lib/audit-log.js'
 import { LockupService } from '../services/lockup-service.js'
 import { MemberRepository } from '../repositories/member-repository.js'
 import { AuditRepository } from '../repositories/audit-repository.js'
 import { BadgeRepository } from '../repositories/badge-repository.js'
+import type { LockupStatusEntity } from '../repositories/lockup-repository.js'
 import { getPrismaClient } from '../lib/database.js'
 import { AccountLevel } from '../middleware/roles.js'
 
@@ -14,6 +15,22 @@ const lockupService = new LockupService(getPrismaClient())
 const memberRepository = new MemberRepository(getPrismaClient())
 const auditRepo = new AuditRepository(getPrismaClient())
 const badgeRepository = new BadgeRepository(getPrismaClient())
+
+async function toLockupStatusResponse(status: LockupStatusEntity): Promise<LockupStatusResponse> {
+  const opening = await lockupService.getFirstOpeningForOperationalDate(status.date)
+
+  return {
+    date: status.date.toISOString().split('T')[0] ?? '',
+    buildingStatus: status.buildingStatus,
+    currentHolder: status.currentHolder,
+    acquiredAt: status.acquiredAt?.toISOString() ?? null,
+    openedBy: opening?.openedBy ?? null,
+    openedAt: opening?.openedAt.toISOString() ?? null,
+    securedAt: status.securedAt?.toISOString() ?? null,
+    securedBy: status.securedByMember ?? null,
+    isActive: status.isActive,
+  }
+}
 
 /**
  * Lockup route implementation using ts-rest
@@ -32,15 +49,7 @@ export const lockupRouter = s.router(lockupContract, {
 
       return {
         status: 200 as const,
-        body: {
-          date: status.date.toISOString().split('T')[0] ?? '',
-          buildingStatus: status.buildingStatus,
-          currentHolder: status.currentHolder,
-          acquiredAt: status.acquiredAt?.toISOString() ?? null,
-          securedAt: status.securedAt?.toISOString() ?? null,
-          securedBy: status.securedByMember ?? null,
-          isActive: status.isActive,
-        },
+        body: await toLockupStatusResponse(status),
       }
     } catch (error) {
       return {
@@ -72,15 +81,7 @@ export const lockupRouter = s.router(lockupContract, {
 
       return {
         status: 200 as const,
-        body: {
-          date: status.date.toISOString().split('T')[0] ?? '',
-          buildingStatus: status.buildingStatus,
-          currentHolder: status.currentHolder,
-          acquiredAt: status.acquiredAt?.toISOString() ?? null,
-          securedAt: status.securedAt?.toISOString() ?? null,
-          securedBy: status.securedByMember ?? null,
-          isActive: status.isActive,
-        },
+        body: await toLockupStatusResponse(status),
       }
     } catch (error) {
       return {
@@ -371,15 +372,7 @@ export const lockupRouter = s.router(lockupContract, {
         body: {
           success: true,
           message: 'Building opened successfully',
-          status: {
-            date: status.date.toISOString().split('T')[0] ?? '',
-            buildingStatus: status.buildingStatus,
-            currentHolder: status.currentHolder,
-            acquiredAt: status.acquiredAt?.toISOString() ?? null,
-            securedAt: status.securedAt?.toISOString() ?? null,
-            securedBy: status.securedByMember ?? null,
-            isActive: status.isActive,
-          },
+          status: await toLockupStatusResponse(status),
         },
       }
     } catch (error) {

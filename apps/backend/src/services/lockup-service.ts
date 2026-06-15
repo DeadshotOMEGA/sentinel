@@ -1,5 +1,6 @@
 import type { PrismaClient } from '@sentinel/database'
 import type { MemberType } from '@sentinel/types'
+import { DateTime } from 'luxon'
 import { getPrismaClient } from '../lib/database.js'
 import { CheckinRepository } from '../repositories/checkin-repository.js'
 import { TemporaryPersonnelRepository } from '../repositories/temporary-personnel-repository.js'
@@ -15,7 +16,11 @@ import { PresenceService } from './presence-service.js'
 import { LiveDutyAssignmentService } from './live-duty-assignment-service.js'
 import { ScheduleService } from './schedule-service.js'
 import { NotFoundError, ValidationError } from '../middleware/error-handler.js'
-import { getOperationalDate } from '../utils/operational-date.js'
+import {
+  DEFAULT_TIMEZONE,
+  getOperationalDate,
+  getOperationalDayStartTime,
+} from '../utils/operational-date.js'
 import {
   broadcastLockupExecution,
   broadcastLockupTransfer,
@@ -91,6 +96,11 @@ export interface CheckoutOptions {
 
 export type TransferReason = 'manual' | 'dds_handoff' | 'duty_watch_takeover' | 'checkout_transfer'
 
+export interface LockupOpeningSummary {
+  openedBy: LockupHolder | null
+  openedAt: Date
+}
+
 interface LockupTransferHistoryItem {
   id: string
   type: 'transfer'
@@ -165,6 +175,62 @@ export class LockupService {
   async getStatusByDate(date: string): Promise<LockupStatusEntity | null> {
     const parsedDate = new Date(date + 'T00:00:00')
     return this.lockupRepo.findStatusByDate(parsedDate)
+  }
+
+  async getFirstOpeningForOperationalDate(
+    operationalDate: Date
+  ): Promise<LockupOpeningSummary | null> {
+    const dayStart = getOperationalDayStartTime()
+    const windowStart = DateTime.fromObject(
+      {
+        year: operationalDate.getUTCFullYear(),
+        month: operationalDate.getUTCMonth() + 1,
+        day: operationalDate.getUTCDate(),
+      },
+      { zone: DEFAULT_TIMEZONE }
+    ).set({
+      hour: dayStart.hour,
+      minute: dayStart.minute,
+      second: 0,
+      millisecond: 0,
+    })
+    const windowEnd = windowStart.plus({ days: 1 })
+
+    const openingLog = await this.prisma.responsibilityAuditLog.findFirst({
+      where: {
+        tagName: 'Lockup',
+        action: 'building_opened',
+        timestamp: {
+          gte: windowStart.toJSDate(),
+          lt: windowEnd.toJSDate(),
+        },
+      },
+      orderBy: { timestamp: 'asc' },
+      select: {
+        memberId: true,
+        timestamp: true,
+      },
+    })
+
+    if (!openingLog) {
+      return null
+    }
+
+    const openedBy = await this.prisma.member.findUnique({
+      where: { id: openingLog.memberId },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        rank: true,
+        serviceNumber: true,
+      },
+    })
+
+    return {
+      openedBy,
+      openedAt: openingLog.timestamp,
+    }
   }
 
   /**

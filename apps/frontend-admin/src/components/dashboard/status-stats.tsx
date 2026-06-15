@@ -305,13 +305,16 @@ function BuildingStat({
   const StatusIcon = display.Icon
 
   const getDesc = () => {
+    if (lockupStatus?.openedAt && lockupStatus.openedBy) {
+      return `Opened by ${formatMemberName(lockupStatus.openedBy)} at ${formatTime(lockupStatus.openedAt)}`
+    }
+    if (lockupStatus?.openedAt) {
+      return `Opened at ${formatTime(lockupStatus.openedAt)}`
+    }
     if (lockupStatus?.buildingStatus === 'secured' && lockupStatus.securedBy) {
       return `Secured by ${formatMemberName(lockupStatus.securedBy)}${lockupStatus.securedAt ? ` at ${formatTime(lockupStatus.securedAt)}` : ''}`
     }
-    if (lockupStatus?.currentHolder && lockupStatus.buildingStatus !== 'secured') {
-      return `Held by ${formatMemberName(lockupStatus.currentHolder)}${lockupStatus.acquiredAt ? ` since ${formatTime(lockupStatus.acquiredAt)}` : ''}`
-    }
-    return 'No lockup in progress'
+    return 'No opening recorded today'
   }
 
   if (display.label === 'Secured') {

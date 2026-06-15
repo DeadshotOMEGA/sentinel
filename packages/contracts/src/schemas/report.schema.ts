@@ -493,11 +493,58 @@ export const DailyPresenceWorkingHoursSchema = v.object({
 
 export type DailyPresenceWorkingHours = v.InferOutput<typeof DailyPresenceWorkingHoursSchema>
 
+const DailyPresenceOperationsPersonSchema = v.object({
+  id: v.string(),
+  displayName: v.string(),
+  rank: v.string(),
+})
+
+export type DailyPresenceOperationsPerson = v.InferOutput<
+  typeof DailyPresenceOperationsPersonSchema
+>
+
+export const DailyPresenceBuildingOpeningSchema = v.object({
+  openedAt: v.string(),
+  openedBy: DailyPresenceOperationsPersonSchema,
+  source: v.picklist(['building_opened', 'first_checkin']),
+})
+
+export type DailyPresenceBuildingOpening = v.InferOutput<typeof DailyPresenceBuildingOpeningSchema>
+
+export const DailyPresenceResponsibilityTransferSchema = v.object({
+  transferredAt: v.string(),
+  from: v.nullable(DailyPresenceOperationsPersonSchema),
+  to: DailyPresenceOperationsPersonSchema,
+  reason: v.nullable(v.string()),
+  notes: v.nullable(v.string()),
+})
+
+export type DailyPresenceResponsibilityTransfer = v.InferOutput<
+  typeof DailyPresenceResponsibilityTransferSchema
+>
+
+export const DailyPresenceOperationsContextSchema = v.object({
+  buildingOpening: v.nullable(DailyPresenceBuildingOpeningSchema),
+  ddsAcceptance: v.nullable(
+    v.object({
+      acceptedAt: v.string(),
+      acceptedBy: DailyPresenceOperationsPersonSchema,
+    })
+  ),
+  ddsTransfers: v.array(DailyPresenceResponsibilityTransferSchema),
+  lockupTransfers: v.array(DailyPresenceResponsibilityTransferSchema),
+})
+
+export type DailyPresenceOperationsContext = v.InferOutput<
+  typeof DailyPresenceOperationsContextSchema
+>
+
 export const DailyPresenceDayContextSchema = v.object({
   workingHours: v.nullable(DailyPresenceWorkingHoursSchema),
   isTrainingNight: v.boolean(),
   isAdminNight: v.boolean(),
   keyNights: v.array(KeyNightSchema),
+  operations: DailyPresenceOperationsContextSchema,
 })
 
 export type DailyPresenceDayContext = v.InferOutput<typeof DailyPresenceDayContextSchema>

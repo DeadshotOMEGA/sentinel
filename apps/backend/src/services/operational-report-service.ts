@@ -1,6 +1,8 @@
 import * as v from 'valibot'
 import { DateTime } from 'luxon'
 import type {
+  DailyPresenceOperationsContext,
+  DailyPresenceResponsibilityTransfer,
   DailyPresenceRow,
   DailyPresenceReportConfig,
   DailyPresenceReportResponse,
@@ -42,9 +44,12 @@ import {
   OperationalReportRepository,
   type OperationalReportCheckinRecord,
   type OperationalReportCheckinTimestampEditRecord,
+  type OperationalReportDdsResponsibilityRecord,
+  type OperationalReportLockupTransferRecord,
   type OperationalReportLockupStatusRecord,
   type OperationalReportMemberRecord,
   type OperationalReportMissedCheckoutRecord,
+  type OperationalReportResponsibilityAuditRecord,
   type OperationalReportScheduledDutyRoleCode,
   type OperationalReportScheduledDutyRecord,
   type OperationalReportUnitEventRecord,
@@ -137,6 +142,7 @@ interface DailyPresenceDayContextInternal {
   isTrainingNight: boolean
   isAdminNight: boolean
   keyNights: KeyNightWindow[]
+  operations: DailyPresenceOperationsContext
 }
 
 interface DailyPresenceAttendanceSummary {
@@ -714,6 +720,11 @@ export class OperationalReportService {
       allActiveMembers.every((member) => sessionsByMember.has(member.id))
         ? sessionsByMember
         : await this.getSessionsByMember(allActiveMembers, range, new Set<string>())
+    const operationsContext = await this.getDailyPresenceOperationsContext(
+      range,
+      allActiveMembers,
+      attendanceSessionsByMember
+    )
     const attendanceSummary = await this.getDailyPresenceAttendanceSummary(
       allActiveMembers,
       attendanceSessionsByMember,
@@ -788,6 +799,7 @@ export class OperationalReportService {
           isTrainingNight: dayContext.isTrainingNight,
           isAdminNight: dayContext.isAdminNight,
           keyNights: dayContext.keyNights.map(this.toApiKeyNight),
+          operations: operationsContext,
         },
         rows,
       },
@@ -1432,7 +1444,219 @@ export class OperationalReportService {
       isTrainingNight: keyNights.some((night) => night.category === 'training'),
       isAdminNight: keyNights.some((night) => night.category === 'administrative'),
       keyNights,
+      operations: this.emptyDailyPresenceOperationsContext(),
     }
+  }
+
+  private async getDailyPresenceOperationsContext(
+    range: DateRange,
+    members: OperationalReportMemberRecord[],
+    sessionsByMember: ReadonlyMap<string, PresenceSessionInternal[]>
+  ): Promise<DailyPresenceOperationsContext> {
+    const [responsibilityAuditRecords, ddsAssignments, lockupTransfers] = await Promise.all([
+      this.repository.findResponsibilityAuditRecords(range.start, range.end),
+      this.repository.findDdsResponsibilityForDate(
+        new Date(`${range.startDate}T00:00:00.000Z`),
+        new Date(`${range.endDate}T00:00:00.000Z`)
+      ),
+      this.repository.findLockupTransfersForRange(range.start, range.end),
+    ])
+    const firstSession = this.getFirstPresenceSession(members, sessionsByMember, range)
+    const peopleById = await this.getDailyPresenceOperationsPeopleById(
+      members,
+      responsibilityAuditRecords,
+      ddsAssignments,
+      lockupTransfers
+    )
+
+    return {
+      buildingOpening: this.getDailyPresenceBuildingOpening(
+        responsibilityAuditRecords,
+        firstSession,
+        peopleById
+      ),
+      ddsAcceptance: this.getDailyPresenceDdsAcceptance(
+        responsibilityAuditRecords,
+        ddsAssignments,
+        peopleById
+      ),
+      ddsTransfers: this.getDailyPresenceDdsTransfers(responsibilityAuditRecords, peopleById),
+      lockupTransfers: lockupTransfers.map((transfer) => ({
+        transferredAt: transfer.transferredAt.toISOString(),
+        from: this.toDutyPerson(transfer.fromMember),
+        to: this.toDutyPerson(transfer.toMember),
+        reason: transfer.reason,
+        notes: transfer.notes,
+      })),
+    }
+  }
+
+  private emptyDailyPresenceOperationsContext(): DailyPresenceOperationsContext {
+    return {
+      buildingOpening: null,
+      ddsAcceptance: null,
+      ddsTransfers: [],
+      lockupTransfers: [],
+    }
+  }
+
+  private getFirstPresenceSession(
+    members: OperationalReportMemberRecord[],
+    sessionsByMember: ReadonlyMap<string, PresenceSessionInternal[]>,
+    range: DateRange
+  ): { member: OperationalReportMemberRecord; inAt: Date } | null {
+    let firstSession: { member: OperationalReportMemberRecord; inAt: Date } | null = null
+
+    for (const member of members) {
+      for (const session of sessionsByMember.get(member.id) ?? []) {
+        if (session.inAt < range.start || session.inAt >= range.end) {
+          continue
+        }
+
+        if (!firstSession || session.inAt < firstSession.inAt) {
+          firstSession = { member, inAt: session.inAt }
+        }
+      }
+    }
+
+    return firstSession
+  }
+
+  private async getDailyPresenceOperationsPeopleById(
+    members: OperationalReportMemberRecord[],
+    responsibilityAuditRecords: OperationalReportResponsibilityAuditRecord[],
+    ddsAssignments: OperationalReportDdsResponsibilityRecord[],
+    lockupTransfers: OperationalReportLockupTransferRecord[]
+  ): Promise<Map<string, ReportDutyPerson>> {
+    const people = new Map<string, ReportDutyPerson>()
+    const addPerson = (person: {
+      id: string
+      rank: string
+      firstName: string
+      lastName: string
+      displayName: string | null
+    }) => {
+      people.set(person.id, this.toDutyPerson(person))
+    }
+
+    for (const member of members) {
+      addPerson(member)
+    }
+    for (const assignment of ddsAssignments) {
+      addPerson(assignment.member)
+    }
+    for (const transfer of lockupTransfers) {
+      addPerson(transfer.fromMember)
+      addPerson(transfer.toMember)
+    }
+
+    const unresolvedIds = new Set<string>()
+    for (const record of responsibilityAuditRecords) {
+      for (const memberId of [
+        record.memberId,
+        record.fromMemberId,
+        record.toMemberId,
+        record.performedBy,
+      ]) {
+        if (memberId && !people.has(memberId)) {
+          unresolvedIds.add(memberId)
+        }
+      }
+    }
+
+    const unresolvedPeople = await this.repository.findDutyPeopleByIds([...unresolvedIds])
+    for (const person of unresolvedPeople) {
+      addPerson(person)
+    }
+
+    return people
+  }
+
+  private getDailyPresenceBuildingOpening(
+    responsibilityAuditRecords: OperationalReportResponsibilityAuditRecord[],
+    firstSession: { member: OperationalReportMemberRecord; inAt: Date } | null,
+    peopleById: ReadonlyMap<string, ReportDutyPerson>
+  ): DailyPresenceOperationsContext['buildingOpening'] {
+    const openingRecord = responsibilityAuditRecords.find(
+      (record) => record.tagName === 'Lockup' && record.action === 'building_opened'
+    )
+    if (openingRecord) {
+      const openedBy = peopleById.get(openingRecord.memberId)
+      if (openedBy) {
+        return {
+          openedAt: openingRecord.timestamp.toISOString(),
+          openedBy,
+          source: 'building_opened',
+        }
+      }
+    }
+
+    if (!firstSession) {
+      return null
+    }
+
+    return {
+      openedAt: firstSession.inAt.toISOString(),
+      openedBy: this.toDutyPerson(firstSession.member),
+      source: 'first_checkin',
+    }
+  }
+
+  private getDailyPresenceDdsAcceptance(
+    responsibilityAuditRecords: OperationalReportResponsibilityAuditRecord[],
+    ddsAssignments: OperationalReportDdsResponsibilityRecord[],
+    peopleById: ReadonlyMap<string, ReportDutyPerson>
+  ): DailyPresenceOperationsContext['ddsAcceptance'] {
+    const acceptedAssignment = ddsAssignments.find((assignment) => assignment.acceptedAt !== null)
+    if (acceptedAssignment?.acceptedAt) {
+      return {
+        acceptedAt: acceptedAssignment.acceptedAt.toISOString(),
+        acceptedBy: this.toDutyPerson(acceptedAssignment.member),
+      }
+    }
+
+    const acceptedAuditRecord = responsibilityAuditRecords.find(
+      (record) =>
+        record.tagName === 'DDS' &&
+        (record.action === 'self_accepted' || record.action === 'accepted')
+    )
+    if (!acceptedAuditRecord) {
+      return null
+    }
+
+    const acceptedBy = peopleById.get(acceptedAuditRecord.memberId)
+    if (!acceptedBy) {
+      return null
+    }
+
+    return {
+      acceptedAt: acceptedAuditRecord.timestamp.toISOString(),
+      acceptedBy,
+    }
+  }
+
+  private getDailyPresenceDdsTransfers(
+    responsibilityAuditRecords: OperationalReportResponsibilityAuditRecord[],
+    peopleById: ReadonlyMap<string, ReportDutyPerson>
+  ): DailyPresenceResponsibilityTransfer[] {
+    return responsibilityAuditRecords
+      .filter((record) => record.tagName === 'DDS' && record.action === 'transferred')
+      .map((record): DailyPresenceResponsibilityTransfer | null => {
+        const toMemberId = record.toMemberId ?? record.memberId
+        const to = peopleById.get(toMemberId)
+        if (!to) {
+          return null
+        }
+
+        return {
+          transferredAt: record.timestamp.toISOString(),
+          from: record.fromMemberId ? (peopleById.get(record.fromMemberId) ?? null) : null,
+          to,
+          reason: 'dds_turnover',
+          notes: record.notes,
+        }
+      })
+      .filter((transfer): transfer is DailyPresenceResponsibilityTransfer => transfer !== null)
   }
 
   private async getDailyPresenceWorkingHours(

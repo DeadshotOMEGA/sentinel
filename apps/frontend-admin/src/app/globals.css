@@ -297,6 +297,10 @@
     display: none !important;
   }
 
+  .reports-print-hidden {
+    display: none !important;
+  }
+
   .reports-print-inline {
     display: inline !important;
   }
@@ -370,6 +374,11 @@
     gap: 0.03in !important;
   }
 
+  .reports-operations-context {
+    gap: 0.015in !important;
+    padding: 0.04in 0.07in !important;
+  }
+
   .reports-summary-grid,
   .reports-print-document section,
   .reports-print-document tr {
@@ -434,7 +443,6 @@
   }
 
   .reports-table .reports-member-cell,
-  .reports-table .reports-department-cell,
   .reports-table .reports-tags-cell {
     overflow-wrap: normal !important;
     word-break: normal !important;
@@ -450,60 +458,36 @@
     font-size: 6.8pt !important;
   }
 
-  .reports-daily-member-col {
-    width: 24%;
+  .reports-daily-presence-table {
+    table-layout: auto !important;
   }
 
-  .reports-daily-department-col {
-    width: 10%;
+  .reports-daily-presence-table .reports-daily-member-col,
+  .reports-daily-presence-table .reports-daily-tags-col,
+  .reports-daily-presence-table .reports-daily-time-col,
+  .reports-daily-presence-table .reports-daily-last-out-col {
+    width: 1% !important;
   }
 
-  .reports-daily-tags-col {
-    width: 28%;
+  .reports-daily-presence-table .reports-daily-details-col {
+    width: auto !important;
   }
 
-  .reports-daily-time-col {
-    width: 12%;
-  }
-
-  .reports-daily-last-out-col {
-    width: 12%;
-  }
-
-  .reports-daily-presence-col {
-    width: 14%;
-  }
-
-  .reports-daily-presence-table-with-details .reports-daily-member-col {
-    width: 20%;
-  }
-
-  .reports-daily-presence-table-with-details .reports-daily-department-col {
-    width: 8%;
-  }
-
-  .reports-daily-presence-table-with-details .reports-daily-tags-col {
-    width: 23%;
-  }
-
-  .reports-daily-presence-table-with-details .reports-daily-time-col {
-    width: 10%;
-  }
-
-  .reports-daily-presence-table-with-details .reports-daily-last-out-col {
-    width: 10%;
-  }
-
-  .reports-daily-presence-table-with-details .reports-daily-presence-col {
-    width: 9%;
-  }
-
-  .reports-daily-details-col {
-    width: 20%;
+  .reports-daily-presence-table th,
+  .reports-daily-presence-table td {
+    padding-right: 0.075in !important;
+    padding-left: 0.075in !important;
   }
 
   .reports-daily-presence-table .reports-tags-cell {
     color: oklch(21% 0.006 285.885) !important;
+  }
+
+  .reports-daily-presence-table th,
+  .reports-daily-presence-table .reports-member-cell,
+  .reports-daily-presence-table .reports-tags-cell,
+  .reports-daily-presence-table .reports-time-cell {
+    white-space: nowrap !important;
   }
 
   .reports-daily-presence-table .reports-session-cell {
@@ -512,6 +496,16 @@
 
   .reports-daily-presence-table .reports-details-cell {
     white-space: normal !important;
+  }
+
+  .reports-daily-presence-table .reports-detail-time {
+    font-size: 7.5pt !important;
+  }
+
+  .reports-daily-presence-table .reports-detail-direction-label,
+  .reports-daily-presence-table .reports-detail-text {
+    font-size: 6.8pt !important;
+    line-height: 1.08 !important;
   }
 }
 
