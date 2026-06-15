@@ -288,6 +288,64 @@ describe('pairOperationalPresenceSessions', () => {
     )
   })
 
+  it('ignores an unmatched checkout without warning when a check-in follows within five minutes', () => {
+    const warnings = new Set<string>()
+    const sessionsByMember = pairOperationalPresenceSessions(
+      [
+        checkin('1', 'member-1', 'out', '2026-05-05T08:00:00.000Z'),
+        checkin('2', 'member-1', 'in', '2026-05-05T08:04:00.000Z'),
+        checkin('3', 'member-1', 'out', '2026-05-05T12:00:00.000Z'),
+      ],
+      warnings
+    )
+
+    const sessions = getSessions(sessionsByMember, 'member-1')
+    expect(sessions).toHaveLength(1)
+    expect(sessions[0]?.inAt.toISOString()).toBe('2026-05-05T08:04:00.000Z')
+    expect(sessions[0]?.outAt?.toISOString()).toBe('2026-05-05T12:00:00.000Z')
+    expect(Array.from(warnings)).not.toContain(
+      'Some checkout records could not be paired with a prior check-in and were ignored.'
+    )
+  })
+
+  it('treats a checkout followed by a check-in within five minutes as continuous presence', () => {
+    const warnings = new Set<string>()
+    const sessionsByMember = pairOperationalPresenceSessions(
+      [
+        checkin('1', 'member-1', 'in', '2026-05-05T08:00:00.000Z'),
+        checkin('2', 'member-1', 'out', '2026-05-05T10:00:00.000Z'),
+        checkin('3', 'member-1', 'in', '2026-05-05T10:03:00.000Z'),
+        checkin('4', 'member-1', 'out', '2026-05-05T16:00:00.000Z'),
+      ],
+      warnings
+    )
+
+    const sessions = getSessions(sessionsByMember, 'member-1')
+    expect(sessions).toHaveLength(1)
+    expect(sessions[0]?.inAt.toISOString()).toBe('2026-05-05T08:00:00.000Z')
+    expect(sessions[0]?.outAt?.toISOString()).toBe('2026-05-05T16:00:00.000Z')
+    expect(sessions[0]?.status).toBe('complete')
+    expect(warnings.size).toBe(0)
+  })
+
+  it('keeps warning for an unmatched checkout when the next check-in is outside five minutes', () => {
+    const warnings = new Set<string>()
+    const sessionsByMember = pairOperationalPresenceSessions(
+      [
+        checkin('1', 'member-1', 'out', '2026-05-05T08:00:00.000Z'),
+        checkin('2', 'member-1', 'in', '2026-05-05T08:06:00.000Z'),
+      ],
+      warnings
+    )
+
+    const sessions = getSessions(sessionsByMember, 'member-1')
+    expect(sessions).toHaveLength(1)
+    expect(sessions[0]?.inAt.toISOString()).toBe('2026-05-05T08:06:00.000Z')
+    expect(Array.from(warnings)).toContain(
+      'Some checkout records could not be paired with a prior check-in and were ignored.'
+    )
+  })
+
   it('tracks affected member IDs for unmatched checkout warnings', () => {
     const warnings = new Set<string>()
     const warningMemberIds = new Map<string, Set<string>>()
@@ -673,6 +731,90 @@ describe('sortDailyPresenceRows', () => {
     expect(sorted.map((row) => row.memberRecord.id)).toEqual(['s1-able', 's1-zulu', 'ms-baker'])
   })
 
+  it('lets last name direction control equal-rank members when rank is descending', () => {
+    const sorted = sortDailyPresenceRows(
+      [
+        sortableDailyPresenceRow({
+          id: 's1-zulu',
+          firstName: 'Zed',
+          lastName: 'Zulu',
+          rank: 'S1',
+          rankOrder: 3,
+        }),
+        sortableDailyPresenceRow({
+          id: 'ms-baker',
+          firstName: 'Bill',
+          lastName: 'Baker',
+          rank: 'MS',
+          rankOrder: 5,
+        }),
+        sortableDailyPresenceRow({
+          id: 's1-able',
+          firstName: 'Ann',
+          lastName: 'Able',
+          rank: 'S1',
+          rankOrder: 3,
+        }),
+      ],
+      [
+        { type: 'field', field: 'rank', direction: 'desc' },
+        { type: 'field', field: 'last_name', direction: 'asc' },
+      ]
+    )
+
+    expect(sorted.map((row) => row.memberRecord.id)).toEqual(['ms-baker', 's1-able', 's1-zulu'])
+  })
+
+  it('honors descending last name sort direction', () => {
+    const sorted = sortDailyPresenceRows(
+      [
+        sortableDailyPresenceRow({
+          id: 'able',
+          firstName: 'Ann',
+          lastName: 'Able',
+        }),
+        sortableDailyPresenceRow({
+          id: 'baker',
+          firstName: 'Bill',
+          lastName: 'Baker',
+        }),
+        sortableDailyPresenceRow({
+          id: 'zulu',
+          firstName: 'Zed',
+          lastName: 'Zulu',
+        }),
+      ],
+      [{ type: 'field', field: 'last_name', direction: 'desc' }]
+    )
+
+    expect(sorted.map((row) => row.memberRecord.id)).toEqual(['zulu', 'baker', 'able'])
+  })
+
+  it('honors descending first name sort direction', () => {
+    const sorted = sortDailyPresenceRows(
+      [
+        sortableDailyPresenceRow({
+          id: 'amy',
+          firstName: 'Amy',
+          lastName: 'Zulu',
+        }),
+        sortableDailyPresenceRow({
+          id: 'bill',
+          firstName: 'Bill',
+          lastName: 'Baker',
+        }),
+        sortableDailyPresenceRow({
+          id: 'zed',
+          firstName: 'Zed',
+          lastName: 'Able',
+        }),
+      ],
+      [{ type: 'field', field: 'first_name', direction: 'desc' }]
+    )
+
+    expect(sorted.map((row) => row.memberRecord.id)).toEqual(['zed', 'bill', 'amy'])
+  })
+
   it('sorts by configured tag priority before last name', () => {
     const sorted = sortDailyPresenceRows(
       [
@@ -756,6 +898,40 @@ describe('sortMemberReportRows', () => {
       'high-baker',
       'low-zulu',
     ])
+  })
+
+  it('lets last name direction control equal-rank weekly rows when rank is descending', () => {
+    const sorted = sortMemberReportRows(
+      [
+        sortableWeeklyPresenceRow({
+          id: 's1-zulu',
+          firstName: 'Zed',
+          lastName: 'Zulu',
+          rank: 'S1',
+          rankOrder: 3,
+        }),
+        sortableWeeklyPresenceRow({
+          id: 'ms-baker',
+          firstName: 'Bill',
+          lastName: 'Baker',
+          rank: 'MS',
+          rankOrder: 5,
+        }),
+        sortableWeeklyPresenceRow({
+          id: 's1-able',
+          firstName: 'Ann',
+          lastName: 'Able',
+          rank: 'S1',
+          rankOrder: 3,
+        }),
+      ],
+      [
+        { type: 'field', field: 'rank', direction: 'desc' },
+        { type: 'field', field: 'last_name', direction: 'asc' },
+      ]
+    )
+
+    expect(sorted.map((row) => row.memberRecord.id)).toEqual(['ms-baker', 's1-able', 's1-zulu'])
   })
 
   it('sorts training night monthly rows by attendance percentage', () => {
