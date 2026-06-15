@@ -132,7 +132,26 @@ export function getBaseReportFilters(reportType: AdminReportType): ReportFilters
     hostMemberId: '',
     organization: '',
     scopeTypes: ['everyone'],
-    dailyPresenceSort: [
+    dailyPresenceSort: getDefaultMemberReportSort(reportType),
+  }
+}
+
+function getDefaultMemberReportSort(reportType: AdminReportType): DailyPresenceSortRule[] {
+  if (reportType === 'daily_presence') {
+    return [
+      {
+        id: 'daily-sort-primary-tag-priority',
+        sortGroup: 'primary',
+        type: 'tag_priority',
+        direction: 'asc',
+      },
+      {
+        id: 'daily-sort-secondary-rank',
+        sortGroup: 'secondary',
+        type: 'field',
+        field: 'rank',
+        direction: 'desc',
+      },
       {
         id: 'daily-sort-secondary-last-name',
         sortGroup: 'secondary',
@@ -140,8 +159,18 @@ export function getBaseReportFilters(reportType: AdminReportType): ReportFilters
         field: 'last_name',
         direction: 'asc',
       },
-    ],
+    ]
   }
+
+  return [
+    {
+      id: `${reportType}-sort-secondary-last-name`,
+      sortGroup: 'secondary',
+      type: 'field',
+      field: 'last_name',
+      direction: 'asc',
+    },
+  ]
 }
 
 export const REPORT_DEFINITIONS = [
@@ -158,7 +187,7 @@ export const REPORT_DEFINITIONS = [
   {
     reportType: 'weekly_presence',
     label: 'Weekly Presence',
-    description: 'Presence across a Monday-Sunday week with key night attendance markers.',
+    description: 'Presence across a Monday-Friday week with key night attendance markers.',
     defaultFilters: () => getBaseReportFilters('weekly_presence'),
     requiredFilters: ['weekStartDate'],
     visibleFilters: ['weekStartDate', 'scopeType', 'divisionId', 'tagId', 'dailyPresenceSort'],

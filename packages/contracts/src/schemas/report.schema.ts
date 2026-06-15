@@ -483,6 +483,25 @@ export const KeyNightPresenceMarkerSchema = v.object({
 
 export type KeyNightPresenceMarker = v.InferOutput<typeof KeyNightPresenceMarkerSchema>
 
+export const DailyPresenceWorkingHoursSchema = v.object({
+  startTime: v.string(),
+  endTime: v.string(),
+  startAt: v.string(),
+  endAt: v.string(),
+  label: v.string(),
+})
+
+export type DailyPresenceWorkingHours = v.InferOutput<typeof DailyPresenceWorkingHoursSchema>
+
+export const DailyPresenceDayContextSchema = v.object({
+  workingHours: v.nullable(DailyPresenceWorkingHoursSchema),
+  isTrainingNight: v.boolean(),
+  isAdminNight: v.boolean(),
+  keyNights: v.array(KeyNightSchema),
+})
+
+export type DailyPresenceDayContext = v.InferOutput<typeof DailyPresenceDayContextSchema>
+
 export const DailyPresenceRowSchema = v.object({
   member: ReportMemberSummarySchema,
   firstIn: v.nullable(v.string()),
@@ -501,7 +520,12 @@ export const DailyPresenceReportDataSchema = v.object({
     totalSessions: v.number(),
     leftAndReturnedCount: v.number(),
     openSessionCount: v.number(),
+    ftsTotalMembers: v.number(),
+    ftsOnTimeCount: v.number(),
+    ftsLateCount: v.number(),
+    geoCheckedInCount: v.number(),
   }),
+  dayContext: DailyPresenceDayContextSchema,
   rows: v.array(DailyPresenceRowSchema),
 })
 

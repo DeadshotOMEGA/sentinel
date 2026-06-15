@@ -20,6 +20,7 @@ import type {
   OperationalReportMemberRecord,
   OperationalReportRepository,
 } from '../repositories/operational-report-repository.js'
+import { getDefaultOperationalTimingsSettings } from '../lib/operational-timings-runtime.js'
 
 function checkin(
   id: string,
@@ -52,7 +53,10 @@ function operationalReportMember(input: {
   rank: string
   firstName: string
   lastName: string
+  tagIds?: string[]
 }): OperationalReportMemberRecord {
+  const tagIds = input.tagIds ?? []
+
   return {
     id: input.id,
     serviceNumber: input.id,
@@ -91,7 +95,19 @@ function operationalReportMember(input: {
       code: 'active',
       name: 'Active',
     },
-    memberTags: [],
+    memberTags: tagIds.map((tagId) => ({
+      tagId,
+      tag: {
+        id: tagId,
+        name: tagId.toUpperCase(),
+        displayOrder: 0,
+        chipVariant: 'faded',
+        chipColor: 'default',
+        isPositional: false,
+        createdAt: new Date('2026-01-01T00:00:00.000Z'),
+        updatedAt: new Date('2026-01-01T00:00:00.000Z'),
+      },
+    })),
     qualifications: [],
   } as unknown as OperationalReportMemberRecord
 }
@@ -418,6 +434,9 @@ describe('generateDailyPresence', () => {
       findScheduledDutyAssignmentsForMembers: async () => [],
       findDdsAssignmentsForMembers: async () => [],
       findLiveDutyAssignmentsForMembers: async () => [],
+      findTagShortcut: async () => null,
+      findUnitEvents: async () => [],
+      findAppSettingValue: async () => null,
     } as unknown as OperationalReportRepository
     const service = new OperationalReportService(undefined, repository)
 
@@ -468,6 +487,9 @@ describe('generateDailyPresence', () => {
       findScheduledDutyAssignmentsForMembers: async () => [],
       findDdsAssignmentsForMembers: async () => [],
       findLiveDutyAssignmentsForMembers: async () => [],
+      findTagShortcut: async () => null,
+      findUnitEvents: async () => [],
+      findAppSettingValue: async () => null,
     } as unknown as OperationalReportRepository
     const service = new OperationalReportService(undefined, repository)
 
@@ -480,6 +502,117 @@ describe('generateDailyPresence', () => {
       'Some checkout records could not be paired with a prior check-in and were ignored.'
     )
     expect(report.warningDetails).toEqual([])
+  })
+
+  it('summarizes Daily Presence for staff attendance using working hours and FTS/GEO tags', async () => {
+    const ftsTagId = '11111111-1111-4111-8111-111111111111'
+    const geoTagId = '22222222-2222-4222-8222-222222222222'
+    const members = [
+      operationalReportMember({
+        id: '33333333-3333-4333-8333-333333333333',
+        displayName: 'MS OnTime, A',
+        rank: 'MS',
+        firstName: 'Alex',
+        lastName: 'OnTime',
+        tagIds: [ftsTagId],
+      }),
+      operationalReportMember({
+        id: '44444444-4444-4444-8444-444444444444',
+        displayName: 'MS Late, B',
+        rank: 'MS',
+        firstName: 'Blair',
+        lastName: 'Late',
+        tagIds: [ftsTagId],
+      }),
+      operationalReportMember({
+        id: '55555555-5555-4555-8555-555555555555',
+        displayName: 'MS VeryLate, C',
+        rank: 'MS',
+        firstName: 'Casey',
+        lastName: 'VeryLate',
+        tagIds: [ftsTagId],
+      }),
+      operationalReportMember({
+        id: '66666666-6666-4666-8666-666666666666',
+        displayName: 'S1 Geo, D',
+        rank: 'S1',
+        firstName: 'Devon',
+        lastName: 'Geo',
+        tagIds: [geoTagId],
+      }),
+    ]
+    const settings = getDefaultOperationalTimingsSettings()
+    const repository = {
+      findActiveMembers: async () => members,
+      findCheckinsForMembers: async (memberIds: string[]) =>
+        [
+          checkin('fts-on-time-in', members[0].id, 'in', '2026-06-15T12:55:00.000Z'),
+          checkin('fts-late-in', members[1].id, 'in', '2026-06-15T13:12:00.000Z'),
+          checkin('fts-very-late-in', members[2].id, 'in', '2026-06-15T13:45:00.000Z'),
+          checkin('geo-in', members[3].id, 'in', '2026-06-15T15:00:00.000Z'),
+        ].filter((record) => record.memberId !== null && memberIds.includes(record.memberId)),
+      findCheckinTimestampEditNotes: async () => [],
+      findScheduledDutyAssignmentsForMembers: async () => [],
+      findDdsAssignmentsForMembers: async () => [],
+      findLiveDutyAssignmentsForMembers: async () => [],
+      findTagShortcut: async (shortcut: 'fts' | 'geo') =>
+        shortcut === 'fts'
+          ? { id: ftsTagId, name: 'FTS', chipVariant: 'faded', chipColor: 'success' }
+          : { id: geoTagId, name: 'GEO', chipVariant: 'faded', chipColor: 'info' },
+      findUnitEvents: async () => [
+        {
+          id: 'training-event',
+          title: 'Training Night',
+          eventDate: new Date('2026-06-15T00:00:00.000Z'),
+          endDate: null,
+          startTime: new Date('1970-01-01T23:00:00.000Z'),
+          endTime: new Date('1970-01-02T02:00:00.000Z'),
+          eventType: {
+            id: 'training-type',
+            name: 'Training',
+            category: 'training',
+            defaultDurationMinutes: 180,
+          },
+        },
+        {
+          id: 'admin-event',
+          title: 'Admin Night',
+          eventDate: new Date('2026-06-15T00:00:00.000Z'),
+          endDate: null,
+          startTime: new Date('1970-01-01T22:30:00.000Z'),
+          endTime: new Date('1970-01-02T00:30:00.000Z'),
+          eventType: {
+            id: 'admin-type',
+            name: 'Admin',
+            category: 'administrative',
+            defaultDurationMinutes: 120,
+          },
+        },
+      ],
+      findAppSettingValue: async () => settings,
+      findReportSettingValue: async () => null,
+    } as unknown as OperationalReportRepository
+    const service = new OperationalReportService(undefined, repository)
+
+    const report = await service.generateDailyPresence(
+      { date: '2026-06-15', scopeType: 'everyone' },
+      { id: 'actor-1', rank: 'MS', firstName: 'Report', lastName: 'Runner' }
+    )
+
+    expect(report.data.summary).toMatchObject({
+      totalScopedMembers: 4,
+      ftsTotalMembers: 3,
+      ftsOnTimeCount: 1,
+      ftsLateCount: 1,
+      geoCheckedInCount: 1,
+    })
+    expect(report.data.dayContext.workingHours).toMatchObject({
+      startTime: '08:00',
+      endTime: '15:00',
+      label: '08:00-15:00',
+    })
+    expect(report.data.dayContext.isTrainingNight).toBe(true)
+    expect(report.data.dayContext.isAdminNight).toBe(true)
   })
 
   it('includes session methods and timestamp edit notes', async () => {
@@ -541,6 +674,9 @@ describe('generateDailyPresence', () => {
       findScheduledDutyAssignmentsForMembers: async () => [],
       findDdsAssignmentsForMembers: async () => [],
       findLiveDutyAssignmentsForMembers: async () => [],
+      findTagShortcut: async () => null,
+      findUnitEvents: async () => [],
+      findAppSettingValue: async () => null,
     } as unknown as OperationalReportRepository
     const service = new OperationalReportService(undefined, repository)
 
@@ -577,6 +713,124 @@ describe('generateDailyPresence', () => {
         outEditNote: 'Corrected final checkout time',
       },
     ])
+  })
+})
+
+describe('generateWeeklyPresence', () => {
+  it('shows Monday to Friday only and excludes weekend sessions from totals', async () => {
+    const member = operationalReportMember({
+      id: '11111111-1111-4111-8111-111111111111',
+      displayName: 'S1 Example, A',
+      rank: 'S1',
+      firstName: 'Alex',
+      lastName: 'Example',
+    })
+    const repository = {
+      findActiveMembers: async () => [member],
+      findCheckinsForMembers: async () => [
+        checkin(
+          'monday-in',
+          '11111111-1111-4111-8111-111111111111',
+          'in',
+          '2026-06-08T15:00:00.000Z'
+        ),
+        checkin(
+          'monday-out',
+          '11111111-1111-4111-8111-111111111111',
+          'out',
+          '2026-06-08T17:00:00.000Z'
+        ),
+        checkin(
+          'saturday-in',
+          '11111111-1111-4111-8111-111111111111',
+          'in',
+          '2026-06-13T15:00:00.000Z'
+        ),
+        checkin(
+          'saturday-out',
+          '11111111-1111-4111-8111-111111111111',
+          'out',
+          '2026-06-13T17:00:00.000Z'
+        ),
+      ],
+      findScheduledDutyAssignmentsForMembers: async () => [],
+      findDdsAssignmentsForMembers: async () => [],
+      findLiveDutyAssignmentsForMembers: async () => [],
+      findUnitEvents: async () => [],
+      findAppSettingValue: async () => null,
+      findReportSettingValue: async () => null,
+    } as unknown as OperationalReportRepository
+    const service = new OperationalReportService(undefined, repository)
+
+    const report = await service.generateWeeklyPresence(
+      { weekStartDate: '2026-06-08', scopeType: 'everyone' },
+      { id: 'actor-1', rank: 'MS', firstName: 'Report', lastName: 'Runner' }
+    )
+
+    expect(report.data.days.map((day) => day.date)).toEqual([
+      '2026-06-08',
+      '2026-06-09',
+      '2026-06-10',
+      '2026-06-11',
+      '2026-06-12',
+    ])
+    expect(report.data.rows[0]?.totalDaysPresent).toBe(1)
+    expect(report.data.rows[0]?.totalSessions).toBe(1)
+  })
+})
+
+describe('generateMonthlyPresence', () => {
+  it('shows weekdays only and excludes weekend sessions from totals', async () => {
+    const member = operationalReportMember({
+      id: '11111111-1111-4111-8111-111111111111',
+      displayName: 'S1 Example, A',
+      rank: 'S1',
+      firstName: 'Alex',
+      lastName: 'Example',
+    })
+    const repository = {
+      findActiveMembers: async () => [member],
+      findCheckinsForMembers: async () => [
+        checkin(
+          'weekday-in',
+          '11111111-1111-4111-8111-111111111111',
+          'in',
+          '2026-06-08T15:00:00.000Z'
+        ),
+        checkin(
+          'weekday-out',
+          '11111111-1111-4111-8111-111111111111',
+          'out',
+          '2026-06-08T17:00:00.000Z'
+        ),
+        checkin(
+          'weekend-in',
+          '11111111-1111-4111-8111-111111111111',
+          'in',
+          '2026-06-13T15:00:00.000Z'
+        ),
+        checkin(
+          'weekend-out',
+          '11111111-1111-4111-8111-111111111111',
+          'out',
+          '2026-06-13T17:00:00.000Z'
+        ),
+      ],
+      findUnitEvents: async () => [],
+      findAppSettingValue: async () => null,
+      findReportSettingValue: async () => null,
+    } as unknown as OperationalReportRepository
+    const service = new OperationalReportService(undefined, repository)
+
+    const report = await service.generateMonthlyPresence(
+      { month: '2026-06', scopeType: 'everyone' },
+      { id: 'actor-1', rank: 'MS', firstName: 'Report', lastName: 'Runner' }
+    )
+
+    expect(report.data.days.map((day) => day.date)).not.toContain('2026-06-13')
+    expect(report.data.days.every((day) => !['6', '7'].includes(day.label))).toBe(true)
+    expect(report.data.rows[0]?.totalDaysPresent).toBe(1)
+    expect(report.data.rows[0]?.totalSessions).toBe(1)
   })
 })
 
