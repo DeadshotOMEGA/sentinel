@@ -1,9 +1,7 @@
-import bcrypt from 'bcryptjs'
 import type { PrismaClientInstance } from '@sentinel/database'
 import { prisma as defaultPrisma } from '@sentinel/database'
 import {
   SENTINEL_BOOTSTRAP_BADGE_SERIAL,
-  SENTINEL_BOOTSTRAP_DEFAULT_PIN,
   SENTINEL_BOOTSTRAP_DIVISION_CODE,
   SENTINEL_BOOTSTRAP_DIVISION_NAME,
   SENTINEL_BOOTSTRAP_RANK_CODE,
@@ -11,8 +9,6 @@ import {
   SENTINEL_BOOTSTRAP_SETTING_KEY,
   getSentinelBootstrapIdentity,
 } from '../lib/system-bootstrap.js'
-
-const BCRYPT_COST = 12
 
 interface EnsureIntegrityOptions {
   ensureDeleteProtectionTriggers?: boolean
@@ -43,19 +39,18 @@ export class SentinelBootstrapIntegrityService {
       let memberRecord = existingIdentity
         ? await tx.member.findUnique({
             where: { id: existingIdentity.memberId },
-            select: { id: true, pinHash: true, mustChangePin: true },
+            select: { id: true },
           })
         : null
 
       if (!memberRecord) {
         memberRecord = await tx.member.findUnique({
           where: { serviceNumber: SENTINEL_BOOTSTRAP_SERVICE_NUMBER },
-          select: { id: true, pinHash: true, mustChangePin: true },
+          select: { id: true },
         })
       }
 
       if (!memberRecord) {
-        const pinHash = await bcrypt.hash(SENTINEL_BOOTSTRAP_DEFAULT_PIN, BCRYPT_COST)
         memberRecord = await tx.member.create({
           data: {
             serviceNumber: SENTINEL_BOOTSTRAP_SERVICE_NUMBER,
@@ -68,16 +63,10 @@ export class SentinelBootstrapIntegrityService {
             memberType: 'class_a',
             status: 'active',
             accountLevel: 10,
-            pinHash,
-            mustChangePin: false,
           },
-          select: { id: true, pinHash: true, mustChangePin: true },
+          select: { id: true },
         })
       }
-
-      const shouldResetPin =
-        !memberRecord.pinHash ||
-        !(await bcrypt.compare(SENTINEL_BOOTSTRAP_DEFAULT_PIN, memberRecord.pinHash))
 
       await tx.member.update({
         where: { id: memberRecord.id },
@@ -91,10 +80,6 @@ export class SentinelBootstrapIntegrityService {
           rank: rank.code,
           status: 'active',
           accountLevel: 10,
-          mustChangePin: false,
-          ...(shouldResetPin
-            ? { pinHash: await bcrypt.hash(SENTINEL_BOOTSTRAP_DEFAULT_PIN, BCRYPT_COST) }
-            : {}),
         },
       })
 
@@ -156,7 +141,6 @@ export class SentinelBootstrapIntegrityService {
             badgeId: badgeRecord.id,
             badgeSerial: SENTINEL_BOOTSTRAP_BADGE_SERIAL,
             serviceNumber: SENTINEL_BOOTSTRAP_SERVICE_NUMBER,
-            defaultPin: SENTINEL_BOOTSTRAP_DEFAULT_PIN,
             managedBy: 'sentinel-appliance',
             updatedAt: new Date().toISOString(),
           },
@@ -170,7 +154,6 @@ export class SentinelBootstrapIntegrityService {
             badgeId: badgeRecord.id,
             badgeSerial: SENTINEL_BOOTSTRAP_BADGE_SERIAL,
             serviceNumber: SENTINEL_BOOTSTRAP_SERVICE_NUMBER,
-            defaultPin: SENTINEL_BOOTSTRAP_DEFAULT_PIN,
             managedBy: 'sentinel-appliance',
             createdAt: new Date().toISOString(),
           },

@@ -70,14 +70,3 @@ export function buildLoginUrl(
 export function buildForcedReauthLoginUrl(): '/login' {
   return '/login'
 }
-
-export function buildChangePinRequiredUrl(
-  pathname: string | null | undefined,
-  search?: string | URLSearchParams | null
-): string {
-  const destination = resolvePostLoginDestinationHint(pathname, search)
-
-  return isKioskDestination(destination)
-    ? `/change-pin-required?destination=${encodeURIComponent(destination)}`
-    : '/change-pin-required'
-}

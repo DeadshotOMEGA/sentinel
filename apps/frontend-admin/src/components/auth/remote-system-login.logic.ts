@@ -1,6 +1,6 @@
 import type { RemoteSystemLoginContext, RemoteSystemOption } from '@sentinel/contracts'
 
-export interface PinInputInitialSelection {
+export interface RemoteSystemLoginInitialSelection {
   id: string
 }
 
@@ -46,7 +46,7 @@ export function isSelectableRemoteSystem(
 
 export function resolveDefaultRemoteSystemId(input: {
   remoteSystems: RemoteSystemOption[]
-  initialSelection?: PinInputInitialSelection | null
+  initialSelection?: RemoteSystemLoginInitialSelection | null
   loginContext?: RemoteSystemLoginContext | null
 }): string {
   const { remoteSystems, initialSelection = null, loginContext = null } = input
@@ -58,7 +58,10 @@ export function resolveDefaultRemoteSystemId(input: {
 
   if (initialSelection) {
     const initialRemoteSystem = remoteSystems.find((system) => system.id === initialSelection.id)
-    if (initialRemoteSystem && isSelectableRemoteSystem(initialRemoteSystem, normalizedLoginContext)) {
+    if (
+      initialRemoteSystem &&
+      isSelectableRemoteSystem(initialRemoteSystem, normalizedLoginContext)
+    ) {
       return initialRemoteSystem.id
     }
   }
@@ -72,7 +75,7 @@ export function resolveDefaultRemoteSystemId(input: {
 export function resolveEffectiveRemoteSystemId(input: {
   remoteSystems: RemoteSystemOption[]
   selectedRemoteSystem: string
-  initialSelection?: PinInputInitialSelection | null
+  initialSelection?: RemoteSystemLoginInitialSelection | null
   loginContext?: RemoteSystemLoginContext | null
 }): string {
   const {

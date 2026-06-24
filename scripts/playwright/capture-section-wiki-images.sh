@@ -4,7 +4,6 @@ set -euo pipefail
 SESSION_NAME="${SESSION_NAME:-section-wiki-images}"
 FRONTEND_URL="${FRONTEND_URL:-http://localhost:3001}"
 BADGE_NUMBER="${BADGE_NUMBER:-0000000000}"
-PIN_CODE="${PIN_CODE:-0000}"
 RUN_DATE="$(date +%F)"
 STAMP="$(date +%Y%m%d-%H%M%S)"
 RUN_DIR=".playwright-cli/runs/section-wiki/${RUN_DATE}/${STAMP}"
@@ -47,7 +46,6 @@ cat >"$WORKFLOW_FILE" <<'JS'
 async (page) => {
   const baseUrl = __FRONTEND_URL__
   const badgeNumber = __BADGE_NUMBER__
-  const pinCode = __PIN_CODE__
   const assetDir = __ASSET_DIR__
   const filename = (name) => `${assetDir}/${name}.png`
   const wait = (ms) => page.waitForTimeout(ms)
@@ -105,7 +103,7 @@ async (page) => {
       await page.keyboard.press('Enter')
     }
 
-    await page.getByTestId('auth-pin-input').waitFor({ state: 'visible', timeout: 10000 })
+    await page.getByTestId('auth-remote-system-select').waitFor({ state: 'visible', timeout: 10000 })
 
     const remoteSelect = page.getByTestId('auth-remote-system-select').first()
     if (
@@ -124,8 +122,7 @@ async (page) => {
       }
     }
 
-    await page.getByTestId('auth-pin-input').fill(pinCode)
-    await page.getByTestId('auth-pin-submit').click()
+    await page.getByTestId('auth-login-submit').click()
     await page.waitForURL('**/dashboard', { timeout: 15000 })
     await hideChrome()
   }
@@ -302,7 +299,7 @@ async (page) => {
   await openAndCapture('members-create-civilian', '[data-help-id="members.create-civilian"]', '[data-help-id="members.member-form"]')
   await openAndCapture('members-import-csv', '[data-help-id="members.import-csv"]', '[data-help-id="members.import-dialog"]')
   await screenshotBox('members-sync-qualifications', '[data-help-id="members.sync-qualifications"]', 14, { minWidth: 300, minHeight: 84 })
-  await screenshotBox('members-qualifications-tags-pin', '[data-help-id="members.row-actions"], [data-help-id="members.table"]', 12)
+  await screenshotBox('members-qualifications-tags', '[data-help-id="members.row-actions"], [data-help-id="members.table"]', 12)
 
   await page.goto(appUrl('/events'))
   await page.waitForLoadState('networkidle')
@@ -342,15 +339,14 @@ async (page) => {
 }
 JS
 
-node - "$WORKFLOW_FILE" "$FRONTEND_URL" "$BADGE_NUMBER" "$PIN_CODE" "$ASSET_DIR" <<'NODE'
+node - "$WORKFLOW_FILE" "$FRONTEND_URL" "$BADGE_NUMBER" "$ASSET_DIR" <<'NODE'
 const fs = require('fs')
 
-const [file, frontendUrl, badgeNumber, pinCode, assetDir] = process.argv.slice(2)
+const [file, frontendUrl, badgeNumber, assetDir] = process.argv.slice(2)
 let source = fs.readFileSync(file, 'utf8')
 const replacements = {
   __FRONTEND_URL__: JSON.stringify(frontendUrl),
   __BADGE_NUMBER__: JSON.stringify(badgeNumber),
-  __PIN_CODE__: JSON.stringify(pinCode),
   __ASSET_DIR__: JSON.stringify(assetDir),
 }
 
@@ -361,10 +357,10 @@ for (const [token, value] of Object.entries(replacements)) {
 fs.writeFileSync(file, source)
 NODE
 
-FRONTEND_URL="$FRONTEND_URL" BADGE_NUMBER="$BADGE_NUMBER" PIN_CODE="$PIN_CODE" ASSET_DIR="$ASSET_DIR" \
+FRONTEND_URL="$FRONTEND_URL" BADGE_NUMBER="$BADGE_NUMBER" ASSET_DIR="$ASSET_DIR" \
   playwright_cli -s="$SESSION_NAME" open --browser=chromium --config="$PLAYWRIGHT_CLI_CONFIG" "$FRONTEND_URL/login"
 playwright_cli -s="$SESSION_NAME" resize 1920 1080
-FRONTEND_URL="$FRONTEND_URL" BADGE_NUMBER="$BADGE_NUMBER" PIN_CODE="$PIN_CODE" ASSET_DIR="$ASSET_DIR" \
+FRONTEND_URL="$FRONTEND_URL" BADGE_NUMBER="$BADGE_NUMBER" ASSET_DIR="$ASSET_DIR" \
   playwright_cli -s="$SESSION_NAME" run-code --filename="$WORKFLOW_FILE"
 playwright_cli -s="$SESSION_NAME" snapshot --filename="${RUN_DIR}/section-wiki.yml" || true
 playwright_cli -s="$SESSION_NAME" close || true

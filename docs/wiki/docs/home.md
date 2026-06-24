@@ -87,7 +87,7 @@ This Wiki is the operator help center for Sentinel. Start here when you need to 
 - [Edit Member](/admin/members/edit-member)
 - [Import CSV](/admin/members/import-csv)
 - [Sync Qualifications](/admin/members/sync-qualifications)
-- [Qualifications Tags And PIN](/admin/members/qualifications-tags-and-pin)
+- [Qualifications And Tags](/admin/members/qualifications-and-tags)
 - [Bulk Actions](/admin/members/bulk-actions)
 
 ## Events Help

@@ -6,7 +6,7 @@ The user menu shows who is signed in and provides account/session actions.
 
 ## What This Is
 
-The user menu identifies the signed-in operator and provides account actions such as changing PIN or signing out.
+The user menu identifies the signed-in operator and provides account actions such as signing out.
 
 ## When To Use It
 
@@ -22,8 +22,7 @@ Check this before making Admin changes, before lockup-related actions, and whene
 
 1. Look at the user menu before high-impact actions.
 2. Confirm you are signed in as yourself.
-3. Change PIN only for your own account maintenance.
-4. Sign out when leaving the workstation or handing it to another person.
+3. Sign out when leaving the workstation or handing it to another person.
 
 ## Shared Workstation Reminder
 

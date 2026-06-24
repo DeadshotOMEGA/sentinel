@@ -1,7 +1,6 @@
 'use client'
 /* global process */
 
-import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuthStore, AccountLevel } from '@/store/auth-store'
 import {
@@ -12,8 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { ChangePinModal } from '@/components/auth/change-pin-modal'
-import { User, LogOut, KeyRound } from 'lucide-react'
+import { User, LogOut } from 'lucide-react'
 import { TID } from '@/lib/test-ids'
 
 const LEVEL_LABELS: Record<number, string> = {
@@ -28,7 +26,6 @@ const LEVEL_LABELS: Record<number, string> = {
 export function UserMenu() {
   const router = useRouter()
   const { member, logout } = useAuthStore()
-  const [changePinOpen, setChangePinOpen] = useState(false)
 
   const handleLogout = async () => {
     try {
@@ -47,31 +44,23 @@ export function UserMenu() {
   if (!member) return null
 
   return (
-    <>
-      <DropdownMenu>
-        <DropdownMenuTrigger className="btn btn-ghost btn-sm" testId={TID.nav.userMenu}>
-          <User className="h-5 w-5" />
-          {member.rank} {member.lastName}
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuLabel>
-            Signed in as {member.firstName} {member.lastName}
-            <br />
-            {LEVEL_LABELS[member.accountLevel] ?? `Level ${member.accountLevel}`}
-          </DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => setChangePinOpen(true)} testId={TID.nav.changePin}>
-            <KeyRound className="h-5 w-5" />
-            Change PIN
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleLogout} testId={TID.nav.logout}>
-            <LogOut className="h-5 w-5" />
-            Sign Out
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-      <ChangePinModal open={changePinOpen} onOpenChange={setChangePinOpen} />
-    </>
+    <DropdownMenu>
+      <DropdownMenuTrigger className="btn btn-ghost btn-sm" testId={TID.nav.userMenu}>
+        <User className="h-5 w-5" />
+        {member.rank} {member.lastName}
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuLabel>
+          Signed in as {member.firstName} {member.lastName}
+          <br />
+          {LEVEL_LABELS[member.accountLevel] ?? `Level ${member.accountLevel}`}
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={handleLogout} testId={TID.nav.logout}>
+          <LogOut className="h-5 w-5" />
+          Sign Out
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }

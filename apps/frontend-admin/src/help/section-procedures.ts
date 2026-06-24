@@ -217,11 +217,11 @@ export const membersProcedureDefinitions: ProcedureDefinition[] = [
         popover: {
           title: 'Row actions',
           description:
-            'Use row actions for qualifications, tags, PIN, edit, and archive. Confirm the row identity before selecting an icon.',
+            'Use row actions for qualifications, tags, edit, and archive. Confirm the row identity before selecting an icon.',
           side: 'left',
           align: 'center',
         },
-        help: { wikiSlug: 'admin/members/qualifications-tags-and-pin' },
+        help: { wikiSlug: 'admin/members/qualifications-and-tags' },
       },
       {
         id: 'members-bulk-actions',

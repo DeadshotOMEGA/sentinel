@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Search } from 'lucide-react'
-import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { useBadge, useBadges } from '@/hooks/use-badges'
 import { useCreateMember, useMember, useUpdateMember } from '@/hooks/use-members'
@@ -11,7 +10,6 @@ import { useDivisions } from '@/hooks/use-divisions'
 import { useEnums } from '@/hooks/use-enums'
 import { useAuthStore, AccountLevel } from '@/store/auth-store'
 import { TID } from '@/lib/test-ids'
-import { SetPinModal } from './set-pin-modal'
 import { AppBadge, type AppBadgeStatus } from '@/components/ui/AppBadge'
 import {
   AppCard,
@@ -120,9 +118,7 @@ export function MemberFormModal({
   member,
   createProfile = 'member',
 }: MemberFormModalProps) {
-  const queryClient = useQueryClient()
   const [badgeSearch, setBadgeSearch] = useState('')
-  const [pinModalOpen, setPinModalOpen] = useState(false)
   const { data: divisions } = useDivisions()
   const { data: enums } = useEnums()
   const { data: liveMember } = useMember(open && member?.id ? member.id : '')
@@ -173,8 +169,6 @@ export function MemberFormModal({
   const selectedBadgeId = watch('badgeId')
   const actorLevel = signedInMember?.accountLevel ?? 0
   const canManageAccountLevel = actorLevel >= AccountLevel.ADMIN
-  const canManagePin = actorLevel >= AccountLevel.ADMIN
-  const canShowPinSection = mode === 'edit' && Boolean(member) && canManagePin
   const civilianMemberTypeId =
     enums?.memberTypes.find(
       (memberType: { id: string; code: string }) => memberType.code === 'civilian_staff'
@@ -352,7 +346,7 @@ export function MemberFormModal({
             {mode === 'create'
               ? isCivilianProfile
                 ? 'Create a museum staff record that can use the normal member badge scan flow without entering the nominal roll.'
-                : 'Add the member profile first. Badge assignment and PIN access can be configured after creation.'
+                : 'Add the member profile first. Badge assignment and administrative access can be configured after creation.'
               : `Review profile, unit placement, and badge access for ${resolvedMember?.displayName ?? 'this member'}.`}
           </DialogDescription>
         </DialogHeader>
@@ -608,8 +602,7 @@ export function MemberFormModal({
                   <AppCardHeader className="border-b border-base-300 pb-(--space-3)">
                     <AppCardTitle>Badge & Access</AppCardTitle>
                     <AppCardDescription>
-                      Manage badge assignment, protected PIN access, and administrative access
-                      level.
+                      Manage badge assignment and administrative access level.
                     </AppCardDescription>
                   </AppCardHeader>
                   <AppCardContent className="space-y-(--space-3) px-(--space-6) pb-(--space-5) pt-(--space-3)">
@@ -625,12 +618,6 @@ export function MemberFormModal({
                             size="sm"
                           >
                             {currentBadge ? `Badge ${currentBadge.status}` : 'No badge assigned'}
-                          </AppBadge>
-                          <AppBadge
-                            status={resolvedMember.mustChangePin ? 'warning' : 'success'}
-                            size="sm"
-                          >
-                            {resolvedMember.mustChangePin ? 'PIN setup required' : 'PIN configured'}
                           </AppBadge>
                         </div>
 
@@ -780,56 +767,15 @@ export function MemberFormModal({
                             </select>
                           </label>
                         )}
-
-                        {canShowPinSection && (
-                          <div className="rounded-box border border-base-300 p-(--space-3)">
-                            <div className="space-y-(--space-2)">
-                              <div>
-                                <h3 className="text-sm font-medium">PIN Access</h3>
-                                <p className="text-sm text-base-content/60">
-                                  Protected login uses the assigned badge and a 4-digit PIN.
-                                </p>
-                              </div>
-                              <AppBadge
-                                status={resolvedMember.mustChangePin ? 'warning' : 'success'}
-                                size="sm"
-                              >
-                                {resolvedMember.mustChangePin ? 'Set PIN now' : 'PIN active'}
-                              </AppBadge>
-                            </div>
-
-                            {resolvedMember.mustChangePin && (
-                              <div
-                                role="alert"
-                                className="alert alert-warning mt-(--space-3) text-sm"
-                              >
-                                <span>
-                                  This member still needs an initial or replacement PIN before
-                                  regular protected access.
-                                </span>
-                              </div>
-                            )}
-
-                            <div className="mt-(--space-3)">
-                              <button
-                                type="button"
-                                className={`btn btn-sm ${resolvedMember.mustChangePin ? 'btn-warning' : 'btn-primary'}`}
-                                onClick={() => setPinModalOpen(true)}
-                              >
-                                {resolvedMember.mustChangePin ? 'Set PIN' : 'Change PIN'}
-                              </button>
-                            </div>
-                          </div>
-                        )}
                       </>
                     ) : (
                       <>
                         <div className="rounded-box border border-base-300 bg-base-200/40 p-(--space-3)">
                           <p className="text-sm font-medium">Access setup comes next</p>
                           <p className="mt-(--space-2) text-sm text-base-content/60">
-                            Create the member profile first. Badge assignment and PIN setup are
-                            managed from the edit view so you can see current badge status and
-                            access details together.
+                            Create the member profile first. Badge assignment is managed from the
+                            edit view so you can see current badge status and access details
+                            together.
                           </p>
                         </div>
 
@@ -887,19 +833,6 @@ export function MemberFormModal({
             </button>
           </DialogFooter>
         </form>
-
-        {resolvedMember && (
-          <SetPinModal
-            open={pinModalOpen}
-            onOpenChange={setPinModalOpen}
-            memberId={resolvedMember.id}
-            memberName={resolvedMember.displayName}
-            onSuccess={async () => {
-              await queryClient.invalidateQueries({ queryKey: ['members'] })
-              await queryClient.invalidateQueries({ queryKey: ['member', resolvedMember.id] })
-            }}
-          />
-        )}
       </DialogContent>
     </Dialog>
   )

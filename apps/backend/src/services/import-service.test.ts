@@ -34,7 +34,6 @@ function createMockMember(
     mobilePhone: overrides.mobilePhone,
     badgeId: overrides.badgeId,
     accountLevel: overrides.accountLevel ?? 1,
-    mustChangePin: overrides.mustChangePin ?? false,
     missedCheckoutCount: overrides.missedCheckoutCount ?? 0,
     lastMissedCheckout: overrides.lastMissedCheckout,
     createdAt: overrides.createdAt ?? now,

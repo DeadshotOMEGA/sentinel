@@ -48,7 +48,6 @@ function toMemberResponse(member: Member | MemberWithDivision) {
     divisionId: member.divisionId ?? null,
     badgeId: member.badgeId || null,
     accountLevel: member.accountLevel,
-    mustChangePin: member.mustChangePin,
     badgeStatus: memberWithDetails.badge?.badgeStatusSummary
       ? {
           name: memberWithDetails.badge.badgeStatusSummary.name,

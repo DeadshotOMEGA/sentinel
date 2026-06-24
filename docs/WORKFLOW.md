@@ -28,9 +28,7 @@ A lightweight workflow designed to keep bugs from disappearing while you continu
 
 - Sentinel reserves a protected bootstrap account for install/recovery:
   - Badge: `0000000000`
-  - PIN: `0000`
-- The bootstrap credential is runtime-enforced and immutable through auth PIN-change endpoints.
-- The bootstrap account bypasses forced PIN-change gating to avoid lockout during setup/recovery.
+- The bootstrap credential is runtime-enforced to avoid lockout during setup/recovery.
 
 Source-of-truth file: `.github/labels.solo-workflow.json`
 Canonical policy pages live in GitHub Wiki under **Labeling and Automation**.

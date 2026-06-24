@@ -1,41 +1,37 @@
 'use client'
 
-/* global HTMLInputElement */
-
-import { useRef, useEffect, useMemo, useState, type KeyboardEvent } from 'react'
+import { useMemo, useState } from 'react'
 import type { RemoteSystemLoginContext, RemoteSystemOption } from '@sentinel/contracts'
-import { KeyRound, ArrowLeft, LoaderCircle, LogIn } from 'lucide-react'
+import { ArrowLeft, LoaderCircle, LogIn, MonitorCheck } from 'lucide-react'
 import { TID } from '@/lib/test-ids'
 import {
   formatRemoteSystemOptionLabel,
   resolveDefaultRemoteSystemId,
   resolveEffectiveRemoteSystemId,
   resolveForcedRemoteSystem,
-  type PinInputInitialSelection,
-} from './pin-input.logic'
-import { PinField } from './pin-field'
+  type RemoteSystemLoginInitialSelection,
+} from './remote-system-login.logic'
 
-export type { PinInputInitialSelection } from './pin-input.logic'
+export type { RemoteSystemLoginInitialSelection } from './remote-system-login.logic'
 
-export interface PinInputSubmission {
-  pin: string
+export interface RemoteSystemLoginSubmission {
   remoteSystemId?: string
   useKioskRemoteSystem?: boolean
 }
 
-interface PinInputProps {
-  onSubmit: (input: PinInputSubmission) => void
+interface RemoteSystemLoginProps {
+  onSubmit: (input: RemoteSystemLoginSubmission) => void
   onBack: () => void
   loading?: boolean
   remoteSystems: RemoteSystemOption[]
   remoteSystemsLoading?: boolean
   remoteSystemsError?: string | null
-  initialSelection?: PinInputInitialSelection | null
+  initialSelection?: RemoteSystemLoginInitialSelection | null
   loginContext?: RemoteSystemLoginContext | null
   forceKioskRemoteSystem?: boolean
 }
 
-export function PinInput({
+export function RemoteSystemLogin({
   onSubmit,
   onBack,
   loading = false,
@@ -45,14 +41,8 @@ export function PinInput({
   initialSelection = null,
   loginContext = null,
   forceKioskRemoteSystem = false,
-}: PinInputProps) {
-  const [pin, setPin] = useState('')
+}: RemoteSystemLoginProps) {
   const [selectedRemoteSystem, setSelectedRemoteSystem] = useState('')
-  const inputRef = useRef<HTMLInputElement>(null)
-
-  useEffect(() => {
-    inputRef.current?.focus()
-  }, [])
 
   const forcedRemoteSystem = useMemo(
     () => resolveForcedRemoteSystem(remoteSystems, loginContext),
@@ -82,11 +72,9 @@ export function PinInput({
   const hasSelectableRemoteSystems = defaultRemoteSystemId.length > 0
   const isHostDevice = loginContext?.isHostDevice === true
   const hostRemoteSystemMissing = isHostDevice && !forcedRemoteSystem
-  const canSubmit =
-    pin.length === 4 &&
-    (forceKioskRemoteSystem
-      ? Boolean(kioskRemoteSystem) && !remoteSystemsLoading
-      : effectiveSelectedRemoteSystem.length > 0 && !hostRemoteSystemMissing)
+  const canSubmit = forceKioskRemoteSystem
+    ? Boolean(kioskRemoteSystem) && !remoteSystemsLoading
+    : effectiveSelectedRemoteSystem.length > 0 && !hostRemoteSystemMissing
 
   const handleSubmit = () => {
     if (!canSubmit) {
@@ -95,36 +83,24 @@ export function PinInput({
 
     if (forceKioskRemoteSystem) {
       onSubmit({
-        pin,
         useKioskRemoteSystem: true,
       })
       return
     }
 
     onSubmit({
-      pin,
       remoteSystemId: effectiveSelectedRemoteSystem,
     })
-  }
-
-  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && canSubmit) {
-      e.preventDefault()
-      handleSubmit()
-    }
-    if (e.key === 'Escape') {
-      onBack()
-    }
   }
 
   return (
     <fieldset className="fieldset space-y-(--space-4)">
       <legend className="fieldset-legend mx-auto text-center text-2xl font-semibold">
-        Enter your 4-digit PIN
+        Confirm workstation
       </legend>
       <div className="flex justify-center">
         <div className="rounded-full bg-primary-fadded p-(--space-3) text-primary-fadded-content">
-          <KeyRound size={36} strokeWidth={1.75} />
+          <MonitorCheck size={36} strokeWidth={1.75} />
         </div>
       </div>
 
@@ -233,27 +209,13 @@ export function PinInput({
         </fieldset>
       )}
 
-      <PinField
-        ref={inputRef}
-        label="PIN"
-        value={pin}
-        onValueChange={setPin}
-        size="large"
-        placeholderStyle="slots"
-        onKeyDown={handleKeyDown}
-        disabled={loading}
-        ariaLabel="PIN"
-        className="input-lg"
-        data-testid={TID.auth.pinInput}
-      />
-
       <div className="grid grid-cols-2 gap-(--space-2)">
         <button
           type="button"
           className="btn btn-ghost"
           onClick={onBack}
           disabled={loading}
-          data-testid={TID.auth.pinBack}
+          data-testid={TID.auth.loginBack}
         >
           <ArrowLeft size={16} />
           Back
@@ -263,7 +225,7 @@ export function PinInput({
           className="btn btn-primary"
           onClick={handleSubmit}
           disabled={!canSubmit || loading}
-          data-testid={TID.auth.pinSubmit}
+          data-testid={TID.auth.loginSubmit}
         >
           {loading ? (
             <LoaderCircle className="h-4 w-4 animate-spin" />

@@ -8,7 +8,7 @@ Use this page when you first sit down at Sentinel for a DDS shift.
 
 ## What This Is
 
-Logging in is not just access control. It is the first operational check. Before you act as DDS, confirm Sentinel accepts your own badge or service number, uses your own PIN, shows the correct managed workstation, and lands you on the correct Dashboard.
+Logging in is not just access control. It is the first operational check. Before you act as DDS, confirm Sentinel accepts your own badge or service number, shows the correct managed workstation, and lands you on the correct Dashboard.
 
 ## When To Use It
 
@@ -23,13 +23,11 @@ Logging in is not just access control. It is the first operational check. Before
 2. On the login screen, scan your badge or type your badge/service number.
 3. Press Enter to continue.
 
-![Sentinel PIN and remote system login screen](/uploads/wiki-dashboard/operations/sentinel-login-pin-entry.png)
+![Sentinel remote system login screen](/uploads/wiki-dashboard/operations/sentinel-login-workstation-entry.png)
 
 4. Confirm the Remote system field matches the workstation or managed station you are using.
-5. Enter your 4-digit PIN.
-6. Select Sign In.
-7. If Sentinel asks you to create or change a PIN, finish that prompt before continuing.
-8. Confirm the Dashboard opens before taking any operational action.
+5. Select Sign In.
+6. Confirm the Dashboard opens before taking any operational action.
 
 ![Sentinel Dashboard after successful login](/uploads/wiki-dashboard/operations/sentinel-login-dashboard-confirmation.png)
 
@@ -63,7 +61,6 @@ If the Dashboard does not load, capture the screen and escalate.
 ## When To Escalate
 
 - Your badge or service number is not accepted.
-- Your PIN is rejected after you confirm you entered it correctly.
 - You cannot select the correct remote system.
 - Sentinel signs in but does not reach Dashboard.
 - Sentinel says one account/system, but the real workstation or person using it is different.

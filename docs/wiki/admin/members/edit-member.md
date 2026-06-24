@@ -39,7 +39,7 @@ Stop: Do not edit one person when you meant another similar name.
 ## Confirm After Action
 
 - The table row reflects the saved change.
-- Qualifications, tags, or PIN state still make sense.
+- Qualifications, tags, and badge state still make sense.
 
 ## When To Escalate
 

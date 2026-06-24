@@ -76,7 +76,7 @@ export const dashboardProcedureDefinitions: ProcedureDefinition[] = [
         popover: {
           title: 'Your signed-in account',
           description:
-            'The user menu shows who is signed in and provides account actions like changing PIN or signing out.',
+            'The user menu shows who is signed in and provides account actions like signing out.',
           side: 'bottom',
           align: 'end',
         },

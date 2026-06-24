@@ -17496,8 +17496,6 @@ export namespace Prisma {
     contract_end: Date | null
     missedCheckoutCount: number | null
     lastMissedCheckout: Date | null
-    pinHash: string | null
-    mustChangePin: boolean | null
     accountLevel: number | null
   }
 
@@ -17531,8 +17529,6 @@ export namespace Prisma {
     contract_end: Date | null
     missedCheckoutCount: number | null
     lastMissedCheckout: Date | null
-    pinHash: string | null
-    mustChangePin: boolean | null
     accountLevel: number | null
   }
 
@@ -17566,8 +17562,6 @@ export namespace Prisma {
     contract_end: number
     missedCheckoutCount: number
     lastMissedCheckout: number
-    pinHash: number
-    mustChangePin: number
     accountLevel: number
     _all: number
   }
@@ -17613,8 +17607,6 @@ export namespace Prisma {
     contract_end?: true
     missedCheckoutCount?: true
     lastMissedCheckout?: true
-    pinHash?: true
-    mustChangePin?: true
     accountLevel?: true
   }
 
@@ -17648,8 +17640,6 @@ export namespace Prisma {
     contract_end?: true
     missedCheckoutCount?: true
     lastMissedCheckout?: true
-    pinHash?: true
-    mustChangePin?: true
     accountLevel?: true
   }
 
@@ -17683,8 +17673,6 @@ export namespace Prisma {
     contract_end?: true
     missedCheckoutCount?: true
     lastMissedCheckout?: true
-    pinHash?: true
-    mustChangePin?: true
     accountLevel?: true
     _all?: true
   }
@@ -17805,8 +17793,6 @@ export namespace Prisma {
     contract_end: Date | null
     missedCheckoutCount: number
     lastMissedCheckout: Date | null
-    pinHash: string | null
-    mustChangePin: boolean
     accountLevel: number
     _count: MemberCountAggregateOutputType | null
     _avg: MemberAvgAggregateOutputType | null
@@ -17859,8 +17845,6 @@ export namespace Prisma {
     contract_end?: boolean
     missedCheckoutCount?: boolean
     lastMissedCheckout?: boolean
-    pinHash?: boolean
-    mustChangePin?: boolean
     accountLevel?: boolean
     rankRef?: boolean | Member$rankRefArgs<ExtArgs>
     badge?: boolean | Member$badgeArgs<ExtArgs>
@@ -17923,8 +17907,6 @@ export namespace Prisma {
     contract_end?: boolean
     missedCheckoutCount?: boolean
     lastMissedCheckout?: boolean
-    pinHash?: boolean
-    mustChangePin?: boolean
     accountLevel?: boolean
     rankRef?: boolean | Member$rankRefArgs<ExtArgs>
     badge?: boolean | Member$badgeArgs<ExtArgs>
@@ -17963,8 +17945,6 @@ export namespace Prisma {
     contract_end?: boolean
     missedCheckoutCount?: boolean
     lastMissedCheckout?: boolean
-    pinHash?: boolean
-    mustChangePin?: boolean
     accountLevel?: boolean
     rankRef?: boolean | Member$rankRefArgs<ExtArgs>
     badge?: boolean | Member$badgeArgs<ExtArgs>
@@ -18003,12 +17983,10 @@ export namespace Prisma {
     contract_end?: boolean
     missedCheckoutCount?: boolean
     lastMissedCheckout?: boolean
-    pinHash?: boolean
-    mustChangePin?: boolean
     accountLevel?: boolean
   }
 
-  export type MemberOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "serviceNumber" | "rankId" | "rank" | "firstName" | "lastName" | "displayName" | "email" | "mobilePhone" | "divisionId" | "badgeId" | "memberType" | "memberSource" | "status" | "memberTypeId" | "memberStatusId" | "createdAt" | "updatedAt" | "employeeNumber" | "initials" | "mess" | "moc" | "classDetails" | "homePhone" | "notes" | "contract_start" | "contract_end" | "missedCheckoutCount" | "lastMissedCheckout" | "pinHash" | "mustChangePin" | "accountLevel", ExtArgs["result"]["member"]>
+  export type MemberOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "serviceNumber" | "rankId" | "rank" | "firstName" | "lastName" | "displayName" | "email" | "mobilePhone" | "divisionId" | "badgeId" | "memberType" | "memberSource" | "status" | "memberTypeId" | "memberStatusId" | "createdAt" | "updatedAt" | "employeeNumber" | "initials" | "mess" | "moc" | "classDetails" | "homePhone" | "notes" | "contract_start" | "contract_end" | "missedCheckoutCount" | "lastMissedCheckout" | "accountLevel", ExtArgs["result"]["member"]>
   export type MemberInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     rankRef?: boolean | Member$rankRefArgs<ExtArgs>
     badge?: boolean | Member$badgeArgs<ExtArgs>
@@ -18117,8 +18095,6 @@ export namespace Prisma {
       contract_end: Date | null
       missedCheckoutCount: number
       lastMissedCheckout: Date | null
-      pinHash: string | null
-      mustChangePin: boolean
       accountLevel: number
     }, ExtArgs["result"]["member"]>
     composites: {}
@@ -18600,8 +18576,6 @@ export namespace Prisma {
     readonly contract_end: FieldRef<"Member", 'DateTime'>
     readonly missedCheckoutCount: FieldRef<"Member", 'Int'>
     readonly lastMissedCheckout: FieldRef<"Member", 'DateTime'>
-    readonly pinHash: FieldRef<"Member", 'String'>
-    readonly mustChangePin: FieldRef<"Member", 'Boolean'>
     readonly accountLevel: FieldRef<"Member", 'Int'>
   }
     
@@ -78130,8 +78104,6 @@ export namespace Prisma {
     contract_end: 'contract_end',
     missedCheckoutCount: 'missedCheckoutCount',
     lastMissedCheckout: 'lastMissedCheckout',
-    pinHash: 'pinHash',
-    mustChangePin: 'mustChangePin',
     accountLevel: 'accountLevel'
   };
 
@@ -79813,8 +79785,6 @@ export namespace Prisma {
     contract_end?: DateTimeNullableFilter<"Member"> | Date | string | null
     missedCheckoutCount?: IntFilter<"Member"> | number
     lastMissedCheckout?: DateTimeNullableFilter<"Member"> | Date | string | null
-    pinHash?: StringNullableFilter<"Member"> | string | null
-    mustChangePin?: BoolFilter<"Member"> | boolean
     accountLevel?: IntFilter<"Member"> | number
     rankRef?: XOR<RankNullableScalarRelationFilter, RankWhereInput> | null
     badge?: XOR<BadgeNullableScalarRelationFilter, BadgeWhereInput> | null
@@ -79876,8 +79846,6 @@ export namespace Prisma {
     contract_end?: SortOrderInput | SortOrder
     missedCheckoutCount?: SortOrder
     lastMissedCheckout?: SortOrderInput | SortOrder
-    pinHash?: SortOrderInput | SortOrder
-    mustChangePin?: SortOrder
     accountLevel?: SortOrder
     rankRef?: RankOrderByWithRelationInput
     badge?: BadgeOrderByWithRelationInput
@@ -79942,8 +79910,6 @@ export namespace Prisma {
     contract_end?: DateTimeNullableFilter<"Member"> | Date | string | null
     missedCheckoutCount?: IntFilter<"Member"> | number
     lastMissedCheckout?: DateTimeNullableFilter<"Member"> | Date | string | null
-    pinHash?: StringNullableFilter<"Member"> | string | null
-    mustChangePin?: BoolFilter<"Member"> | boolean
     accountLevel?: IntFilter<"Member"> | number
     rankRef?: XOR<RankNullableScalarRelationFilter, RankWhereInput> | null
     badge?: XOR<BadgeNullableScalarRelationFilter, BadgeWhereInput> | null
@@ -80005,8 +79971,6 @@ export namespace Prisma {
     contract_end?: SortOrderInput | SortOrder
     missedCheckoutCount?: SortOrder
     lastMissedCheckout?: SortOrderInput | SortOrder
-    pinHash?: SortOrderInput | SortOrder
-    mustChangePin?: SortOrder
     accountLevel?: SortOrder
     _count?: MemberCountOrderByAggregateInput
     _avg?: MemberAvgOrderByAggregateInput
@@ -80048,8 +80012,6 @@ export namespace Prisma {
     contract_end?: DateTimeNullableWithAggregatesFilter<"Member"> | Date | string | null
     missedCheckoutCount?: IntWithAggregatesFilter<"Member"> | number
     lastMissedCheckout?: DateTimeNullableWithAggregatesFilter<"Member"> | Date | string | null
-    pinHash?: StringNullableWithAggregatesFilter<"Member"> | string | null
-    mustChangePin?: BoolWithAggregatesFilter<"Member"> | boolean
     accountLevel?: IntWithAggregatesFilter<"Member"> | number
   }
 
@@ -84994,8 +84956,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     rankRef?: RankCreateNestedOneWithoutMembersInput
     badge?: BadgeCreateNestedOneWithoutMembersInput
@@ -85057,8 +85017,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
@@ -85110,8 +85068,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     rankRef?: RankUpdateOneWithoutMembersNestedInput
     badge?: BadgeUpdateOneWithoutMembersNestedInput
@@ -85173,8 +85129,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
@@ -85231,8 +85185,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
   }
 
@@ -85261,8 +85213,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
   }
 
@@ -85296,8 +85246,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
   }
 
@@ -90697,8 +90645,6 @@ export namespace Prisma {
     contract_end?: SortOrder
     missedCheckoutCount?: SortOrder
     lastMissedCheckout?: SortOrder
-    pinHash?: SortOrder
-    mustChangePin?: SortOrder
     accountLevel?: SortOrder
   }
 
@@ -90737,8 +90683,6 @@ export namespace Prisma {
     contract_end?: SortOrder
     missedCheckoutCount?: SortOrder
     lastMissedCheckout?: SortOrder
-    pinHash?: SortOrder
-    mustChangePin?: SortOrder
     accountLevel?: SortOrder
   }
 
@@ -90772,8 +90716,6 @@ export namespace Prisma {
     contract_end?: SortOrder
     missedCheckoutCount?: SortOrder
     lastMissedCheckout?: SortOrder
-    pinHash?: SortOrder
-    mustChangePin?: SortOrder
     accountLevel?: SortOrder
   }
 
@@ -99618,8 +99560,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     rankRef?: RankCreateNestedOneWithoutMembersInput
     bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
@@ -99679,8 +99619,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
@@ -100015,8 +99953,6 @@ export namespace Prisma {
     contract_end?: DateTimeNullableFilter<"Member"> | Date | string | null
     missedCheckoutCount?: IntFilter<"Member"> | number
     lastMissedCheckout?: DateTimeNullableFilter<"Member"> | Date | string | null
-    pinHash?: StringNullableFilter<"Member"> | string | null
-    mustChangePin?: BoolFilter<"Member"> | boolean
     accountLevel?: IntFilter<"Member"> | number
   }
 
@@ -100297,8 +100233,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     rankRef?: RankCreateNestedOneWithoutMembersInput
     badge?: BadgeCreateNestedOneWithoutMembersInput
@@ -100359,8 +100293,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     visitorsHosted?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
@@ -100543,8 +100475,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     rankRef?: RankUpdateOneWithoutMembersNestedInput
     badge?: BadgeUpdateOneWithoutMembersNestedInput
@@ -100605,8 +100535,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     visitorsHosted?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
@@ -100657,8 +100585,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     rankRef?: RankCreateNestedOneWithoutMembersInput
     badge?: BadgeCreateNestedOneWithoutMembersInput
@@ -100718,8 +100644,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
@@ -103168,8 +103092,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     rankRef?: RankCreateNestedOneWithoutMembersInput
     badge?: BadgeCreateNestedOneWithoutMembersInput
@@ -103230,8 +103152,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
@@ -103325,8 +103245,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     rankRef?: RankUpdateOneWithoutMembersNestedInput
     badge?: BadgeUpdateOneWithoutMembersNestedInput
@@ -103387,8 +103305,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
@@ -103634,8 +103550,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     rankRef?: RankCreateNestedOneWithoutMembersInput
     badge?: BadgeCreateNestedOneWithoutMembersInput
@@ -103696,8 +103610,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
@@ -103795,8 +103707,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     rankRef?: RankUpdateOneWithoutMembersNestedInput
     badge?: BadgeUpdateOneWithoutMembersNestedInput
@@ -103857,8 +103767,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
@@ -103946,8 +103854,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     rankRef?: RankCreateNestedOneWithoutMembersInput
     badge?: BadgeCreateNestedOneWithoutMembersInput
@@ -104008,8 +103914,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
@@ -104076,8 +103980,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     rankRef?: RankUpdateOneWithoutMembersNestedInput
     badge?: BadgeUpdateOneWithoutMembersNestedInput
@@ -104138,8 +104040,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
@@ -104190,8 +104090,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     rankRef?: RankCreateNestedOneWithoutMembersInput
     badge?: BadgeCreateNestedOneWithoutMembersInput
@@ -104252,8 +104150,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
@@ -104430,8 +104326,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     rankRef?: RankCreateNestedOneWithoutMembersInput
     badge?: BadgeCreateNestedOneWithoutMembersInput
@@ -104492,8 +104386,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
@@ -104663,8 +104555,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     rankRef?: RankUpdateOneWithoutMembersNestedInput
     badge?: BadgeUpdateOneWithoutMembersNestedInput
@@ -104725,8 +104615,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
@@ -104927,8 +104815,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     rankRef?: RankUpdateOneWithoutMembersNestedInput
     badge?: BadgeUpdateOneWithoutMembersNestedInput
@@ -104989,8 +104875,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
@@ -105283,8 +105167,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     rankRef?: RankCreateNestedOneWithoutMembersInput
     badge?: BadgeCreateNestedOneWithoutMembersInput
@@ -105345,8 +105227,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
@@ -105648,8 +105528,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     rankRef?: RankUpdateOneWithoutMembersNestedInput
     badge?: BadgeUpdateOneWithoutMembersNestedInput
@@ -105710,8 +105588,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
@@ -105881,8 +105757,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     rankRef?: RankCreateNestedOneWithoutMembersInput
     badge?: BadgeCreateNestedOneWithoutMembersInput
@@ -105943,8 +105817,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
@@ -106114,8 +105986,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     rankRef?: RankUpdateOneWithoutMembersNestedInput
     badge?: BadgeUpdateOneWithoutMembersNestedInput
@@ -106176,8 +106046,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
@@ -107057,8 +106925,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     rankRef?: RankCreateNestedOneWithoutMembersInput
     badge?: BadgeCreateNestedOneWithoutMembersInput
@@ -107119,8 +106985,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitorsHosted?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
@@ -107224,8 +107088,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     rankRef?: RankUpdateOneWithoutMembersNestedInput
     badge?: BadgeUpdateOneWithoutMembersNestedInput
@@ -107286,8 +107148,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitorsHosted?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
@@ -107470,8 +107330,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     rankRef?: RankCreateNestedOneWithoutMembersInput
     badge?: BadgeCreateNestedOneWithoutMembersInput
@@ -107532,8 +107390,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
@@ -107589,8 +107445,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     rankRef?: RankCreateNestedOneWithoutMembersInput
     badge?: BadgeCreateNestedOneWithoutMembersInput
@@ -107651,8 +107505,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
@@ -107782,8 +107634,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     rankRef?: RankUpdateOneWithoutMembersNestedInput
     badge?: BadgeUpdateOneWithoutMembersNestedInput
@@ -107844,8 +107694,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
@@ -107907,8 +107755,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     rankRef?: RankUpdateOneWithoutMembersNestedInput
     badge?: BadgeUpdateOneWithoutMembersNestedInput
@@ -107969,8 +107815,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
@@ -108090,8 +107934,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     rankRef?: RankCreateNestedOneWithoutMembersInput
     badge?: BadgeCreateNestedOneWithoutMembersInput
@@ -108151,8 +107993,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
@@ -108230,8 +108070,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     rankRef?: RankCreateNestedOneWithoutMembersInput
     badge?: BadgeCreateNestedOneWithoutMembersInput
@@ -108291,8 +108129,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
@@ -108535,8 +108371,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     badge?: BadgeCreateNestedOneWithoutMembersInput
     bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
@@ -108596,8 +108430,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
@@ -109206,8 +109038,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     rankRef?: RankCreateNestedOneWithoutMembersInput
     badge?: BadgeCreateNestedOneWithoutMembersInput
@@ -109268,8 +109098,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
@@ -109493,8 +109321,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     rankRef?: RankUpdateOneWithoutMembersNestedInput
     badge?: BadgeUpdateOneWithoutMembersNestedInput
@@ -109555,8 +109381,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
@@ -110125,8 +109949,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     rankRef?: RankCreateNestedOneWithoutMembersInput
     badge?: BadgeCreateNestedOneWithoutMembersInput
@@ -110187,8 +110009,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
@@ -110288,8 +110108,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     rankRef?: RankUpdateOneWithoutMembersNestedInput
     badge?: BadgeUpdateOneWithoutMembersNestedInput
@@ -110350,8 +110168,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
@@ -110943,8 +110759,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     rankRef?: RankCreateNestedOneWithoutMembersInput
     badge?: BadgeCreateNestedOneWithoutMembersInput
@@ -111005,8 +110819,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
@@ -111151,8 +110963,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     rankRef?: RankUpdateOneWithoutMembersNestedInput
     badge?: BadgeUpdateOneWithoutMembersNestedInput
@@ -111213,8 +111023,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
@@ -111331,8 +111139,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     rankRef?: RankCreateNestedOneWithoutMembersInput
     badge?: BadgeCreateNestedOneWithoutMembersInput
@@ -111393,8 +111199,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
@@ -111450,8 +111254,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     rankRef?: RankCreateNestedOneWithoutMembersInput
     badge?: BadgeCreateNestedOneWithoutMembersInput
@@ -111512,8 +111314,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
@@ -111658,8 +111458,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     rankRef?: RankUpdateOneWithoutMembersNestedInput
     badge?: BadgeUpdateOneWithoutMembersNestedInput
@@ -111720,8 +111518,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
@@ -111783,8 +111579,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     rankRef?: RankUpdateOneWithoutMembersNestedInput
     badge?: BadgeUpdateOneWithoutMembersNestedInput
@@ -111845,8 +111639,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
@@ -111897,8 +111689,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     rankRef?: RankCreateNestedOneWithoutMembersInput
     badge?: BadgeCreateNestedOneWithoutMembersInput
@@ -111959,8 +111749,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
@@ -112016,8 +111804,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     rankRef?: RankCreateNestedOneWithoutMembersInput
     badge?: BadgeCreateNestedOneWithoutMembersInput
@@ -112078,8 +111864,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
@@ -112203,8 +111987,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     rankRef?: RankUpdateOneWithoutMembersNestedInput
     badge?: BadgeUpdateOneWithoutMembersNestedInput
@@ -112265,8 +112047,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
@@ -112328,8 +112108,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     rankRef?: RankUpdateOneWithoutMembersNestedInput
     badge?: BadgeUpdateOneWithoutMembersNestedInput
@@ -112390,8 +112168,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
@@ -112524,8 +112300,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     rankRef?: RankCreateNestedOneWithoutMembersInput
     badge?: BadgeCreateNestedOneWithoutMembersInput
@@ -112586,8 +112360,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
@@ -112643,8 +112415,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     rankRef?: RankCreateNestedOneWithoutMembersInput
     badge?: BadgeCreateNestedOneWithoutMembersInput
@@ -112705,8 +112475,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
@@ -112812,8 +112580,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     rankRef?: RankUpdateOneWithoutMembersNestedInput
     badge?: BadgeUpdateOneWithoutMembersNestedInput
@@ -112874,8 +112640,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
@@ -112937,8 +112701,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     rankRef?: RankUpdateOneWithoutMembersNestedInput
     badge?: BadgeUpdateOneWithoutMembersNestedInput
@@ -112999,8 +112761,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
@@ -113084,8 +112844,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     rankRef?: RankCreateNestedOneWithoutMembersInput
     badge?: BadgeCreateNestedOneWithoutMembersInput
@@ -113146,8 +112904,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
@@ -113253,8 +113009,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     rankRef?: RankUpdateOneWithoutMembersNestedInput
     badge?: BadgeUpdateOneWithoutMembersNestedInput
@@ -113315,8 +113069,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
@@ -113367,8 +113119,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     rankRef?: RankCreateNestedOneWithoutMembersInput
     badge?: BadgeCreateNestedOneWithoutMembersInput
@@ -113429,8 +113179,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
@@ -113560,8 +113308,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     rankRef?: RankUpdateOneWithoutMembersNestedInput
     badge?: BadgeUpdateOneWithoutMembersNestedInput
@@ -113622,8 +113368,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
@@ -114803,8 +114547,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     rankRef?: RankCreateNestedOneWithoutMembersInput
     badge?: BadgeCreateNestedOneWithoutMembersInput
@@ -114865,8 +114607,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
@@ -115031,8 +114771,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     rankRef?: RankUpdateOneWithoutMembersNestedInput
     badge?: BadgeUpdateOneWithoutMembersNestedInput
@@ -115093,8 +114831,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
@@ -115839,8 +115575,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
   }
 
@@ -116040,8 +115774,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     rankRef?: RankUpdateOneWithoutMembersNestedInput
     bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
@@ -116101,8 +115833,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
@@ -116158,8 +115888,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
   }
 
@@ -116359,8 +116087,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
   }
 
@@ -116389,8 +116115,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     rankRef?: RankUpdateOneWithoutMembersNestedInput
     badge?: BadgeUpdateOneWithoutMembersNestedInput
@@ -116450,8 +116174,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
@@ -116507,8 +116229,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
   }
 
@@ -118637,8 +118357,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
   }
 
@@ -118667,8 +118385,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     rankRef?: RankUpdateOneWithoutMembersNestedInput
     badge?: BadgeUpdateOneWithoutMembersNestedInput
@@ -118728,8 +118444,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
@@ -118785,8 +118499,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
   }
 
@@ -118819,8 +118531,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
   }
 
@@ -118849,8 +118559,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     rankRef?: RankUpdateOneWithoutMembersNestedInput
     badge?: BadgeUpdateOneWithoutMembersNestedInput
@@ -118910,8 +118618,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
@@ -118967,8 +118673,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
   }
 
@@ -119183,8 +118887,6 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
-    pinHash?: string | null
-    mustChangePin?: boolean
     accountLevel?: number
   }
 
@@ -119225,8 +118927,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     badge?: BadgeUpdateOneWithoutMembersNestedInput
     bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
@@ -119286,8 +118986,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
@@ -119343,8 +119041,6 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
     accountLevel?: IntFieldUpdateOperationsInput | number
   }
 

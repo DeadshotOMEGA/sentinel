@@ -1,28 +1,13 @@
-import bcrypt from 'bcryptjs'
 import type { PrismaClientInstance } from '@sentinel/database'
 import { prisma as defaultPrisma } from '@sentinel/database'
-import { DISALLOWED_MEMBER_PINS } from '@sentinel/contracts'
 import { formatAuditMemberName } from '../lib/audit-log.js'
 import { CheckinRepository } from '../repositories/checkin-repository.js'
 import { AuditRepository } from '../repositories/audit-repository.js'
 import { SessionRepository } from '../repositories/session-repository.js'
 import type { SessionMetadata, SessionWithMember } from '../repositories/session-repository.js'
 import { authLogger } from '../lib/logger.js'
-import {
-  getSentinelBootstrapIdentity,
-  isSentinelBootstrapServiceNumber,
-} from '../lib/system-bootstrap.js'
 import { broadcastCheckin } from '../websocket/broadcast.js'
 import { PresenceService } from './presence-service.js'
-
-const BCRYPT_COST = 12
-const DISALLOWED_MEMBER_PIN_SET = new Set<string>(DISALLOWED_MEMBER_PINS)
-
-function isDisallowedMemberPin(pin: string): boolean {
-  return DISALLOWED_MEMBER_PIN_SET.has(pin)
-}
-
-type PinSetupReason = 'missing' | 'default'
 
 interface LoginMemberRecord {
   id: string
@@ -31,9 +16,7 @@ interface LoginMemberRecord {
   rank: string
   serviceNumber: string
   accountLevel: number
-  mustChangePin: boolean
   status: string
-  pinHash: string | null
 }
 
 interface AuthMemberSummary {
@@ -43,14 +26,6 @@ interface AuthMemberSummary {
   rank: string
   serviceNumber: string
   accountLevel: number
-  mustChangePin: boolean
-}
-
-interface LoginContext {
-  member: LoginMemberRecord
-  isBootstrapMember: boolean
-  pinState: 'configured' | 'setup_required'
-  setupReason: PinSetupReason | null
 }
 
 interface LoginCheckinResult {
@@ -66,12 +41,6 @@ export interface LoginResult {
   lastSeenAt: string
   expiresAt: string
   member: AuthMemberSummary
-}
-
-export interface PreflightLoginResult {
-  member: AuthMemberSummary
-  pinState: 'configured' | 'setup_required'
-  setupReason: PinSetupReason | null
 }
 
 export interface RemoteSystemSelection {
@@ -95,37 +64,17 @@ export class AuthService {
   }
 
   /**
-   * Authenticate with badge serial/service number + PIN.
+   * Authenticate with badge serial/service number.
    * Returns session token and member data on success.
-   * Throws generic error to avoid leaking which field failed.
+   * Throws generic error to avoid leaking identifier details.
    */
   async login(
     loginIdentifier: string,
-    pin: string,
     remoteSystem: RemoteSystemSelection,
     ipAddress?: string | null,
     userAgent?: string | null
   ): Promise<LoginResult> {
-    const context = await this.resolveLoginContext(loginIdentifier, ipAddress)
-    const { member } = context
-
-    if (context.pinState === 'setup_required') {
-      authLogger.info('Login blocked until PIN setup is completed', {
-        memberId: member.id,
-        setupReason: context.setupReason,
-        ip: ipAddress,
-      })
-      throw new PinSetupRequiredError('PIN setup required before signing in')
-    }
-
-    const pinValid = await bcrypt.compare(pin, member.pinHash!)
-    if (!pinValid) {
-      authLogger.warn('Login failed: invalid PIN', {
-        memberId: member.id,
-        ip: ipAddress,
-      })
-      throw new AuthenticationError('Invalid badge or PIN')
-    }
+    const member = await this.findLoginMemberByIdentifier(loginIdentifier, ipAddress)
 
     const session = await this.sessionRepo.create({
       memberId: member.id,
@@ -200,81 +149,6 @@ export class AuthService {
     }
   }
 
-  async preflightLogin(
-    loginIdentifier: string,
-    ipAddress?: string | null
-  ): Promise<PreflightLoginResult> {
-    const context = await this.resolveLoginContext(loginIdentifier, ipAddress)
-
-    return {
-      member: this.toAuthMemberSummary(context.member),
-      pinState: context.pinState,
-      setupReason: context.setupReason,
-    }
-  }
-
-  async setupPin(
-    loginIdentifier: string,
-    newPin: string,
-    ipAddress?: string | null
-  ): Promise<void> {
-    this.assertAllowedNewPin(newPin)
-
-    const context = await this.resolveLoginContext(loginIdentifier, ipAddress)
-
-    if (context.isBootstrapMember) {
-      throw new ForbiddenError('Cannot set PIN for the protected Sentinel bootstrap account')
-    }
-
-    if (context.pinState !== 'setup_required') {
-      throw new ForbiddenError('PIN setup is not available for this account')
-    }
-
-    const hash = await bcrypt.hash(newPin, BCRYPT_COST)
-    await this.prisma.member.update({
-      where: { id: context.member.id },
-      data: { pinHash: hash, mustChangePin: false },
-    })
-
-    authLogger.info('PIN setup completed after login preflight', {
-      memberId: context.member.id,
-      ip: ipAddress,
-    })
-  }
-
-  private async resolveLoginContext(
-    loginIdentifier: string,
-    ipAddress?: string | null
-  ): Promise<LoginContext> {
-    const member = await this.findLoginMemberByIdentifier(loginIdentifier, ipAddress)
-    const isBootstrapMember = isSentinelBootstrapServiceNumber(member.serviceNumber)
-    const setupReason = await this.detectPinSetupReason(member, isBootstrapMember)
-
-    if (setupReason) {
-      await this.ensureMustChangePin(member)
-
-      authLogger.info('PIN setup is required before protected login', {
-        memberId: member.id,
-        setupReason,
-        ip: ipAddress,
-      })
-
-      return {
-        member,
-        isBootstrapMember,
-        pinState: 'setup_required',
-        setupReason,
-      }
-    }
-
-    return {
-      member,
-      isBootstrapMember,
-      pinState: 'configured',
-      setupReason: null,
-    }
-  }
-
   private async findLoginMemberByIdentifier(
     loginIdentifier: string,
     ipAddress?: string | null
@@ -298,9 +172,7 @@ export class AuthService {
             rank: true,
             serviceNumber: true,
             accountLevel: true,
-            mustChangePin: true,
             status: true,
-            pinHash: true,
           },
         },
       },
@@ -317,9 +189,7 @@ export class AuthService {
               rank: true,
               serviceNumber: true,
               accountLevel: true,
-              mustChangePin: true,
               status: true,
-              pinHash: true,
             },
           })
         : null
@@ -338,9 +208,7 @@ export class AuthService {
         rank: true,
         serviceNumber: true,
         accountLevel: true,
-        mustChangePin: true,
         status: true,
-        pinHash: true,
       },
     })
 
@@ -351,7 +219,7 @@ export class AuthService {
     authLogger.warn('Login failed: identifier not found or inactive', {
       ip: ipAddress,
     })
-    throw new AuthenticationError('Invalid badge or PIN')
+    throw new AuthenticationError('Invalid badge or Service Number')
   }
 
   /**
@@ -372,86 +240,6 @@ export class AuthService {
     return this.sessionRepo.touchByToken(token)
   }
 
-  /**
-   * Change own PIN (verify old PIN first).
-   */
-  async changePin(
-    memberId: string,
-    newPin: string,
-    options?: {
-      oldPin?: string
-      allowWithoutCurrentPin?: boolean
-    }
-  ): Promise<void> {
-    if (await this.isProtectedBootstrapMember(memberId)) {
-      throw new ForbiddenError('Cannot change PIN for the protected Sentinel bootstrap account')
-    }
-
-    const member = await this.prisma.member.findUnique({
-      where: { id: memberId },
-      select: { pinHash: true, mustChangePin: true },
-    })
-
-    this.assertAllowedNewPin(newPin)
-
-    if (!options?.allowWithoutCurrentPin) {
-      if (!options?.oldPin) {
-        throw new PinPolicyError('Current PIN is required')
-      }
-
-      if (!member?.pinHash) {
-        throw new AuthenticationError('Current PIN is not set')
-      }
-
-      const valid = await bcrypt.compare(options.oldPin, member.pinHash)
-      if (!valid) {
-        throw new AuthenticationError('Current PIN is incorrect')
-      }
-    }
-
-    const hash = await bcrypt.hash(newPin, BCRYPT_COST)
-    await this.prisma.member.update({
-      where: { id: memberId },
-      data: { pinHash: hash, mustChangePin: false },
-    })
-
-    authLogger.info('PIN changed', { memberId })
-  }
-
-  /**
-   * Admin set/reset a member's PIN (no old PIN required).
-   */
-  async setPin(memberId: string, newPin: string): Promise<void> {
-    if (await this.isProtectedBootstrapMember(memberId)) {
-      throw new ForbiddenError('Cannot set PIN for the protected Sentinel bootstrap account')
-    }
-
-    this.assertAllowedNewPin(newPin)
-
-    const member = await this.prisma.member.findUnique({
-      where: { id: memberId },
-      select: { id: true },
-    })
-
-    if (!member) {
-      throw new NotFoundError('Member not found')
-    }
-
-    const hash = await bcrypt.hash(newPin, BCRYPT_COST)
-    await this.prisma.member.update({
-      where: { id: memberId },
-      data: { pinHash: hash, mustChangePin: false },
-    })
-
-    authLogger.info('PIN set by admin', { memberId })
-  }
-
-  private assertAllowedNewPin(newPin: string): void {
-    if (isDisallowedMemberPin(newPin)) {
-      throw new PinPolicyError('Choose a less predictable PIN')
-    }
-  }
-
   private toAuthMemberSummary(member: LoginMemberRecord): AuthMemberSummary {
     return {
       id: member.id,
@@ -460,63 +248,7 @@ export class AuthService {
       rank: member.rank,
       serviceNumber: member.serviceNumber,
       accountLevel: member.accountLevel,
-      mustChangePin: member.mustChangePin,
     }
-  }
-
-  private async detectPinSetupReason(
-    member: LoginMemberRecord,
-    isBootstrapMember: boolean
-  ): Promise<PinSetupReason | null> {
-    if (!member.pinHash) {
-      if (isBootstrapMember) {
-        authLogger.warn('Login failed: bootstrap member is missing a PIN hash', {
-          memberId: member.id,
-        })
-        throw new AuthenticationError('Invalid badge or PIN')
-      }
-
-      return 'missing'
-    }
-
-    if (isBootstrapMember) {
-      return null
-    }
-
-    for (const disallowedPin of DISALLOWED_MEMBER_PINS) {
-      if (await bcrypt.compare(disallowedPin, member.pinHash)) {
-        return 'default'
-      }
-    }
-
-    return null
-  }
-
-  private async ensureMustChangePin(member: LoginMemberRecord): Promise<void> {
-    if (member.mustChangePin) {
-      return
-    }
-
-    await this.prisma.member.update({
-      where: { id: member.id },
-      data: { mustChangePin: true },
-    })
-
-    member.mustChangePin = true
-  }
-
-  private async isProtectedBootstrapMember(memberId: string): Promise<boolean> {
-    const identity = await getSentinelBootstrapIdentity(this.prisma)
-    if (identity && identity.memberId === memberId) {
-      return true
-    }
-
-    const member = await this.prisma.member.findUnique({
-      where: { id: memberId },
-      select: { serviceNumber: true },
-    })
-
-    return isSentinelBootstrapServiceNumber(member?.serviceNumber)
   }
 
   private async ensureMemberCheckedIn(
@@ -625,23 +357,5 @@ export class ForbiddenError extends Error {
   constructor(message: string) {
     super(message)
     this.name = 'ForbiddenError'
-  }
-}
-
-export class PinPolicyError extends Error {
-  public statusCode = 400
-  public code = 'PIN_POLICY_VIOLATION'
-  constructor(message: string) {
-    super(message)
-    this.name = 'PinPolicyError'
-  }
-}
-
-export class PinSetupRequiredError extends Error {
-  public statusCode = 403
-  public code = 'PIN_SETUP_REQUIRED'
-  constructor(message: string) {
-    super(message)
-    this.name = 'PinSetupRequiredError'
   }
 }

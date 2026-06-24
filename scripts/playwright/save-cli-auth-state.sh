@@ -4,7 +4,6 @@ set -euo pipefail
 SESSION_NAME="${1:-sentinel-auth}"
 BASE_URL="${BASE_URL:-http://localhost:3001}"
 PLAYWRIGHT_BADGE_SERIAL="${PLAYWRIGHT_BADGE_SERIAL:-${E2E_BADGE_SERIAL:-0000000000}}"
-PLAYWRIGHT_PIN="${PLAYWRIGHT_PIN:-${E2E_PIN:-0000}}"
 PLAYWRIGHT_REMOTE_SYSTEM="${PLAYWRIGHT_REMOTE_SYSTEM:-Deployment Laptop}"
 PLAYWRIGHT_CLI_CONFIG="${PLAYWRIGHT_CLI_CONFIG:-.playwright-cli/cli.config.json}"
 AUTH_STATE_PATH="${AUTH_STATE_PATH:-.playwright-cli/auth/bootstrap.json}"
@@ -54,8 +53,6 @@ async page => {
 
   await page.getByTestId('auth-badge-input').fill('$PLAYWRIGHT_BADGE_SERIAL')
   await page.keyboard.press('Enter')
-  await page.getByTestId('auth-pin-input').waitFor({ state: 'visible', timeout: 30000 })
-  await page.getByTestId('auth-pin-input').fill('$PLAYWRIGHT_PIN')
 
   const remoteSystemSelect = page.getByTestId('auth-remote-system-select')
   await remoteSystemSelect.waitFor({ state: 'visible', timeout: 30000 })
@@ -94,7 +91,7 @@ async page => {
   }
   await remoteSystemSelect.selectOption(selectedRemoteSystemValue)
 
-  await page.getByTestId('auth-pin-submit').click()
+  await page.getByTestId('auth-login-submit').click()
   await page.waitForURL('**/dashboard', { timeout: 30000 })
 }
 " >/dev/null

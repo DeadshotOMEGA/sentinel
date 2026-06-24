@@ -24,7 +24,6 @@ These scripts are the maintained Playwright CLI utilities for:
 - If `playwright-cli` emits root-level `console-*.log` or `page-*.yml` files, move them into the matching workflow log/run folder before the script exits.
 - Default authentication should use the Sentinel bootstrap account:
   - Badge: `0000000000`
-  - PIN: `0000`
 - Support overrides via environment variables when a different account is intentionally required.
 - Treat `apps/frontend-admin` as a desktop-only webapp for these workflows unless the product requirements explicitly change.
 - Browser size for Codex Playwright work in this repo must be `1920x1080`.

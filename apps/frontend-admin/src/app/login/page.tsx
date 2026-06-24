@@ -1,19 +1,14 @@
 'use client'
 
-import { type FormEvent, Suspense, useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import {
-  DISALLOWED_MEMBER_PINS,
-  type AuthMember,
-  type LoginPinSetupReason,
-} from '@sentinel/contracts'
 import { BadgeScanInput } from '@/components/auth/badge-scan-input'
-import { PinField } from '@/components/auth/pin-field'
-import type { PinInputInitialSelection, PinInputSubmission } from '@/components/auth/pin-input'
-import { PinInput } from '@/components/auth/pin-input'
-import { getSetupDescription } from './login-flow'
+import {
+  RemoteSystemLogin,
+  type RemoteSystemLoginInitialSelection,
+  type RemoteSystemLoginSubmission,
+} from '@/components/auth/remote-system-login'
 import { AppAlert } from '@/components/ui/AppAlert'
-import { AppBadge } from '@/components/ui/AppBadge'
 import {
   AppCard,
   AppCardContent,
@@ -28,14 +23,9 @@ import { useAuthStore } from '@/store/auth-store'
 
 const LAST_REMOTE_SYSTEM_STORAGE_KEY = 'sentinel.last-remote-system'
 
-type LoginStep = 'badge' | 'setup' | 'pin'
+type LoginStep = 'identifier' | 'workstation'
 
-interface SetupFlowState {
-  member: AuthMember
-  reason: LoginPinSetupReason
-}
-
-function readInitialSelection(): PinInputInitialSelection | null {
+function readInitialSelection(): RemoteSystemLoginInitialSelection | null {
   if (typeof window === 'undefined') {
     return null
   }
@@ -71,7 +61,7 @@ function readInitialSelection(): PinInputInitialSelection | null {
   return null
 }
 
-function persistSelection(selection: PinInputInitialSelection) {
+function persistSelection(selection: RemoteSystemLoginInitialSelection) {
   if (typeof window === 'undefined') {
     return
   }
@@ -88,17 +78,6 @@ function getErrorMessage(body: unknown, fallback: string): string {
   }
 
   return fallback
-}
-
-function getErrorCode(body: unknown): string | null {
-  if (body && typeof body === 'object' && 'error' in body) {
-    const error = body.error
-    if (typeof error === 'string' && error.trim().length > 0) {
-      return error
-    }
-  }
-
-  return null
 }
 
 export default function LoginPage() {
@@ -127,15 +106,12 @@ function LoginPageFallback() {
 }
 
 function LoginPageContent() {
-  const [step, setStep] = useState<LoginStep>('badge')
-  const [badgeSerial, setBadgeSerial] = useState<string>('')
-  const [setupState, setSetupState] = useState<SetupFlowState | null>(null)
-  const [newPin, setNewPin] = useState('')
-  const [confirmPin, setConfirmPin] = useState('')
+  const [step, setStep] = useState<LoginStep>('identifier')
+  const [loginIdentifier, setLoginIdentifier] = useState<string>('')
   const [error, setError] = useState<string | null>(null)
-  const [statusMessage, setStatusMessage] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  const [initialSelection, setInitialSelection] = useState<PinInputInitialSelection | null>(null)
+  const [initialSelection, setInitialSelection] =
+    useState<RemoteSystemLoginInitialSelection | null>(null)
   const router = useRouter()
   const setAuth = useAuthStore((state) => state.setAuth)
   const remoteSystemsQuery = useRemoteSystems()
@@ -144,80 +120,24 @@ function LoginPageContent() {
     setInitialSelection(readInitialSelection())
   }, [])
 
-  const resetPinSetupForm = () => {
-    setNewPin('')
-    setConfirmPin('')
-  }
-
-  const returnToBadgeScan = () => {
-    setStep('badge')
-    setBadgeSerial('')
-    setSetupState(null)
+  const returnToIdentifierEntry = () => {
+    setStep('identifier')
+    setLoginIdentifier('')
     setError(null)
-    setStatusMessage(null)
-    resetPinSetupForm()
   }
 
-  const applyPreflightState = (
-    serial: string,
-    result: {
-      member: AuthMember
-      pinState: 'configured' | 'setup_required'
-      setupReason: LoginPinSetupReason | null
-    }
-  ) => {
-    setBadgeSerial(serial)
-
-    if (result.pinState === 'setup_required') {
-      setSetupState({
-        member: result.member,
-        reason: result.setupReason ?? 'missing',
-      })
-      resetPinSetupForm()
-      setStep('setup')
-      return
-    }
-
-    setSetupState(null)
-    setStep('pin')
-  }
-
-  const runPreflight = async (serial: string): Promise<boolean> => {
-    const response = await apiClient.auth.preflightLogin({
-      body: { serialNumber: serial },
-    })
-
-    if (response.status !== 200) {
-      setError(getErrorMessage(response.body, 'Unable to verify login access'))
-      return false
-    }
-
-    applyPreflightState(serial, response.body)
-    return true
-  }
-
-  const handleBadgeScan = async (serial: string) => {
-    setLoading(true)
+  const handleIdentifierSubmit = (identifier: string) => {
+    setLoginIdentifier(identifier)
     setError(null)
-    setStatusMessage(null)
-
-    try {
-      await runPreflight(serial)
-    } catch {
-      setError('Unable to connect to server')
-    } finally {
-      setLoading(false)
-    }
+    setStep('workstation')
   }
 
-  const handlePinSubmit = async ({
-    pin,
+  const handleLoginSubmit = async ({
     remoteSystemId,
     useKioskRemoteSystem,
-  }: PinInputSubmission) => {
+  }: RemoteSystemLoginSubmission) => {
     setLoading(true)
     setError(null)
-    setStatusMessage(null)
 
     try {
       if (!useKioskRemoteSystem && !remoteSystemId) {
@@ -227,17 +147,9 @@ function LoginPageContent() {
 
       const response = await apiClient.auth.login({
         body: useKioskRemoteSystem
-          ? { serialNumber: badgeSerial, pin, useKioskRemoteSystem: true }
-          : { serialNumber: badgeSerial, pin, remoteSystemId },
+          ? { serialNumber: loginIdentifier, useKioskRemoteSystem: true }
+          : { serialNumber: loginIdentifier, remoteSystemId },
       })
-
-      if (response.status === 403 && getErrorCode(response.body) === 'PIN_SETUP_REQUIRED') {
-        const recovered = await runPreflight(badgeSerial)
-        if (!recovered) {
-          setError(getErrorMessage(response.body, 'PIN setup is required before signing in'))
-        }
-        return
-      }
 
       if (response.status !== 200) {
         setError(getErrorMessage(response.body, 'Login failed'))
@@ -256,57 +168,7 @@ function LoginPageContent() {
         lastSeenAt: data.lastSeenAt,
         expiresAt: data.expiresAt,
       })
-      if (data.member.mustChangePin) {
-        router.push('/change-pin-required')
-        return
-      }
       router.push('/dashboard')
-    } catch {
-      setError('Unable to connect to server')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleSetupSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    setError(null)
-    setStatusMessage(null)
-
-    if (!/^\d{4}$/.test(newPin) || !/^\d{4}$/.test(confirmPin)) {
-      setError('Both PIN fields must be exactly 4 digits')
-      return
-    }
-
-    if (newPin !== confirmPin) {
-      setError('New PIN and confirmation do not match')
-      return
-    }
-
-    if (DISALLOWED_MEMBER_PINS.includes(newPin as (typeof DISALLOWED_MEMBER_PINS)[number])) {
-      setError('Choose a less predictable PIN')
-      return
-    }
-
-    setLoading(true)
-
-    try {
-      const response = await apiClient.auth.setupPin({
-        body: {
-          serialNumber: badgeSerial,
-          newPin,
-        },
-      })
-
-      if (response.status !== 200) {
-        setError(getErrorMessage(response.body, 'Failed to save PIN'))
-        return
-      }
-
-      resetPinSetupForm()
-      setSetupState(null)
-      setStep('pin')
-      setStatusMessage('PIN saved. Enter your new PIN to sign in.')
     } catch {
       setError('Unable to connect to server')
     } finally {
@@ -342,110 +204,14 @@ function LoginPageContent() {
                 </AppAlert>
               )}
 
-              {statusMessage && (
-                <AppAlert tone="success" className="animate-fade-in">
-                  {statusMessage}
-                </AppAlert>
+              {step === 'identifier' && (
+                <BadgeScanInput onScan={handleIdentifierSubmit} showLegend={false} />
               )}
 
-              {step === 'badge' && (
-                <>
-                  <BadgeScanInput onScan={handleBadgeScan} showLegend={false} />
-                  {loading && (
-                    <AppAlert
-                      tone="info"
-                      icon={
-                        <span className="loading loading-spinner loading-sm" aria-hidden="true" />
-                      }
-                    >
-                      Checking login access...
-                    </AppAlert>
-                  )}
-                </>
-              )}
-
-              {step === 'setup' && setupState && (
-                <div className="space-y-(--space-4)">
-                  <AppAlert tone="warning" data-testid={TID.auth.setupNotice}>
-                    {getSetupDescription(setupState.reason)}
-                  </AppAlert>
-
-                  <div className="rounded-box border border-base-300 bg-base-200/40 p-(--space-3)">
-                    <div className="flex flex-wrap items-center gap-(--space-2)">
-                      <AppBadge status="warning" size="sm">
-                        PIN setup required
-                      </AppBadge>
-                      <AppBadge status="neutral" size="sm">
-                        {badgeSerial}
-                      </AppBadge>
-                    </div>
-                    <p className="mt-(--space-3) text-sm font-medium text-base-content">
-                      {setupState.member.rank} {setupState.member.lastName},{' '}
-                      {setupState.member.firstName}
-                    </p>
-                    <p className="mt-(--space-1) font-mono text-sm text-base-content/70">
-                      {setupState.member.serviceNumber}
-                    </p>
-                  </div>
-
-                  <form className="space-y-(--space-3)" onSubmit={handleSetupSubmit}>
-                    <PinField
-                      label="New PIN"
-                      value={newPin}
-                      onValueChange={setNewPin}
-                      size="large"
-                      disabled={loading}
-                      ariaLabel="New PIN"
-                      className="input-lg"
-                      data-testid={TID.auth.setupPinInput}
-                      required
-                    />
-                    <p className="label text-base-content/60">
-                      Choose a secure 4-digit PIN that is not easy to guess.
-                    </p>
-
-                    <PinField
-                      label="Confirm New PIN"
-                      value={confirmPin}
-                      onValueChange={setConfirmPin}
-                      size="large"
-                      disabled={loading}
-                      ariaLabel="Confirm new PIN"
-                      className="input-lg"
-                      data-testid={TID.auth.setupPinConfirmInput}
-                      required
-                    />
-
-                    <div className="grid grid-cols-2 gap-(--space-2)">
-                      <button
-                        type="button"
-                        className="btn btn-ghost"
-                        onClick={returnToBadgeScan}
-                        disabled={loading}
-                      >
-                        Scan Another Badge
-                      </button>
-                      <button
-                        type="submit"
-                        className="btn btn-warning"
-                        disabled={loading || newPin.length !== 4 || confirmPin.length !== 4}
-                        data-testid={TID.auth.setupPinSubmit}
-                      >
-                        {loading ? (
-                          <span className="loading loading-spinner loading-sm" />
-                        ) : (
-                          'Save PIN'
-                        )}
-                      </button>
-                    </div>
-                  </form>
-                </div>
-              )}
-
-              {step === 'pin' && (
-                <PinInput
-                  onSubmit={handlePinSubmit}
-                  onBack={returnToBadgeScan}
+              {step === 'workstation' && (
+                <RemoteSystemLogin
+                  onSubmit={handleLoginSubmit}
+                  onBack={returnToIdentifierEntry}
                   loading={loading}
                   remoteSystems={remoteSystemsQuery.data?.systems ?? []}
                   remoteSystemsLoading={remoteSystemsQuery.isLoading}

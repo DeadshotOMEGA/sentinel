@@ -18,7 +18,7 @@ Create Member adds a nominal-roll personnel record that Sentinel can use for bad
 
 - Service number, rank, first and last name.
 - Division and active status.
-- Badge and PIN fields only when authorized.
+- Badge fields only when authorized.
 
 ## Step-By-Step Procedure
 
@@ -27,7 +27,7 @@ Create Member adds a nominal-roll personnel record that Sentinel can use for bad
 3. Enter identity fields from the trusted source.
 4. Assign division and status.
 5. Save the record.
-6. Add badge, qualifications, tags, or PIN only when those details are confirmed.
+6. Add badge, qualifications, or tags only when those details are confirmed.
 
 ## Good / Caution / Stop Conditions
 

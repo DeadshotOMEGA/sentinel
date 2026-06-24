@@ -1234,7 +1234,7 @@ run_bootstrap_schema_and_baseline() {
 }
 
 run_bootstrap_sentinel_account() {
-  log "Ensuring protected Sentinel bootstrap badge/PIN account exists"
+  log "Ensuring protected Sentinel bootstrap badge account exists"
   wait_for_service_health backend 120 || die "Backend is not healthy; cannot bootstrap Sentinel account"
   compose exec -T backend sh -lc "cd /app && pnpm --filter @sentinel/backend sentinel:bootstrap-account"
   log "Ensuring default enum values are present (insert-missing only)"

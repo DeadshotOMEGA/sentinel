@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useState, useMemo, useEffect } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
 import { TID } from '@/lib/test-ids'
 import {
   createColumnHelper,
@@ -23,7 +22,6 @@ import { BulkGrantQualificationModal } from './bulk-grant-qualification-modal'
 import { BulkAssignTagModal } from './bulk-assign-tag-modal'
 import { MemberQualificationsModal } from './member-qualifications-modal'
 import { MemberTagsModal } from './member-tags-modal'
-import { SetPinModal } from './set-pin-modal'
 
 import { Chip, type ChipVariant, type ChipColor } from '@/components/ui/chip'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -39,17 +37,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import {
-  Pencil,
-  Trash2,
-  X,
-  Shield,
-  Tag,
-  KeyRound,
-  ChevronLeft,
-  ChevronRight,
-  Users,
-} from 'lucide-react'
+import { Pencil, Trash2, X, Shield, Tag, ChevronLeft, ChevronRight, Users } from 'lucide-react'
 import { useAuthStore, AccountLevel } from '@/store/auth-store'
 import { SortableHeader } from './sortable-header'
 import { cn } from '@/lib/utils'
@@ -87,7 +75,6 @@ export function MembersTable({
   onPageChange,
   onLimitChange,
 }: MembersTableProps) {
-  const queryClient = useQueryClient()
   // Hidden members toggle (admin+ only)
   const [includeHidden, setIncludeHidden] = useState(false)
   const { data, isLoading, isError } = useMembers({ ...filters, page, limit, includeHidden })
@@ -112,7 +99,6 @@ export function MembersTable({
   const [deletingMemberId, setDeletingMemberId] = useState<string | null>(null)
   const [qualificationsMember, setQualificationsMember] = useState<MemberResponse | null>(null)
   const [tagsMember, setTagsMember] = useState<MemberResponse | null>(null)
-  const [pinMember, setPinMember] = useState<MemberResponse | null>(null)
   const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false)
   const [showBulkEditDialog, setShowBulkEditDialog] = useState(false)
   const [showBulkGrantQualDialog, setShowBulkGrantQualDialog] = useState(false)
@@ -412,14 +398,6 @@ export function MembersTable({
                   data-testid={TID.members.rowAction(member.id, 'tags')}
                 >
                   <Tag className="h-4 w-4" />
-                </button>
-                <button
-                  className="btn btn-ghost btn-sm btn-square"
-                  onClick={() => setPinMember(member)}
-                  title="Set PIN"
-                  data-testid={TID.members.rowAction(member.id, 'pin')}
-                >
-                  <KeyRound className="h-4 w-4" />
                 </button>
                 <button
                   className="btn btn-ghost btn-sm btn-square"
@@ -753,20 +731,6 @@ export function MembersTable({
         onOpenChange={(open) => !open && setTagsMember(null)}
         member={tagsMember}
       />
-
-      {/* Set PIN Modal (Admin) */}
-      {pinMember && (
-        <SetPinModal
-          open={!!pinMember}
-          onOpenChange={(open) => !open && setPinMember(null)}
-          memberId={pinMember.id}
-          memberName={`${pinMember.rank ?? ''} ${pinMember.lastName}`.trim()}
-          onSuccess={async () => {
-            await queryClient.invalidateQueries({ queryKey: ['members'] })
-            await queryClient.invalidateQueries({ queryKey: ['member', pinMember.id] })
-          }}
-        />
-      )}
     </>
   )
 }

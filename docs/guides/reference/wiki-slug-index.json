@@ -10,7 +10,7 @@
     "admin/members/filters-and-search",
     "admin/members/import-csv",
     "admin/members/member-records",
-    "admin/members/qualifications-tags-and-pin",
+    "admin/members/qualifications-and-tags",
     "admin/members/sync-qualifications",
     "docs/start-here",
     "docs/wiki-page-review",
