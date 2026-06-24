@@ -34,6 +34,7 @@ import { systemStatusContract } from './system-status.contract.js'
 import { systemUpdateContract } from './system-update.contract.js'
 import { adminNavigationContract } from './admin-navigation.contract.js'
 import { temporaryPersonnelContract } from './temporary-personnel.contract.js'
+import { accessRuleContract } from './access-rule.contract.js'
 
 const c = initContract()
 
@@ -73,6 +74,7 @@ export type ApiContract = {
   systemUpdate: typeof systemUpdateContract
   adminNavigation: typeof adminNavigationContract
   temporaryPersonnel: typeof temporaryPersonnelContract
+  accessRules: typeof accessRuleContract
 }
 
 /**
@@ -118,6 +120,7 @@ export const apiContract: ApiContract = c.router(
     systemUpdate: systemUpdateContract,
     adminNavigation: adminNavigationContract,
     temporaryPersonnel: temporaryPersonnelContract,
+    accessRules: accessRuleContract,
   },
   {
     pathPrefix: '',

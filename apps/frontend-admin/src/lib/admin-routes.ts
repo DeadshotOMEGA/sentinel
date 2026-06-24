@@ -24,6 +24,7 @@ export type AdminRouteId =
   | 'timings'
   | 'kiosk-sounds'
   | 'account-levels'
+  | 'access-rules'
   | 'dashboard-sorting'
 
 export type AdminRouteGroup =
@@ -283,6 +284,22 @@ export const ADMIN_NAV_ROUTES = [
     keywords: ['account levels', 'access', 'permissions', 'roles', 'admin'],
     searchWeight: 78,
     requiredRole: ADMIN_ROLE_LEVEL.ADMIN,
+    requiredCapabilities: ['admin:view', 'config:manage'],
+    navVisibility: 'sidebar',
+    featureStatus: 'available',
+  },
+  {
+    id: 'access-rules',
+    label: 'Access Rules',
+    href: '/admin/access-rules',
+    group: 'Access Control',
+    tier: 1,
+    icon: 'shield',
+    description: 'Configure the Account Level required for Sentinel workflows.',
+    aliases: ['authorization rules', 'permissions', 'policy', 'access policy'],
+    keywords: ['access rules', 'account levels', 'authorization', 'policy', 'permissions'],
+    searchWeight: 77,
+    requiredRole: ADMIN_ROLE_LEVEL.DEVELOPER,
     requiredCapabilities: ['admin:view', 'config:manage'],
     navVisibility: 'sidebar',
     featureStatus: 'available',
@@ -553,6 +570,11 @@ export function resolveLegacyAdminPath(
   if (requestedTab === 'account-levels') {
     query.delete('tab')
     return withQuery('/admin/account-levels', query)
+  }
+
+  if (requestedTab === 'access-rules') {
+    query.delete('tab')
+    return withQuery('/admin/access-rules', query)
   }
 
   if (requestedTab === 'dashboard-sorting') {

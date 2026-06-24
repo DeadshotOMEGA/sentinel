@@ -10,7 +10,7 @@ import type {
   VisitorSummaryConfig,
 } from '@sentinel/contracts'
 import { getPrismaClient } from '../lib/database.js'
-import { AccountLevel } from '../middleware/roles.js'
+import { requireAccessRule } from '../lib/access-rule-auth.js'
 import {
   OperationalReportService,
   type OperationalReportActor,
@@ -23,30 +23,6 @@ import {
 const s = initServer()
 const prisma = getPrismaClient()
 const operationalReportService = new OperationalReportService(getPrismaClient())
-
-function requireAdminOrDeveloper(req: Request) {
-  if (!req.member) {
-    return {
-      status: 401 as const,
-      body: {
-        error: 'UNAUTHORIZED',
-        message: 'Authentication required',
-      },
-    }
-  }
-
-  if ((req.member.accountLevel ?? 0) < AccountLevel.ADMIN) {
-    return {
-      status: 403 as const,
-      body: {
-        error: 'FORBIDDEN',
-        message: 'Admin or Developer access required',
-      },
-    }
-  }
-
-  return null
-}
 
 function getReportActor(req: Request): OperationalReportActor {
   return {
@@ -73,7 +49,7 @@ function createVisibleActiveMemberWhere(): Prisma.MemberWhereInput {
  */
 export const reportsRouter = s.router(reportContract, {
   generateDailyPresence: async ({ body, req }) => {
-    const auth = requireAdminOrDeveloper(req)
+    const auth = await requireAccessRule(req, 'reports.viewOperational')
     if (auth) {
       return auth
     }
@@ -96,7 +72,7 @@ export const reportsRouter = s.router(reportContract, {
   },
 
   generateWeeklyPresence: async ({ body, req }) => {
-    const auth = requireAdminOrDeveloper(req)
+    const auth = await requireAccessRule(req, 'reports.viewOperational')
     if (auth) {
       return auth
     }
@@ -119,7 +95,7 @@ export const reportsRouter = s.router(reportContract, {
   },
 
   generateMonthlyPresence: async ({ body, req }) => {
-    const auth = requireAdminOrDeveloper(req)
+    const auth = await requireAccessRule(req, 'reports.viewOperational')
     if (auth) {
       return auth
     }
@@ -142,7 +118,7 @@ export const reportsRouter = s.router(reportContract, {
   },
 
   generateTrainingNightMonthly: async ({ body, req }) => {
-    const auth = requireAdminOrDeveloper(req)
+    const auth = await requireAccessRule(req, 'reports.viewOperational')
     if (auth) {
       return auth
     }
@@ -170,7 +146,7 @@ export const reportsRouter = s.router(reportContract, {
   },
 
   generateVisitorActivity: async ({ body, req }) => {
-    const auth = requireAdminOrDeveloper(req)
+    const auth = await requireAccessRule(req, 'reports.viewOperational')
     if (auth) {
       return auth
     }
@@ -193,7 +169,7 @@ export const reportsRouter = s.router(reportContract, {
   },
 
   generateOperationalExceptions: async ({ body, req }) => {
-    const auth = requireAdminOrDeveloper(req)
+    const auth = await requireAccessRule(req, 'reports.viewOperational')
     if (auth) {
       return auth
     }

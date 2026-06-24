@@ -2,7 +2,7 @@
 
 **Purpose:** Immutable record of all architectural decisions
 
-**Last Updated:** 2026-05-22
+**Last Updated:** 2026-06-24
 
 ---
 
@@ -25,11 +25,11 @@ Architecture Decision Records document:
 | Status     | Count | Description                     |
 | ---------- | ----- | ------------------------------- |
 | Proposed   | 0     | Under review                    |
-| Accepted   | 1     | Approved and active             |
+| Accepted   | 2     | Approved and active             |
 | Deprecated | 0     | Superseded but kept for history |
 | Rejected   | 0     | Proposed but not approved       |
 
-**Total ADRs:** 1
+**Total ADRs:** 2
 
 ---
 
@@ -38,6 +38,7 @@ Architecture Decision Records document:
 | ADR                                                    | Title                              | Status   | Date       | Supersedes | Superseded By |
 | ------------------------------------------------------ | ---------------------------------- | -------- | ---------- | ---------- | ------------- |
 | [ADR-0001](0001-temporary-personnel-presence-model.md) | Temporary Personnel Presence Model | Accepted | 2026-05-22 | -          | -             |
+| [ADR-0002](0002-configurable-access-rule-policy.md)    | Configurable Access Rule Policy    | Accepted | 2026-06-24 | -          | -             |
 
 ---
 
@@ -45,7 +46,7 @@ Architecture Decision Records document:
 
 ### Authentication & Authorization
 
-_No ADRs yet_
+- [ADR-0002: Configurable Access Rule Policy](0002-configurable-access-rule-policy.md)
 
 ### Testing & Quality
 
@@ -58,6 +59,7 @@ _No ADRs yet_
 ### Data & Persistence
 
 - [ADR-0001: Temporary Personnel Presence Model](0001-temporary-personnel-presence-model.md)
+- [ADR-0002: Configurable Access Rule Policy](0002-configurable-access-rule-policy.md)
 
 ### Frontend
 
@@ -81,7 +83,7 @@ _No ADRs yet_
 
 ### Security
 
-_No ADRs yet_
+- [ADR-0002: Configurable Access Rule Policy](0002-configurable-access-rule-policy.md)
 
 ---
 
@@ -192,8 +194,8 @@ rg "better-auth|testcontainers|ts-rest" docs/decisions/adr/
 
 ## ADR Statistics
 
-- **Total ADRs:** 1
-- **Accepted:** 1
+- **Total ADRs:** 2
+- **Accepted:** 2
 - **Deprecated:** 0
 - **Rejected:** 0
 - **Average Time to Decision:** N/A

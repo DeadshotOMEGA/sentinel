@@ -19,6 +19,7 @@ import { memberService } from '../services/member-service.js'
 import { getPrismaClient } from '../lib/database.js'
 import { formatAuditMemberName, logRequestAudit } from '../lib/audit-log.js'
 import { resolveMemberScope } from '../lib/member-records.js'
+import { hasAccessRule, requireAccessRule } from '../lib/access-rule-auth.js'
 import { AccountLevel } from '../middleware/roles.js'
 import { ConflictError, NotFoundError } from '../middleware/error-handler.js'
 
@@ -95,10 +96,9 @@ export const membersRouter = s.router(memberContract, {
       const page = query.page ? Number(query.page) : 1
       const limit = query.limit ? Number(query.limit) : 50
 
-      // Only admin+ users can see hidden members
-      const isAdmin = (req.member?.accountLevel ?? 0) >= 5
-      const includeHidden = query.includeHidden === true && isAdmin
-      const scope = resolveMemberScope(query.scope, isAdmin)
+      const canViewAllScopes = await hasAccessRule(req, 'members.viewAllScopes')
+      const includeHidden = query.includeHidden === true && canViewAllScopes
+      const scope = resolveMemberScope(query.scope, canViewAllScopes)
 
       const filters: {
         divisionId?: string
@@ -201,15 +201,15 @@ export const membersRouter = s.router(memberContract, {
       }
 
       if (body.accountLevel !== undefined) {
-        if (actorLevel < AccountLevel.ADMIN) {
-          return {
-            status: 403 as const,
-            body: {
-              error: 'FORBIDDEN',
-              message: 'Only admin or developer accounts can set account levels',
-            },
-          }
+        const requiredRule =
+          body.accountLevel >= AccountLevel.DEVELOPER
+            ? 'members.assignDeveloper'
+            : 'members.manageAccountLevels'
+        const access = await requireAccessRule(req, requiredRule)
+        if (access) {
+          return access
         }
+
         if (body.accountLevel > actorLevel) {
           return {
             status: 403 as const,
@@ -311,15 +311,15 @@ export const membersRouter = s.router(memberContract, {
       }
 
       if (body.accountLevel !== undefined) {
-        if (actorLevel < AccountLevel.ADMIN) {
-          return {
-            status: 403 as const,
-            body: {
-              error: 'FORBIDDEN',
-              message: 'Only admin or developer accounts can set account levels',
-            },
-          }
+        const requiredRule =
+          body.accountLevel >= AccountLevel.DEVELOPER
+            ? 'members.assignDeveloper'
+            : 'members.manageAccountLevels'
+        const access = await requireAccessRule(req, requiredRule)
+        if (access) {
+          return access
         }
+
         if (body.accountLevel > actorLevel) {
           return {
             status: 403 as const,

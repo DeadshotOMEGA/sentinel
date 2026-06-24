@@ -249,6 +249,7 @@ model Member {
   unitEventDutyAssignments               UnitEventDutyAssignment[]
   memberSessions                         MemberSession[]
   acknowledgedSecurityAlerts             SecurityAlert[]                @relation("AlertAcknowledgedBy")
+  updatedAccessRules                     AccessRule[]                   @relation("AccessRuleUpdatedBy")
 
   @@index([badgeId], map: "idx_members_badge")
   @@index([divisionId], map: "idx_members_division")
@@ -885,6 +886,23 @@ model Setting {
   @@index([key], map: "idx_settings_key")
   @@index([category], map: "idx_settings_category")
   @@map("settings")
+}
+
+model AccessRule {
+  id                     String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  key                    String   @unique @db.VarChar(120)
+  configuredMinimumLevel Int      @map("configured_minimum_level")
+  localDescription       String?  @map("local_description") @db.VarChar(500)
+  status                 String   @default("active") @db.VarChar(30)
+  createdAt              DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt              DateTime @updatedAt @map("updated_at") @db.Timestamp(6)
+  updatedByMemberId      String?  @map("updated_by_member_id") @db.Uuid
+
+  updatedByMember Member? @relation("AccessRuleUpdatedBy", fields: [updatedByMemberId], references: [id], onDelete: SetNull, onUpdate: NoAction)
+
+  @@index([status], map: "idx_access_rules_status")
+  @@index([updatedByMemberId], map: "idx_access_rules_updated_by_member")
+  @@map("access_rules")
 }
 
 model AlertConfig {

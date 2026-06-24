@@ -32,13 +32,13 @@ function requireMember(req: RequestWithMember) {
   return null
 }
 
-function requireSystemUpdateAccess(req: RequestWithMember) {
+async function requireSystemUpdateAccess(req: RequestWithMember) {
   const auth = requireMember(req)
   if (auth) {
     return auth
   }
 
-  if (!hasSystemUpdatePermission(req.member?.accountLevel)) {
+  if (!(await hasSystemUpdatePermission(req.member?.accountLevel))) {
     return {
       status: 403 as const,
       body: {
@@ -97,7 +97,7 @@ export function createSystemUpdateRouter(options?: {
     },
 
     startSystemUpdate: async ({ body, req }) => {
-      const auth = requireSystemUpdateAccess(req)
+      const auth = await requireSystemUpdateAccess(req)
       if (auth) {
         return auth
       }
@@ -197,7 +197,7 @@ export function createSystemUpdateRouter(options?: {
     },
 
     getSystemUpdateTrace: async ({ req }) => {
-      const auth = requireSystemUpdateAccess(req)
+      const auth = await requireSystemUpdateAccess(req)
       if (auth) {
         return auth
       }

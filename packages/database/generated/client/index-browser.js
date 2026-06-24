@@ -652,6 +652,17 @@ exports.Prisma.SettingScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.AccessRuleScalarFieldEnum = {
+  id: 'id',
+  key: 'key',
+  configuredMinimumLevel: 'configuredMinimumLevel',
+  localDescription: 'localDescription',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  updatedByMemberId: 'updatedByMemberId'
+};
+
 exports.Prisma.AlertConfigScalarFieldEnum = {
   key: 'key',
   config: 'config',
@@ -963,6 +974,7 @@ exports.Prisma.ModelName = {
   Account: 'Account',
   Verification: 'Verification',
   Setting: 'Setting',
+  AccessRule: 'AccessRule',
   AlertConfig: 'AlertConfig',
   StatHoliday: 'StatHoliday',
   QualificationType: 'QualificationType',

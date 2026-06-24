@@ -1,12 +1,32 @@
-import { Router, Request, Response } from 'express'
+import { Router, Request, Response, NextFunction } from 'express'
 import { requireAuth } from '../middleware/auth.js'
-import { requireMinimumLevel, AccountLevel } from '../middleware/roles.js'
 import { SessionRepository } from '../repositories/session-repository.js'
 import { getPrismaClient } from '../lib/database.js'
 import { authLogger } from '../lib/logger.js'
 import { tailscaleDeviceService } from '../services/tailscale-device-service.js'
+import { accessRuleService } from '../services/access-rule-service.js'
 
 const router: Router = Router()
+
+function requireExpressAccessRule(accessRuleKey: string) {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    if (!req.member) {
+      return res.status(401).json({
+        error: 'Unauthorized',
+        message: 'Authentication required',
+      })
+    }
+
+    if (!(await accessRuleService.hasAccess(req.member.accountLevel, accessRuleKey))) {
+      return res.status(403).json({
+        error: 'Forbidden',
+        message: `Access Rule '${accessRuleKey}' required`,
+      })
+    }
+
+    return next()
+  }
+}
 
 /**
  * GET /api/admin/sessions
@@ -17,7 +37,7 @@ const router: Router = Router()
 router.get(
   '/tailscale/devices',
   requireAuth(),
-  requireMinimumLevel(AccountLevel.ADMIN),
+  requireExpressAccessRule('network.view'),
   async (req: Request, res: Response) => {
     try {
       const result = await tailscaleDeviceService.getDevices()
@@ -43,7 +63,7 @@ router.get(
 router.get(
   '/sessions',
   requireAuth(),
-  requireMinimumLevel(AccountLevel.ADMIN),
+  requireExpressAccessRule('sessions.view'),
   async (req: Request, res: Response) => {
     try {
       const memberId = req.query.memberId as string | undefined
@@ -79,7 +99,7 @@ router.get(
 router.delete(
   '/sessions/:id',
   requireAuth(),
-  requireMinimumLevel(AccountLevel.ADMIN),
+  requireExpressAccessRule('sessions.revoke'),
   async (req: Request, res: Response) => {
     try {
       const sessionId = req.params.id as string

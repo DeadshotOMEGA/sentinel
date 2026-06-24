@@ -21,6 +21,7 @@ export const AdminNavigationRouteIdValues = [
   'timings',
   'kiosk-sounds',
   'account-levels',
+  'access-rules',
   'dashboard-sorting',
   'legacy',
   'unknown',

@@ -31,6 +31,8 @@ export type AuditAction =
   | 'setting_create'
   | 'setting_update'
   | 'setting_delete'
+  | 'access_rule_update'
+  | 'access_rule_bulk_update'
   | 'network_settings_update'
   | 'operational_timings_update'
   | 'remote_system_create'

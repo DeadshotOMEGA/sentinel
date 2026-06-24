@@ -8,6 +8,7 @@ import { BadgeRepository } from '../repositories/badge-repository.js'
 import type { LockupStatusEntity } from '../repositories/lockup-repository.js'
 import { getPrismaClient } from '../lib/database.js'
 import { AccountLevel } from '../middleware/roles.js'
+import { accessRuleService } from '../services/access-rule-service.js'
 
 const s = initServer()
 
@@ -15,6 +16,31 @@ const lockupService = new LockupService(getPrismaClient())
 const memberRepository = new MemberRepository(getPrismaClient())
 const auditRepo = new AuditRepository(getPrismaClient())
 const badgeRepository = new BadgeRepository(getPrismaClient())
+
+async function requireMemberAccessRule(memberId: string, accessRuleKey: string) {
+  const member = await memberRepository.findById(memberId)
+  if (!member) {
+    return {
+      status: 404 as const,
+      body: {
+        error: 'NOT_FOUND',
+        message: `Member with ID '${memberId}' not found`,
+      },
+    }
+  }
+
+  if (!(await accessRuleService.hasAccess(member.accountLevel, accessRuleKey))) {
+    return {
+      status: 403 as const,
+      body: {
+        error: 'FORBIDDEN',
+        message: `Access Rule '${accessRuleKey}' required`,
+      },
+    }
+  }
+
+  return null
+}
 
 async function toLockupStatusResponse(status: LockupStatusEntity): Promise<LockupStatusResponse> {
   const opening = await lockupService.getFirstOpeningForOperationalDate(status.date)
@@ -104,6 +130,16 @@ export const lockupRouter = s.router(lockupContract, {
   transferLockup: async ({ body, req }) => {
     try {
       const previousStatus = await lockupService.getCurrentStatus()
+      if (previousStatus.currentHolder?.id) {
+        const access = await requireMemberAccessRule(
+          previousStatus.currentHolder.id,
+          'lockup.transfer'
+        )
+        if (access) {
+          return access
+        }
+      }
+
       const result = await lockupService.transferLockup(body.toMemberId, body.reason, body.notes)
 
       await logRequestAudit(auditRepo, req, {
@@ -218,7 +254,7 @@ export const lockupRouter = s.router(lockupContract, {
 
       const lockupStatus = await lockupService.getCurrentStatus()
       const isHolder = lockupStatus.currentHolder?.id === member.id
-      const isPrivileged = accountLevel >= AccountLevel.ADMIN
+      const isPrivileged = await accessRuleService.hasAccess(accountLevel, 'lockup.adminOverride')
 
       if (!isHolder && !isPrivileged) {
         return {
@@ -264,6 +300,11 @@ export const lockupRouter = s.router(lockupContract, {
    */
   acquireLockup: async ({ params, body, req }) => {
     try {
+      const access = await requireMemberAccessRule(params.id, 'lockup.acquire')
+      if (access) {
+        return access
+      }
+
       await lockupService.acquireLockup(params.id, body?.notes)
 
       const member = await memberRepository.findById(params.id)
@@ -352,6 +393,11 @@ export const lockupRouter = s.router(lockupContract, {
    */
   openBuilding: async ({ params, body, req }) => {
     try {
+      const access = await requireMemberAccessRule(params.id, 'lockup.openBuilding')
+      if (access) {
+        return access
+      }
+
       const status = await lockupService.openBuilding(params.id, body.note)
 
       const member = await memberRepository.findById(params.id)
@@ -555,6 +601,21 @@ export const lockupRouter = s.router(lockupContract, {
    */
   checkLockupAuth: async ({ params }) => {
     try {
+      const access = await requireMemberAccessRule(params.id, 'lockup.execute')
+      if (access) {
+        if (access.status === 404) {
+          return access
+        }
+
+        return {
+          status: 200 as const,
+          body: {
+            authorized: false,
+            message: "Access Rule 'lockup.execute' required",
+          },
+        }
+      }
+
       // Use new qualification-based check
       const canReceiveLockup = await lockupService.memberHoldsLockup(params.id)
 
@@ -605,6 +666,11 @@ export const lockupRouter = s.router(lockupContract, {
    */
   executeLockup: async ({ params, body, req }) => {
     try {
+      const access = await requireMemberAccessRule(params.id, 'lockup.execute')
+      if (access) {
+        return access
+      }
+
       const result = await lockupService.executeLockup(params.id, body.note)
 
       const member = await memberRepository.findById(params.id)

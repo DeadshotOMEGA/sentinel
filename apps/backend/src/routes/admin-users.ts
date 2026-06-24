@@ -6,6 +6,7 @@ import { AdminUserRepository } from '../repositories/admin-user-repository.js'
 import { AuditRepository } from '../repositories/audit-repository.js'
 import { getPrismaClient } from '../lib/database.js'
 import { apiLogger } from '../lib/logger.js'
+import { accessRuleService } from '../services/access-rule-service.js'
 import bcrypt from 'bcryptjs'
 
 const s = initServer()
@@ -94,7 +95,7 @@ type MemberRequestContext = {
   }
 }
 
-function requireAdminActor(req: MemberRequestContext):
+type AdminActorResult =
   | { ok: true; actorId: string; actorLevel: number }
   | {
       ok: false
@@ -105,7 +106,12 @@ function requireAdminActor(req: MemberRequestContext):
           message: string
         }
       }
-    } {
+    }
+
+async function requireAdminActor(
+  req: MemberRequestContext,
+  accessRuleKey: 'adminUsers.view' | 'adminUsers.manage' | 'adminUsers.delete'
+): Promise<AdminActorResult> {
   if (!req.member?.id) {
     return {
       ok: false,
@@ -120,14 +126,14 @@ function requireAdminActor(req: MemberRequestContext):
   }
 
   const actorLevel = req.member.accountLevel ?? 0
-  if (actorLevel < 5) {
+  if (!(await accessRuleService.hasAccess(actorLevel, accessRuleKey))) {
     return {
       ok: false,
       response: {
         status: 403,
         body: {
           error: 'FORBIDDEN',
-          message: 'Requires admin or developer access',
+          message: `Access Rule '${accessRuleKey}' required`,
         },
       },
     }
@@ -145,7 +151,7 @@ export const adminUsersRouter = s.router(adminUserContract, {
    */
   getAdminUsers: async ({ req }: { req: MemberRequestContext }) => {
     try {
-      const actor = requireAdminActor(req)
+      const actor = await requireAdminActor(req, 'adminUsers.view')
       if (!actor.ok) {
         return actor.response
       }
@@ -183,7 +189,7 @@ export const adminUsersRouter = s.router(adminUserContract, {
     req: MemberRequestContext
   }) => {
     try {
-      const actor = requireAdminActor(req)
+      const actor = await requireAdminActor(req, 'adminUsers.view')
       if (!actor.ok) {
         return actor.response
       }
@@ -224,7 +230,7 @@ export const adminUsersRouter = s.router(adminUserContract, {
    */
   createAdminUser: async ({ body, req }) => {
     try {
-      const actor = requireAdminActor(req)
+      const actor = await requireAdminActor(req, 'adminUsers.manage')
       if (!actor.ok) {
         return actor.response
       }
@@ -331,7 +337,7 @@ export const adminUsersRouter = s.router(adminUserContract, {
     req: MemberRequestContext
   }) => {
     try {
-      const actor = requireAdminActor(req)
+      const actor = await requireAdminActor(req, 'adminUsers.manage')
       if (!actor.ok) {
         return actor.response
       }
@@ -456,7 +462,7 @@ export const adminUsersRouter = s.router(adminUserContract, {
     req: MemberRequestContext
   }) => {
     try {
-      const actor = requireAdminActor(req)
+      const actor = await requireAdminActor(req, 'adminUsers.manage')
       if (!actor.ok) {
         return actor.response
       }
@@ -536,7 +542,7 @@ export const adminUsersRouter = s.router(adminUserContract, {
     req: MemberRequestContext
   }) => {
     try {
-      const actor = requireAdminActor(req)
+      const actor = await requireAdminActor(req, 'adminUsers.manage')
       if (!actor.ok) {
         return actor.response
       }
@@ -655,7 +661,7 @@ export const adminUsersRouter = s.router(adminUserContract, {
     req: MemberRequestContext
   }) => {
     try {
-      const actor = requireAdminActor(req)
+      const actor = await requireAdminActor(req, 'adminUsers.manage')
       if (!actor.ok) {
         return actor.response
       }
@@ -743,19 +749,9 @@ export const adminUsersRouter = s.router(adminUserContract, {
     req: MemberRequestContext
   }) => {
     try {
-      const actor = requireAdminActor(req)
+      const actor = await requireAdminActor(req, 'adminUsers.delete')
       if (!actor.ok) {
         return actor.response
-      }
-
-      if (actor.actorLevel < 6) {
-        return {
-          status: 403 as const,
-          body: {
-            error: 'FORBIDDEN',
-            message: 'Only developers can delete admin users',
-          },
-        }
       }
 
       // Cannot delete yourself

@@ -4,7 +4,7 @@ import * as v from 'valibot'
 import { OperationalTimingsSettingsSchema } from '@sentinel/contracts'
 import type { Request } from 'express'
 import { logRequestAudit } from '../lib/audit-log.js'
-import { AccountLevel } from '../middleware/roles.js'
+import { requireAccessRule } from '../lib/access-rule-auth.js'
 import { AuditRepository } from '../repositories/audit-repository.js'
 import { OperationalTimingsService } from '../services/operational-timings-service.js'
 import { getPrismaClient } from '../lib/database.js'
@@ -23,25 +23,6 @@ function requireMember(req: Request) {
       },
     }
   }
-  return null
-}
-
-function requireAdminOrDeveloper(req: Request) {
-  const auth = requireMember(req)
-  if (auth) {
-    return auth
-  }
-
-  if ((req.member?.accountLevel ?? 0) < AccountLevel.ADMIN) {
-    return {
-      status: 403 as const,
-      body: {
-        error: 'FORBIDDEN',
-        message: 'Admin or Developer access required',
-      },
-    }
-  }
-
   return null
 }
 
@@ -70,7 +51,7 @@ export const operationalTimingsRouter = s.router(operationalTimingContract, {
   },
 
   updateOperationalTimings: async ({ req, body }) => {
-    const auth = requireAdminOrDeveloper(req)
+    const auth = await requireAccessRule(req, 'config.timing.manage')
     if (auth) {
       return auth
     }
