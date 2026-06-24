@@ -16,7 +16,6 @@ function createMember(accountLevel: number) {
     rank: 'PO2',
     serviceNumber: 'M12345678',
     accountLevel,
-    mustChangePin: false,
   }
 }
 

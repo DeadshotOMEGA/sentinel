@@ -68,7 +68,6 @@ function toMember(prismaMember: PrismaMember): Member {
     mobilePhone: prismaMember.mobilePhone ?? undefined,
     badgeId: prismaMember.badgeId ?? undefined,
     accountLevel: prismaMember.accountLevel,
-    mustChangePin: prismaMember.mustChangePin,
     missedCheckoutCount: prismaMember.missedCheckoutCount,
     lastMissedCheckout: prismaMember.lastMissedCheckout ?? undefined,
     createdAt: prismaMember.createdAt ?? new Date(),

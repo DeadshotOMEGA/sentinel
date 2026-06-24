@@ -16,7 +16,7 @@ import './globals.css'
 const DRAWER_ID = 'app-drawer'
 
 /** Routes that render without the app shell (navbar, sidebar) */
-const BARE_ROUTES = ['/login', '/kiosk', '/change-pin-required']
+const BARE_ROUTES = ['/login', '/kiosk']
 
 export default function RootLayout({
   children,

@@ -1,16 +1,11 @@
 export const TID = {
   auth: {
     badgeInput: 'auth-badge-input',
-    pinInput: 'auth-pin-input',
-    pinBack: 'auth-pin-back',
-    pinSubmit: 'auth-pin-submit',
+    loginBack: 'auth-login-back',
+    loginSubmit: 'auth-login-submit',
     remoteSystemSelect: 'auth-remote-system-select',
     remoteSystemNameInput: 'auth-remote-system-name-input',
     errorAlert: 'auth-error-alert',
-    setupNotice: 'auth-setup-notice',
-    setupPinInput: 'auth-setup-pin-input',
-    setupPinConfirmInput: 'auth-setup-pin-confirm-input',
-    setupPinSubmit: 'auth-setup-pin-submit',
   },
   nav: {
     logo: 'nav-logo',
@@ -24,7 +19,6 @@ export const TID = {
     backendStatusSystemUpdate: 'nav-backend-status-system-update',
     backendStatusRemoteSystems: 'nav-backend-status-remote-systems',
     userMenu: 'nav-user-menu',
-    changePin: 'nav-change-pin',
     logout: 'nav-logout',
   },
   hostHotspotRepair: {

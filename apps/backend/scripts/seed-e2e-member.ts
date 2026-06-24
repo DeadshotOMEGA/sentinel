@@ -38,7 +38,6 @@ async function main() {
       memberType: 'system',
       status: 'active',
       accountLevel: 6,
-      pinHash: '$2b$12$hEikq71eUVjfjAoTDfAta.39drWK8zvwAyRZq1cIHQYuLg2z1Wqc2',
     },
   })
 
@@ -57,7 +56,7 @@ async function main() {
   })
 
   console.log('Created member:', member.id)
-  console.log('Badge serial: CLAUDE-E2E-BADGE, PIN: 9999')
+  console.log('Badge serial: CLAUDE-E2E-BADGE')
   await prisma.$disconnect()
 }
 main()

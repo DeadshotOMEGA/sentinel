@@ -1,17 +1,16 @@
-# Qualifications Tags And PIN
+# Qualifications And Tags
 
 > Audience: Admins
 
-![Member row actions for qualifications, tags, and PIN](/uploads/wiki-dashboard/operations/members-qualifications-tags-pin.png)
+![Member row actions for qualifications and tags](/uploads/wiki-dashboard/operations/members-qualifications-tags.png)
 
 ## What This Is
 
-Row actions manage qualifications, tags, PIN, edit, and archive controls for one member at a time.
+Row actions manage qualifications, tags, edit, and archive controls for one member at a time.
 
 ## When To Use It
 
 - A member needs a qualification or tag update.
-- A member needs PIN access set or reset.
 - You need to inspect one record-specific control.
 
 ## What To Check
@@ -26,15 +25,15 @@ Row actions manage qualifications, tags, PIN, edit, and archive controls for one
 2. Use the row action for the required task.
 3. Apply only the authorized change.
 4. Save and confirm the row updates.
-5. Check schedules or login behavior if qualifications or PIN changed.
+5. Check schedules or login behavior if qualifications or tags changed.
 
 ## Good / Caution / Stop Conditions
 
 Good: The member-specific change is visible and limited to that member.
 
-Caution: PIN and qualification changes can affect access and duty eligibility.
+Caution: Qualification changes can affect duty eligibility.
 
-Stop: Do not change PIN or eligibility for a member you have not positively identified.
+Stop: Do not change eligibility for a member you have not positively identified.
 
 ## Confirm After Action
 

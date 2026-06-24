@@ -76,7 +76,7 @@ const ACCOUNT_LEVEL_DEFINITIONS: AccountLevelDefinition[] = [
   {
     level: AccountLevel.ADMIN,
     label: 'Admin',
-    summary: 'Administrative access for member records, PIN management, and Sentinel settings.',
+    summary: 'Administrative access for member records and Sentinel settings.',
     permissions: [
       'Everything in Command.',
       'Manage members, settings, remote systems, and assign account levels up to Admin.',

@@ -4717,35 +4717,10 @@
         }
       }
     },
-    "/api/auth/preflight-login": {
-      "post": {
-        "description": "Validate a badge serial number or Service Number and report whether the member can continue to PIN entry or must first create a replacement PIN.",
-        "summary": "Check login state before PIN entry",
-        "tags": ["auth"],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "200"
-          },
-          "400": {
-            "description": "400"
-          },
-          "401": {
-            "description": "401"
-          },
-          "429": {
-            "description": "429"
-          },
-          "500": {
-            "description": "500"
-          }
-        }
-      }
-    },
     "/api/auth/login": {
       "post": {
-        "description": "Authenticate a member using their NFC badge serial number or Service Number and 4-digit PIN, then associate the session to a managed remote system (or kiosk auto-mode).",
-        "summary": "Login with badge serial or Service Number + PIN",
+        "description": "Authenticate a member using their NFC badge serial number or Service Number, then associate the session to a managed remote system (or kiosk auto-mode).",
+        "summary": "Login with badge serial or Service Number",
         "tags": ["auth"],
         "parameters": [],
         "responses": {
@@ -4820,87 +4795,6 @@
           },
           "401": {
             "description": "401"
-          },
-          "500": {
-            "description": "500"
-          }
-        }
-      }
-    },
-    "/api/auth/change-pin": {
-      "post": {
-        "description": "Authenticated member changes their own PIN",
-        "summary": "Change own PIN",
-        "tags": ["auth"],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "200"
-          },
-          "400": {
-            "description": "400"
-          },
-          "401": {
-            "description": "401"
-          },
-          "403": {
-            "description": "403"
-          },
-          "500": {
-            "description": "500"
-          }
-        }
-      }
-    },
-    "/api/auth/set-pin": {
-      "post": {
-        "description": "Admin sets or resets a member PIN (requires account level 5+)",
-        "summary": "Admin set member PIN",
-        "tags": ["auth"],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "200"
-          },
-          "400": {
-            "description": "400"
-          },
-          "401": {
-            "description": "401"
-          },
-          "403": {
-            "description": "403"
-          },
-          "404": {
-            "description": "404"
-          },
-          "500": {
-            "description": "500"
-          }
-        }
-      }
-    },
-    "/api/auth/setup-pin": {
-      "post": {
-        "description": "Allow a member with a missing or temporary default PIN to create a secure 4-digit PIN before normal sign-in.",
-        "summary": "Create a first or replacement PIN after login preflight",
-        "tags": ["auth"],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "200"
-          },
-          "400": {
-            "description": "400"
-          },
-          "401": {
-            "description": "401"
-          },
-          "403": {
-            "description": "403"
-          },
-          "429": {
-            "description": "429"
           },
           "500": {
             "description": "500"

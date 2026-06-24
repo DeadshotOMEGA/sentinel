@@ -441,7 +441,6 @@ export class CheckinRepository {
         memberType: checkin.member.memberType as unknown as MemberType,
         memberSource: checkin.member.memberSource as MemberWithDivision['memberSource'],
         accountLevel: checkin.member.accountLevel,
-        mustChangePin: checkin.member.mustChangePin,
         classDetails: checkin.member.classDetails ?? undefined,
         status: checkin.member.status as unknown as MemberStatus,
         email: checkin.member.email ?? undefined,
@@ -514,7 +513,6 @@ export class CheckinRepository {
               memberType: c.member!.memberType as MemberType,
               memberSource: c.member!.memberSource as MemberWithDivision['memberSource'],
               accountLevel: c.member!.accountLevel,
-              mustChangePin: c.member!.mustChangePin,
               status: c.member!.status as MemberStatus,
               employeeNumber: c.member!.employeeNumber || undefined,
               initials: c.member!.initials || undefined,
@@ -621,7 +619,6 @@ export class CheckinRepository {
             memberType: c.member.memberType as MemberType,
             memberSource: c.member.memberSource as MemberWithDivision['memberSource'],
             accountLevel: c.member.accountLevel,
-            mustChangePin: c.member.mustChangePin,
             status: c.member.status as MemberStatus,
             employeeNumber: c.member.employeeNumber || undefined,
             initials: c.member.initials || undefined,
@@ -901,7 +898,6 @@ export class CheckinRepository {
         member_type: string
         member_source: string
         account_level: number
-        must_change_pin: boolean
         class_details: string | null
         status: string
         email: string | null
@@ -929,7 +925,7 @@ export class CheckinRepository {
     >`
       SELECT
         m.id, m.service_number, m.employee_number, m.first_name, m.last_name, m.initials, m.rank,
-        m.division_id, m.mess, m.moc, m.member_type, m.member_source, m.account_level, m.must_change_pin, m.class_details, m.status, m.email, m.home_phone, m.mobile_phone,
+        m.division_id, m.mess, m.moc, m.member_type, m.member_source, m.account_level, m.class_details, m.status, m.email, m.home_phone, m.mobile_phone,
         m.badge_id, m.created_at as member_created_at, m.updated_at as member_updated_at,
         d.id as division_id, d.name as division_name, d.code as division_code,
         d.description as division_description, d.created_at as division_created_at,
@@ -966,7 +962,6 @@ export class CheckinRepository {
         memberType: row.member_type as unknown as MemberType,
         memberSource: row.member_source as MemberWithDivision['memberSource'],
         accountLevel: row.account_level,
-        mustChangePin: row.must_change_pin,
         classDetails: row.class_details ?? undefined,
         status: row.status as unknown as MemberStatus,
         email: row.email ?? undefined,

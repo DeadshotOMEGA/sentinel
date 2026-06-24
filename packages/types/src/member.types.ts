@@ -33,7 +33,6 @@ export interface Member {
   mobilePhone?: string
   badgeId?: string
   accountLevel: number
-  mustChangePin: boolean
   missedCheckoutCount?: number
   lastMissedCheckout?: Date
   createdAt: Date

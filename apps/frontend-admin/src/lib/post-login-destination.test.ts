@@ -20,17 +20,13 @@ describe('post-login destination helpers', () => {
 
   it('prefers explicit destination hints from the query string', () => {
     expect(resolvePostLoginDestinationHint('/dashboard', '?destination=%2Fkiosk')).toBe('/kiosk')
-    expect(resolvePostLoginDestinationHint('/change-pin-required', '?redirect=%2Fkiosk')).toBe(
-      '/kiosk'
-    )
+    expect(resolvePostLoginDestinationHint('/login', '?redirect=%2Fkiosk')).toBe('/kiosk')
   })
 
   it('builds kiosk-aware login URLs only when needed', () => {
     expect(buildLoginUrl('/dashboard')).toBe('/login')
     expect(buildLoginUrl('/kiosk')).toBe('/login?destination=%2Fkiosk')
-    expect(buildLoginUrl('/change-pin-required', '?destination=%2Fkiosk')).toBe(
-      '/login?destination=%2Fkiosk'
-    )
+    expect(buildLoginUrl('/login', '?destination=%2Fkiosk')).toBe('/login?destination=%2Fkiosk')
   })
 
   it('uses a dashboard-default login path for forced reauth', () => {

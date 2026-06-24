@@ -9,7 +9,6 @@ import {
 } from '../lib/kiosk-device-auth.js'
 import { SessionRepository } from '../repositories/session-repository.js'
 import { getPrismaClient } from '../lib/database.js'
-import { isSentinelBootstrapServiceNumber } from '../lib/system-bootstrap.js'
 
 /**
  * Extend Express Request type to include authentication data
@@ -25,7 +24,6 @@ declare global {
         rank: string
         serviceNumber: string
         accountLevel: number
-        mustChangePin: boolean
       }
       apiKey?: {
         id: string
@@ -101,19 +99,6 @@ function resolveRequestIpAddress(req: Request): string | null {
   return req.ip ?? null
 }
 
-function isPinChangeExemptPath(req: Request): boolean {
-  const method = req.method.toUpperCase()
-  const path = req.path
-
-  if (method === 'POST' && path === '/auth/change-pin') return true
-  if (method === 'POST' && path === '/auth/heartbeat') return true
-  if (method === 'POST' && path === '/auth/logout') return true
-  if (method === 'GET' && path === '/auth/session') return true
-  if (method === 'POST' && path === '/auth/login') return true
-
-  return false
-}
-
 /**
  * Authenticate request using session token or API key
  *
@@ -142,15 +127,6 @@ export function requireAuth(required: boolean = true) {
             rank: session.member.rank,
             serviceNumber: session.member.serviceNumber,
             accountLevel: session.member.accountLevel,
-            mustChangePin: session.member.mustChangePin,
-          }
-
-          const isBootstrapMember = isSentinelBootstrapServiceNumber(session.member.serviceNumber)
-          if (session.member.mustChangePin && !isBootstrapMember && !isPinChangeExemptPath(req)) {
-            return res.status(403).json({
-              error: 'PIN_CHANGE_REQUIRED',
-              message: 'PIN change required before accessing this resource',
-            })
           }
 
           // Add user ID to request context for logging

@@ -1,19 +1,10 @@
-import bcrypt from 'bcryptjs'
 import type { PrismaClientInstance } from '@sentinel/database'
 import { prisma as defaultPrisma } from '@sentinel/database'
-import {
-  SENTINEL_BOOTSTRAP_DEFAULT_PIN,
-  isSentinelBootstrapServiceNumber,
-} from '../lib/system-bootstrap.js'
-
-const BCRYPT_COST = 12
-// Temporary bootstrap PIN for regular members after badge assignment.
-// Login treats this as setup-only state and requires the member to replace it.
-const TEMPORARY_PIN = '1111'
+import { isSentinelBootstrapServiceNumber } from '../lib/system-bootstrap.js'
 
 /**
- * Provisions member login credentials after badge assignment.
- * Idempotent by design: existing PIN hashes are never overwritten.
+ * Keeps protected bootstrap access metadata current after badge assignment.
+ * Regular member login now uses Service Number or active assigned badge only.
  */
 export class MemberAuthProvisioningService {
   private prisma: PrismaClientInstance
@@ -28,7 +19,6 @@ export class MemberAuthProvisioningService {
       select: {
         id: true,
         serviceNumber: true,
-        pinHash: true,
       },
     })
 
@@ -37,34 +27,13 @@ export class MemberAuthProvisioningService {
     }
 
     if (isSentinelBootstrapServiceNumber(member.serviceNumber)) {
-      const pinHash =
-        member.pinHash && (await bcrypt.compare(SENTINEL_BOOTSTRAP_DEFAULT_PIN, member.pinHash))
-          ? member.pinHash
-          : await bcrypt.hash(SENTINEL_BOOTSTRAP_DEFAULT_PIN, BCRYPT_COST)
       await this.prisma.member.update({
         where: { id: member.id },
         data: {
-          pinHash,
-          mustChangePin: false,
           status: 'active',
           accountLevel: 10,
         },
       })
-      return
     }
-
-    // Existing PIN remains authoritative; do not reset.
-    if (member.pinHash) {
-      return
-    }
-
-    const pinHash = await bcrypt.hash(TEMPORARY_PIN, BCRYPT_COST)
-    await this.prisma.member.update({
-      where: { id: memberId },
-      data: {
-        pinHash,
-        mustChangePin: true,
-      },
-    })
   }
 }

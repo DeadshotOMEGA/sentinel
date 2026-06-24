@@ -180,7 +180,7 @@ export function createApp(): Express {
     app.use('/openapi.json', openapiRouter)
   }
 
-  // Badge+PIN auth routes
+  // Badge/Service Number auth routes
   app.use('/api/auth/rfid-login', rfidAuthLimiter)
   app.use('/api/auth', authRouter)
 

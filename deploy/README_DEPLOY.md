@@ -384,11 +384,9 @@ Post-upgrade UI smoke checks (recommended):
   - `sudo systemctl start sentinel-appliance.service`
 - A protected bootstrap Sentinel login is automatically created/maintained:
   - Badge: `0000000000`
-  - PIN: `0000`
   - This record is guarded in API/repository paths and by DB delete triggers.
   - Runtime integrity checks enforce the bootstrap account state on backend startup.
-  - The bootstrap PIN is fixed (`0000`) and cannot be changed through auth APIs.
-  - The bootstrap account bypasses forced PIN-change gating to guarantee setup/recovery access.
+  - The bootstrap account uses badge or Service Number login to guarantee setup/recovery access.
 - Fresh install now forces bootstrap mode to create all tables first and keep them empty:
   - `docker compose exec -T backend sh -lc "cd /app && pnpm --filter @sentinel/database exec prisma db push"`
   - `docker compose exec -T backend sh -lc "cd /app && pnpm --filter @sentinel/database prisma:baseline"`

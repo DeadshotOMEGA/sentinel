@@ -5,7 +5,7 @@ import {
   resolveDefaultRemoteSystemId,
   resolveEffectiveRemoteSystemId,
   resolveForcedRemoteSystem,
-} from './pin-input.logic'
+} from './remote-system-login.logic'
 
 const REMOTE_SYSTEMS: RemoteSystemOption[] = [
   {
@@ -34,7 +34,7 @@ const REMOTE_SYSTEMS: RemoteSystemOption[] = [
   },
 ]
 
-describe('pin-input logic', () => {
+describe('remote-system login logic', () => {
   it('falls back from a stale or occupied saved selection to the first selectable remote system', () => {
     expect(
       resolveDefaultRemoteSystemId({

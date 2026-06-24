@@ -18,7 +18,7 @@ Create Civilian Staff adds authorized non-member personnel who need Sentinel han
 
 - Authorization source for the civilian staff record.
 - Name, organization or division context, and access need.
-- Whether badge or PIN access is allowed.
+- Whether badge access is allowed.
 
 ## Step-By-Step Procedure
 
@@ -39,7 +39,7 @@ Stop: Do not use civilian staff records to bypass member-account requirements.
 ## Confirm After Action
 
 - The row scope and status are correct.
-- Badge or PIN state matches authorization.
+- Badge state matches authorization.
 
 ## When To Escalate
 

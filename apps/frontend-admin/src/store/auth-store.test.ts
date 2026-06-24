@@ -26,7 +26,9 @@ describe('auth store', () => {
   beforeEach(() => {
     storage.clear()
     vi.resetModules()
-    vi.stubGlobal('localStorage', createLocalStorageMock(storage))
+    const localStorage = createLocalStorageMock(storage)
+    vi.stubGlobal('localStorage', localStorage)
+    vi.stubGlobal('window', { localStorage })
   })
 
   afterEach(() => {
@@ -43,7 +45,6 @@ describe('auth store', () => {
       rank: 'PO2',
       serviceNumber: 'M12345678',
       accountLevel: 5,
-      mustChangePin: false,
     }
     const session: SessionMetadata = {
       sessionId: 'session-1',

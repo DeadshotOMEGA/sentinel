@@ -3,12 +3,7 @@
 import { useEffect, useEffectEvent, useRef } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { apiClient } from '@/lib/api-client'
-import {
-  buildChangePinRequiredUrl,
-  buildForcedReauthLoginUrl,
-  buildLoginUrl,
-  resolvePostLoginDestinationHint,
-} from '@/lib/post-login-destination'
+import { buildForcedReauthLoginUrl, buildLoginUrl } from '@/lib/post-login-destination'
 import { isKioskRoute } from '@/lib/kiosk-device-auth'
 import { useAuthStore } from '@/store/auth-store'
 import {
@@ -45,18 +40,6 @@ export function AuthHydrator() {
           expiresAt: data.expiresAt,
         })
 
-        if (
-          data.member.mustChangePin &&
-          pathname !== '/change-pin-required' &&
-          pathname !== '/login'
-        ) {
-          router.replace(buildChangePinRequiredUrl(pathname, window.location.search))
-          return
-        }
-
-        if (!data.member.mustChangePin && pathname === '/change-pin-required') {
-          router.replace(resolvePostLoginDestinationHint(pathname, window.location.search))
-        }
         return
       }
 
