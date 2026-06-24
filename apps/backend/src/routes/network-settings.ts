@@ -4,7 +4,7 @@ import { networkSettingContract } from '@sentinel/contracts'
 import { getPrismaClient } from '../lib/database.js'
 import { logRequestAudit } from '../lib/audit-log.js'
 import { getRequestClientIp } from '../lib/runtime-context.js'
-import { AccountLevel } from '../middleware/roles.js'
+import { requireAccessRule } from '../lib/access-rule-auth.js'
 import { AuditRepository } from '../repositories/audit-repository.js'
 import { HostHotspotRecoveryService } from '../services/host-hotspot-recovery-service.js'
 import { NetworkSettingsService } from '../services/network-settings-service.js'
@@ -20,25 +20,6 @@ function requireMember(req: Request) {
       body: {
         error: 'UNAUTHORIZED',
         message: 'Authentication required',
-      },
-    }
-  }
-
-  return null
-}
-
-function requireAdmin(req: Request) {
-  const auth = requireMember(req)
-  if (auth) {
-    return auth
-  }
-
-  if ((req.member?.accountLevel ?? 0) < AccountLevel.ADMIN) {
-    return {
-      status: 403 as const,
-      body: {
-        error: 'FORBIDDEN',
-        message: 'Admin access required',
       },
     }
   }
@@ -86,7 +67,7 @@ export const networkSettingsRouter = s.router(networkSettingContract, {
   },
 
   updateNetworkSettings: async ({ body, req }) => {
-    const auth = requireAdmin(req)
+    const auth = await requireAccessRule(req, 'network.manage')
     if (auth) {
       return auth
     }

@@ -1,8 +1,7 @@
 import { Socket } from 'socket.io'
 import { logger } from '../lib/logger.js'
 import { socketIOTransport } from '../lib/log-transport-socketio.js'
-import { getMemberId, hasMinimumLevel } from './auth.js'
-import { AccountLevel } from '../middleware/roles.js'
+import { getMemberId, hasSocketAccessRule } from './auth.js'
 
 /**
  * Register event handlers for a connected socket
@@ -47,11 +46,11 @@ export function registerSocketHandlers(socket: Socket) {
   })
 
   // Subscribe to security alerts (admin only)
-  socket.on('alerts:subscribe', () => {
-    if (!hasMinimumLevel(socket, AccountLevel.ADMIN)) {
+  socket.on('alerts:subscribe', async () => {
+    if (!(await hasSocketAccessRule(socket, 'securityAlerts.view'))) {
       socket.emit('error', {
         code: 'FORBIDDEN',
-        message: 'Admin access required to subscribe to alerts',
+        message: "Access Rule 'securityAlerts.view' required",
       })
       return
     }
@@ -77,11 +76,11 @@ export function registerSocketHandlers(socket: Socket) {
   })
 
   // Subscribe to lockup events (admin only)
-  socket.on('lockup:subscribe', () => {
-    if (!hasMinimumLevel(socket, AccountLevel.ADMIN)) {
+  socket.on('lockup:subscribe', async () => {
+    if (!(await hasSocketAccessRule(socket, 'lockup.viewHistory'))) {
       socket.emit('error', {
         code: 'FORBIDDEN',
-        message: 'Admin access required to subscribe to lockup events',
+        message: "Access Rule 'lockup.viewHistory' required",
       })
       return
     }
@@ -118,11 +117,11 @@ export function registerSocketHandlers(socket: Socket) {
   })
 
   // Subscribe to kiosk status (admin only)
-  socket.on('kiosks:subscribe', () => {
-    if (!hasMinimumLevel(socket, AccountLevel.ADMIN)) {
+  socket.on('kiosks:subscribe', async () => {
+    if (!(await hasSocketAccessRule(socket, 'kiosks.viewStatus'))) {
       socket.emit('error', {
         code: 'FORBIDDEN',
-        message: 'Admin access required to subscribe to kiosk status',
+        message: "Access Rule 'kiosks.viewStatus' required",
       })
       return
     }
@@ -137,11 +136,11 @@ export function registerSocketHandlers(socket: Socket) {
   })
 
   // Subscribe to live log streaming (admin only)
-  socket.on('logs:subscribe', () => {
-    if (!hasMinimumLevel(socket, AccountLevel.ADMIN)) {
+  socket.on('logs:subscribe', async () => {
+    if (!(await hasSocketAccessRule(socket, 'logs.viewRuntime'))) {
       socket.emit('error', {
         code: 'FORBIDDEN',
-        message: 'Admin access required to subscribe to logs',
+        message: "Access Rule 'logs.viewRuntime' required",
       })
       return
     }
@@ -158,11 +157,11 @@ export function registerSocketHandlers(socket: Socket) {
     logger.debug('Socket unsubscribed from log streaming', { socketId: socket.id })
   })
 
-  socket.on('logs:set-level', (level: string) => {
-    if (!hasMinimumLevel(socket, AccountLevel.ADMIN)) {
+  socket.on('logs:set-level', async (level: string) => {
+    if (!(await hasSocketAccessRule(socket, 'logs.manageRuntime'))) {
       socket.emit('error', {
         code: 'FORBIDDEN',
-        message: 'Admin access required to change log level',
+        message: "Access Rule 'logs.manageRuntime' required",
       })
       return
     }
@@ -181,11 +180,11 @@ export function registerSocketHandlers(socket: Socket) {
     socket.emit('logs:level-changed', { level })
   })
 
-  socket.on('logs:clear-history', () => {
-    if (!hasMinimumLevel(socket, AccountLevel.ADMIN)) {
+  socket.on('logs:clear-history', async () => {
+    if (!(await hasSocketAccessRule(socket, 'logs.manageRuntime'))) {
       socket.emit('error', {
         code: 'FORBIDDEN',
-        message: 'Admin access required to clear log history',
+        message: "Access Rule 'logs.manageRuntime' required",
       })
       return
     }

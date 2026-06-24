@@ -1,37 +1,14 @@
 import { initServer } from '@ts-rest/express'
 import { adminNavigationContract } from '@sentinel/contracts'
-import { AccountLevel } from '../middleware/roles.js'
+import type { Request } from 'express'
+import { requireAccessRule } from '../lib/access-rule-auth.js'
 import { recordAdminNavigationEvent } from '../lib/metrics.js'
 
 const s = initServer()
 
-function requireAdmin(req: { member?: { accountLevel?: number } }) {
-  if (!req.member) {
-    return {
-      status: 401 as const,
-      body: {
-        error: 'UNAUTHORIZED',
-        message: 'Authentication required',
-      },
-    }
-  }
-
-  if ((req.member.accountLevel ?? 0) < AccountLevel.ADMIN) {
-    return {
-      status: 403 as const,
-      body: {
-        error: 'FORBIDDEN',
-        message: 'Admin access required',
-      },
-    }
-  }
-
-  return null
-}
-
 export const adminNavigationEventsRouter = s.router(adminNavigationContract, {
   recordAdminNavigationEvent: async ({ body, req }) => {
-    const auth = requireAdmin(req)
+    const auth = await requireAccessRule(req as Request, 'admin.view')
     if (auth) {
       return auth
     }

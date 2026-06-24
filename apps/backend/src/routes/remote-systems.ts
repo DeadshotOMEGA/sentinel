@@ -1,11 +1,10 @@
 import { initServer } from '@ts-rest/express'
-import type { Request } from 'express'
 import { remoteSystemContract, type AdminRemoteSystem } from '@sentinel/contracts'
 import { Prisma } from '@sentinel/database'
 import { getPrismaClient } from '../lib/database.js'
 import { logRequestAudit } from '../lib/audit-log.js'
 import { shouldEnforceMainSystemLoginSelection } from '../lib/runtime-context.js'
-import { AccountLevel } from '../middleware/roles.js'
+import { requireAccessRule } from '../lib/access-rule-auth.js'
 import { AuditRepository } from '../repositories/audit-repository.js'
 import {
   DEPLOYMENT_REMOTE_SYSTEM_CODE,
@@ -17,39 +16,6 @@ const auditRepo = new AuditRepository(getPrismaClient())
 
 function getRemoteSystemRepository(): RemoteSystemRepository {
   return new RemoteSystemRepository(getPrismaClient())
-}
-
-function requireMember(req: Request) {
-  if (!req.member) {
-    return {
-      status: 401 as const,
-      body: {
-        error: 'UNAUTHORIZED',
-        message: 'Authentication required',
-      },
-    }
-  }
-
-  return null
-}
-
-function requireAdmin(req: Request) {
-  const auth = requireMember(req)
-  if (auth) {
-    return auth
-  }
-
-  if ((req.member?.accountLevel ?? 0) < AccountLevel.ADMIN) {
-    return {
-      status: 403 as const,
-      body: {
-        error: 'FORBIDDEN',
-        message: 'Admin access required',
-      },
-    }
-  }
-
-  return null
 }
 
 function toAdminRemoteSystem(system: AdminRemoteSystem): AdminRemoteSystem {
@@ -98,7 +64,7 @@ export const remoteSystemsRouter = s.router(remoteSystemContract, {
   },
 
   listAdminRemoteSystems: async ({ req }) => {
-    const auth = requireAdmin(req)
+    const auth = await requireAccessRule(req, 'remoteSystems.view')
     if (auth) {
       return auth
     }
@@ -138,7 +104,7 @@ export const remoteSystemsRouter = s.router(remoteSystemContract, {
   },
 
   createRemoteSystem: async ({ body, req }) => {
-    const auth = requireAdmin(req)
+    const auth = await requireAccessRule(req, 'remoteSystems.manage')
     if (auth) {
       return auth
     }
@@ -205,7 +171,7 @@ export const remoteSystemsRouter = s.router(remoteSystemContract, {
   },
 
   reorderRemoteSystems: async ({ body, req }) => {
-    const auth = requireAdmin(req)
+    const auth = await requireAccessRule(req, 'remoteSystems.manage')
     if (auth) {
       return auth
     }
@@ -266,7 +232,7 @@ export const remoteSystemsRouter = s.router(remoteSystemContract, {
   },
 
   updateRemoteSystem: async ({ params, body, req }) => {
-    const auth = requireAdmin(req)
+    const auth = await requireAccessRule(req, 'remoteSystems.manage')
     if (auth) {
       return auth
     }
@@ -382,7 +348,7 @@ export const remoteSystemsRouter = s.router(remoteSystemContract, {
   },
 
   deleteRemoteSystem: async ({ params, req }) => {
-    const auth = requireAdmin(req)
+    const auth = await requireAccessRule(req, 'remoteSystems.manage')
     if (auth) {
       return auth
     }

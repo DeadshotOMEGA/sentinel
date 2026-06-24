@@ -82,6 +82,12 @@ describe('ADMIN_NAV_ROUTES', () => {
     ).toEqual(['admin:view'])
   })
 
+  it('keeps Access Rules visible only to Developer-level members', () => {
+    expect(getAdminRouteById('access-rules').requiredRole).toBe(6)
+    expect(getAdminSidebarRoutes(5).map((route) => route.id)).not.toContain('access-rules')
+    expect(getAdminSidebarRoutes(6).map((route) => route.id)).toContain('access-rules')
+  })
+
   it('preserves legacy route intent', () => {
     expect(resolveLegacyAdminPath('/badges', new URLSearchParams('page=2'))).toBe(
       '/admin/badges?page=2'
@@ -101,6 +107,9 @@ describe('ADMIN_NAV_ROUTES', () => {
     )
     expect(resolveLegacyAdminPath('/settings', new URLSearchParams('tab=account-levels'))).toBe(
       '/admin/account-levels'
+    )
+    expect(resolveLegacyAdminPath('/settings', new URLSearchParams('tab=access-rules'))).toBe(
+      '/admin/access-rules'
     )
     expect(resolveLegacyAdminPath('/settings', new URLSearchParams('tab=dashboard-sorting'))).toBe(
       '/admin/dashboard-sorting'

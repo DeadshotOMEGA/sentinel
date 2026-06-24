@@ -84,9 +84,84 @@ _Avoid_: Presence, building occupancy
 The operational act of confirming and clearing who remains present before the Unit is secured.
 _Avoid_: Attendance close, daily checkout
 
+**Administrative Presence Action**:
+A staff-initiated correction or override to a person's presence state.
+_Avoid_: Dashboard action, manual change
+
+**Account Level**:
+A Member authority tier used to decide which Sentinel workflows the Member may use.
+_Avoid_: Role, rank, permission
+
+**Operational Qualification**:
+A Unit approval that confirms a Member may hold a specific operational responsibility.
+_Avoid_: Account Level, permission, role
+
+**Access Rule**:
+A named Sentinel workflow or action with a required minimum Account Level.
+_Avoid_: Option, hard-coded restriction, page permission
+
+**System Identity**:
+An internal Sentinel identity used for maintenance or recovery rather than human workflow access.
+_Avoid_: Member, Developer
+
+**Remote System**:
+A Sentinel workstation or appliance context where a Member signs in and uses Sentinel.
+_Avoid_: Separate permission set, local role
+
+**Access Rule Floor**:
+The lowest Account Level Sentinel allows for an Access Rule.
+_Avoid_: Default permission, suggested level
+
+**Built-in Access Rule Default**:
+The Sentinel-defined Account Level used for an Access Rule when no valid configured level is available.
+_Avoid_: Fallback permission, hard-coded access
+
+**Destructive Access Rule**:
+An Access Rule for an action that can remove, overwrite, export, or broadly expose Sentinel data.
+_Avoid_: Dangerous option, admin action
+
+**Operational Report**:
+A report that supports routine Unit attendance, presence, visitor, or duty workflows.
+_Avoid_: Diagnostic report, audit log
+
+**Diagnostic Record**:
+A record used to inspect Sentinel system activity, configuration, or data state.
+_Avoid_: Operational report
+
 ## Relationships
 
 - A **Member** may have one **NFC Tag**
+- A **Member** has one **Account Level**
+- A **Member** may have one or more **Operational Qualifications**
+- An **Access Rule** has one minimum **Account Level**
+- An **Access Rule** has one **Access Rule Floor**
+- An **Access Rule** has one **Built-in Access Rule Default**
+- An **Access Rule** belongs to a Sentinel-defined catalog
+- The **Access Rule** catalog covers Sentinel workflows whose visibility or authority depends on Account Level
+- Developer recovery workflows are represented as **Access Rules** with Developer **Access Rule Floors**
+- An **Access Rule** applies the same way across **Remote Systems**
+- An **Access Rule** starts from Sentinel's current authority threshold unless a Developer changes it
+- The **Access Rule** for changing Access Rules requires the Developer **Account Level**
+- The **Access Rule** for assigning Developer **Account Level** requires the Developer **Account Level**
+- An **Access Rule** always resolves to an **Account Level**, not to a disabled state
+- A **Member** may use an **Access Rule** when their **Account Level** meets or exceeds that rule's minimum **Account Level**
+- **Account Levels** inherit upward for **Access Rules**
+- A **Member** cannot assign another Member an **Account Level** equal to or higher than their own, except at Developer **Account Level**
+- A **Member** cannot lower their own **Account Level** through normal account-level management
+- Sentinel must retain at least one active Developer-level **Member**
+- A Developer-level **Member** may assign another **Member** to Developer **Account Level**
+- An **Access Rule** change is an audited governance change
+- An **Access Rule** change takes effect immediately for authority checks
+- An **Access Rule** minimum **Account Level** cannot be lower than its **Access Rule Floor**
+- A missing or invalid **Access Rule** configuration uses the **Built-in Access Rule Default**
+- An **Access Rule** governs both whether a workflow is visible and whether the workflow may be performed
+- Operationally sensitive help follows the **Access Rule** for the workflow it explains
+- **Operational Reports** and **Diagnostic Records** may have different **Access Rules**
+- Exporting Sentinel data is governed by a **Destructive Access Rule**
+- **Administrative Presence Actions** may have separate **Access Rules** from routine check-in workflows
+- **System Identities** are excluded from **Access Rules** for human workflow access
+- An **Access Rule** does not replace an **Operational Qualification**
+- View, change, and **Destructive Access Rules** may have different minimum **Account Levels**
 - A **Temporary Personnel Assignment** has one or more **Temporary Personnel**
 - A **Temporary Personnel Assignment** has one **Assignment Sponsor**
 - **Temporary Personnel** belong to one active **Temporary Personnel Assignment** while working at the Unit
@@ -182,6 +257,87 @@ _Avoid_: Attendance close, daily checkout
 > **Dev:** "Should **Temporary Personnel** block the building from being secured if they are still checked in?"
 > **Domain expert:** "Yes - **Building Close** needs to show and clear everyone still present."
 
+> **Dev:** "Should network settings be tied directly to Admin in the code?"
+> **Domain expert:** "No - network settings should be governed by an **Access Rule** whose minimum **Account Level** can be reviewed by future administrators."
+
+> **Dev:** "If a Member cannot see a workflow, can they still perform it another way?"
+> **Domain expert:** "No - an **Access Rule** controls both visibility and authority."
+
+> **Dev:** "Can an Admin lower the rule that controls who edits Access Rules?"
+> **Domain expert:** "No - changing Access Rules is reserved for the Developer **Account Level**."
+
+> **Dev:** "Can future staff create a new Access Rule from Settings?"
+> **Domain expert:** "No - Sentinel defines the **Access Rule** catalog, and staff can adjust the minimum **Account Level** for those rules."
+
+> **Dev:** "Can a sensitive Access Rule be lowered all the way to Basic?"
+> **Domain expert:** "No - each **Access Rule** has an **Access Rule Floor** that protects the lowest allowed threshold."
+
+> **Dev:** "Can an Access Rule be disabled so nobody can use it?"
+> **Domain expert:** "No - an **Access Rule** always has a minimum **Account Level**."
+
+> **Dev:** "If an Access Rule requires Quartermaster, do Command Members get it too?"
+> **Domain expert:** "Yes - **Account Levels** inherit upward for **Access Rules**."
+
+> **Dev:** "Should the new Access Rules change who can do things immediately after upgrade?"
+> **Domain expert:** "No - each **Access Rule** starts from Sentinel's current authority threshold."
+
+> **Dev:** "Should Access Rules only cover the Admin Settings area?"
+> **Domain expert:** "No - the **Access Rule** catalog covers Sentinel workflows whose visibility or authority depends on **Account Level**."
+
+> **Dev:** "Should viewing a page and changing its data always require the same Account Level?"
+> **Domain expert:** "No - view, change, and **Destructive Access Rules** may have different minimum **Account Levels**."
+
+> **Dev:** "Can an Admin promote another Member to Admin or Developer?"
+> **Domain expert:** "No - a **Member** cannot assign another Member an **Account Level** equal to or higher than their own, except at Developer **Account Level**."
+
+> **Dev:** "Can a Member lower their own Account Level?"
+> **Domain expert:** "No - a **Member** cannot lower their own **Account Level** through normal account-level management."
+
+> **Dev:** "Can the last Developer-level Member be lowered or removed?"
+> **Domain expert:** "No - Sentinel must retain at least one active Developer-level **Member**."
+
+> **Dev:** "Can a Developer-level Member appoint another Developer-level Member?"
+> **Domain expert:** "Yes - a Developer-level **Member** may assign another **Member** to Developer **Account Level**."
+
+> **Dev:** "Do we need to know who changed an Access Rule later?"
+> **Domain expert:** "Yes - an **Access Rule** change is an audited governance change."
+
+> **Dev:** "Does an Access Rule change wait until Members sign in again?"
+> **Domain expert:** "No - an **Access Rule** change takes effect immediately for authority checks."
+
+> **Dev:** "If an Access Rule setting is missing or invalid, should Sentinel deny everyone?"
+> **Domain expert:** "No - Sentinel uses the **Built-in Access Rule Default** and raises the problem for staff."
+
+> **Dev:** "Can a Member read operationally sensitive help for a workflow they cannot use?"
+> **Domain expert:** "No - operationally sensitive help follows the **Access Rule** for the workflow it explains."
+
+> **Dev:** "Should routine reports and diagnostic logs use the same Access Rule?"
+> **Domain expert:** "No - **Operational Reports** and **Diagnostic Records** may have different **Access Rules**."
+
+> **Dev:** "Is exporting data safer just because it does not modify records?"
+> **Domain expert:** "No - exporting Sentinel data is governed by a **Destructive Access Rule**."
+
+> **Dev:** "Should all dashboard presence controls share one Access Rule?"
+> **Domain expert:** "No - **Administrative Presence Actions** may have separate **Access Rules** from routine check-in workflows."
+
+> **Dev:** "Does an Access Rule replace a lockup qualification?"
+> **Domain expert:** "No - an **Access Rule** answers whether the Member may use that class of workflow; an **Operational Qualification** answers whether the Member is approved for that responsibility."
+
+> **Dev:** "Is changing Access Rules the same authority as assigning Account Levels?"
+> **Domain expert:** "No - changing **Access Rules**, assigning ordinary **Account Levels**, and assigning Developer **Account Level** are separate authorities."
+
+> **Dev:** "Does the same Member have different Access Rules at different workstations?"
+> **Domain expert:** "No - an **Access Rule** applies the same way across **Remote Systems**."
+
+> **Dev:** "Should Developer recovery workflows be hidden from the Access Rule catalog?"
+> **Domain expert:** "No - Developer recovery workflows are represented as **Access Rules** with Developer **Access Rule Floors**."
+
+> **Dev:** "Does Sentinel Bootstrap count as a Developer-level Member?"
+> **Domain expert:** "No - **System Identities** are excluded from **Access Rules** for human workflow access."
+
 ## Flagged Ambiguities
 
 - "temporary people" could mean repeat visitors or short-term personnel - resolved: people working at the Unit for a defined assignment are **Temporary Personnel**.
+- "option" could mean a page, button, API endpoint, or workflow - resolved: configurable access thresholds are **Access Rules**.
+- "permission" could mean Account Level authority or operational approval - resolved: **Access Rules** govern Account Level authority, while **Operational Qualifications** govern approved responsibilities.
+- "role" could mean Account Level authority, duty assignment, or organizational position - resolved: use **Access Rule** for configurable workflow thresholds and **Account Level** for member authority tiers.

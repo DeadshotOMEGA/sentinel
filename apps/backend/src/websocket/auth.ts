@@ -7,6 +7,7 @@ import {
 import { SessionRepository } from '../repositories/session-repository.js'
 import { getPrismaClient } from '../lib/database.js'
 import { AccountLevel } from '../middleware/roles.js'
+import { accessRuleService } from '../services/access-rule-service.js'
 
 function extractSessionTokenFromCookieHeader(
   cookieHeader: string | string[] | undefined
@@ -133,12 +134,8 @@ export async function authenticateSocket(socket: Socket, next: (err?: Error) => 
   }
 }
 
-/**
- * Check if socket has at least the required account level
- */
-export function hasMinimumLevel(socket: Socket, requiredLevel: number): boolean {
-  const memberLevel = socket.data.accountLevel ?? 0
-  return memberLevel >= requiredLevel
+export async function hasSocketAccessRule(socket: Socket, accessRuleKey: string): Promise<boolean> {
+  return accessRuleService.hasAccess(socket.data.accountLevel ?? 0, accessRuleKey)
 }
 
 /**

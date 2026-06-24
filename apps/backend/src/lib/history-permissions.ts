@@ -1,6 +1,6 @@
 import type { Request } from 'express'
 import { ScheduleService } from '../services/schedule-service.js'
-import { AccountLevel } from '../middleware/roles.js'
+import { accessRuleService } from '../services/access-rule-service.js'
 import { getPrismaClient } from './database.js'
 import { serviceLogger } from './logger.js'
 
@@ -13,7 +13,7 @@ export async function canMemberEditHistory(req: Request): Promise<boolean> {
     return false
   }
 
-  if (member.accountLevel >= AccountLevel.ADMIN) {
+  if (await accessRuleService.hasAccess(member.accountLevel, 'presence.editHistory')) {
     return true
   }
 

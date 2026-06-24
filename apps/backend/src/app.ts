@@ -45,6 +45,7 @@ import {
   systemStatusContract,
   systemUpdateContract,
   adminNavigationContract,
+  accessRuleContract,
 } from '@sentinel/contracts'
 import { requireAuth } from './middleware/auth.js'
 import { requestLogger } from './middleware/request-logger.js'
@@ -96,6 +97,7 @@ import { networkSettingsRouter } from './routes/network-settings.js'
 import { systemStatusRouter } from './routes/system-status.js'
 import { systemUpdateRouter } from './routes/system-update.js'
 import { adminNavigationEventsRouter } from './routes/admin-navigation-events.js'
+import { accessRulesRouter } from './routes/access-rules.js'
 import { kioskSoundsRouter } from './routes/kiosk-sounds.js'
 import { authRouter } from './routes/auth.js'
 import authRfidRouter from './routes/auth-rfid.js'
@@ -331,6 +333,15 @@ export function createApp(): Express {
     },
   })
   createExpressEndpoints(settingContract, settingsRouter, app, {
+    requestValidationErrorHandler: (err, _req, res) => {
+      return res.status(400).json({
+        error: 'VALIDATION_ERROR',
+        message: 'Request validation failed',
+        issues: err.body?.issues || err.pathParams?.issues || err.query?.issues || [],
+      })
+    },
+  })
+  createExpressEndpoints(accessRuleContract, accessRulesRouter, app, {
     requestValidationErrorHandler: (err, _req, res) => {
       return res.status(400).json({
         error: 'VALIDATION_ERROR',

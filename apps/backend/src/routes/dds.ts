@@ -13,7 +13,7 @@ import { DdsService } from '../services/dds-service.js'
 import { PresenceService } from '../services/presence-service.js'
 import { getPrismaClient } from '../lib/database.js'
 import { formatAuditMemberName, logRequestAudit } from '../lib/audit-log.js'
-import { AccountLevel } from '../middleware/roles.js'
+import { requireAccessRule } from '../lib/access-rule-auth.js'
 import { AuditRepository } from '../repositories/audit-repository.js'
 
 const s = initServer()
@@ -324,14 +324,9 @@ export const ddsRouter = s.router(ddsContract, {
         }
       }
 
-      if ((req.member.accountLevel ?? 0) < AccountLevel.ADMIN) {
-        return {
-          status: 403 as const,
-          body: {
-            error: 'FORBIDDEN',
-            message: 'Admin access required',
-          },
-        }
+      const access = await requireAccessRule(req, 'dds.assign')
+      if (access) {
+        return access
       }
 
       const previousAssignment = await ddsService.getCurrentDds()
@@ -411,6 +406,11 @@ export const ddsRouter = s.router(ddsContract, {
    */
   assignDds: async ({ body, req }: { body: AssignDdsInput; req: Request }) => {
     try {
+      const access = await requireAccessRule(req, 'dds.assign')
+      if (access) {
+        return access
+      }
+
       const adminId = req.member?.id ?? 'system'
 
       const previousAssignment = await ddsService.getCurrentDds()
@@ -490,6 +490,11 @@ export const ddsRouter = s.router(ddsContract, {
    */
   transferDds: async ({ body, req }: { body: TransferDdsInput; req: Request }) => {
     try {
+      const access = await requireAccessRule(req, 'dds.assign')
+      if (access) {
+        return access
+      }
+
       const adminId = req.member?.id ?? 'system'
 
       const previousAssignment = await ddsService.getCurrentDds()
@@ -569,6 +574,11 @@ export const ddsRouter = s.router(ddsContract, {
    */
   releaseDds: async ({ body, req }: { body: ReleaseDdsInput; req: Request }) => {
     try {
+      const access = await requireAccessRule(req, 'dds.assign')
+      if (access) {
+        return access
+      }
+
       const adminId = req.member?.id ?? 'system'
       const previousAssignment = await ddsService.getCurrentDds()
 

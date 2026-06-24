@@ -1,35 +1,11 @@
 import { initServer } from '@ts-rest/express'
 import { auditContract, type AuditLogListQuery } from '@sentinel/contracts'
-import { AccountLevel } from '../middleware/roles.js'
 import { getPrismaClient } from '../lib/database.js'
+import { requireAccessRule } from '../lib/access-rule-auth.js'
 import { AuditRepository, type AuditLogWithAdminRecord } from '../repositories/audit-repository.js'
 
 const s = initServer()
 const auditRepo = new AuditRepository(getPrismaClient())
-
-function requireAdmin(req: { member?: { accountLevel?: number } }) {
-  if (!req.member) {
-    return {
-      status: 401 as const,
-      body: {
-        error: 'UNAUTHORIZED',
-        message: 'Authentication required',
-      },
-    }
-  }
-
-  if ((req.member.accountLevel ?? 0) < AccountLevel.ADMIN) {
-    return {
-      status: 403 as const,
-      body: {
-        error: 'FORBIDDEN',
-        message: 'Admin access required',
-      },
-    }
-  }
-
-  return null
-}
 
 function toDate(value?: string): Date | undefined {
   return value ? new Date(value) : undefined
@@ -71,7 +47,7 @@ function getFilters(query: AuditLogListQuery) {
 
 export const auditLogsRouter = s.router(auditContract, {
   getAuditLogs: async ({ query, req }) => {
-    const auth = requireAdmin(req)
+    const auth = await requireAccessRule(req, 'logs.viewAudit')
     if (auth) {
       return auth
     }
@@ -107,7 +83,7 @@ export const auditLogsRouter = s.router(auditContract, {
   },
 
   getEntityAuditLogs: async ({ params, query, req }) => {
-    const auth = requireAdmin(req)
+    const auth = await requireAccessRule(req, 'logs.viewAudit')
     if (auth) {
       return auth
     }
@@ -147,7 +123,7 @@ export const auditLogsRouter = s.router(auditContract, {
   },
 
   getAuditStats: async ({ req }) => {
-    const auth = requireAdmin(req)
+    const auth = await requireAccessRule(req, 'logs.viewAudit')
     if (auth) {
       return auth
     }
@@ -177,7 +153,7 @@ export const auditLogsRouter = s.router(auditContract, {
   },
 
   getAuditLogById: async ({ params, req }) => {
-    const auth = requireAdmin(req)
+    const auth = await requireAccessRule(req, 'logs.viewAudit')
     if (auth) {
       return auth
     }
@@ -211,7 +187,7 @@ export const auditLogsRouter = s.router(auditContract, {
   },
 
   createAuditLog: async ({ body, req }) => {
-    const auth = requireAdmin(req)
+    const auth = await requireAccessRule(req, 'logs.viewAudit')
     if (auth) {
       return auth
     }

@@ -7,7 +7,7 @@ import { logRequestAudit } from '../lib/audit-log.js'
 import type { Setting } from '../repositories/setting-repository.js'
 import type { SettingResponse } from '@sentinel/contracts'
 import type { Request } from 'express'
-import { AccountLevel } from '../middleware/roles.js'
+import { requireAccessRule } from '../lib/access-rule-auth.js'
 
 const s = initServer()
 
@@ -27,23 +27,13 @@ function requireMember(req: Request) {
   return null
 }
 
-function requireAdminOrDeveloper(req: Request) {
+async function requireSettingsManageAccess(req: Request) {
   const memberAuth = requireMember(req)
   if (memberAuth) {
     return memberAuth
   }
 
-  if ((req.member?.accountLevel ?? 0) < AccountLevel.ADMIN) {
-    return {
-      status: 403 as const,
-      body: {
-        error: 'FORBIDDEN',
-        message: 'Admin or Developer access required',
-      },
-    }
-  }
-
-  return null
+  return requireAccessRule(req, 'config.settings.manage')
 }
 
 /**
@@ -71,7 +61,7 @@ export const settingsRouter = s.router(settingContract, {
    * Get all settings with optional filtering
    */
   getSettings: async ({ query, req }) => {
-    const auth = requireMember(req)
+    const auth = await requireAccessRule(req, 'config.view')
     if (auth) {
       return auth
     }
@@ -104,7 +94,7 @@ export const settingsRouter = s.router(settingContract, {
    * Get single setting by key
    */
   getSettingByKey: async ({ params, req }) => {
-    const auth = requireMember(req)
+    const auth = await requireAccessRule(req, 'config.view')
     if (auth) {
       return auth
     }
@@ -141,7 +131,7 @@ export const settingsRouter = s.router(settingContract, {
    * Create new setting (admin only)
    */
   createSetting: async ({ body, req }) => {
-    const auth = requireAdminOrDeveloper(req)
+    const auth = await requireSettingsManageAccess(req)
     if (auth) {
       return auth
     }
@@ -210,7 +200,7 @@ export const settingsRouter = s.router(settingContract, {
    * Update existing setting (admin only)
    */
   updateSetting: async ({ params, body, req }) => {
-    const auth = requireAdminOrDeveloper(req)
+    const auth = await requireSettingsManageAccess(req)
     if (auth) {
       return auth
     }
@@ -290,7 +280,7 @@ export const settingsRouter = s.router(settingContract, {
    * Delete setting (admin only)
    */
   deleteSetting: async ({ params, req }) => {
-    const auth = requireAdminOrDeveloper(req)
+    const auth = await requireSettingsManageAccess(req)
     if (auth) {
       return auth
     }

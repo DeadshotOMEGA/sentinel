@@ -1,9 +1,9 @@
 import type { PrismaClient } from '@sentinel/database'
 import { getPrismaClient } from '../lib/database.js'
 import { AppError, NotFoundError, ValidationError } from '../middleware/error-handler.js'
-import { AccountLevel } from '../middleware/roles.js'
 import { Prisma } from '@sentinel/database'
 import { getRuntimeAlertRateLimit } from '../lib/operational-timings-runtime.js'
+import { accessRuleService } from './access-rule-service.js'
 
 import {
   broadcastSecurityAlert,
@@ -165,12 +165,8 @@ export class SecurityAlertService {
       throw new NotFoundError('Member', memberId)
     }
 
-    if (member.accountLevel < AccountLevel.COMMAND) {
-      throw new AppError(
-        'Only Command, Admin, or Developer level members can acknowledge alerts',
-        403,
-        'FORBIDDEN'
-      )
+    if (!(await accessRuleService.hasAccess(member.accountLevel, 'securityAlerts.acknowledge'))) {
+      throw new AppError("Access Rule 'securityAlerts.acknowledge' required", 403, 'FORBIDDEN')
     }
 
     // Check if alert exists

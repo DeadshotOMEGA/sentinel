@@ -5,7 +5,7 @@ import type {
   SystemUpdatePhase,
   SystemUpdateVersion,
 } from '@sentinel/contracts'
-import { AccountLevel } from '../middleware/roles.js'
+import { accessRuleService } from '../services/access-rule-service.js'
 import { isStableVersionTag } from './service-version.js'
 
 const JOB_ID_PATTERN = /^system-update-[0-9]{13}-[0-9a-f-]{36}$/
@@ -391,8 +391,10 @@ export function isSystemUpdateJobFinished(
   return TERMINAL_JOB_STATUSES.has(job.status)
 }
 
-export function hasSystemUpdatePermission(accountLevel: number | null | undefined): boolean {
-  return (accountLevel ?? 0) >= AccountLevel.ADMIN
+export async function hasSystemUpdatePermission(
+  accountLevel: number | null | undefined
+): Promise<boolean> {
+  return accessRuleService.hasAccess(accountLevel, 'updates.apply')
 }
 
 export function isValidSystemUpdateVersion(value: string): boolean {
