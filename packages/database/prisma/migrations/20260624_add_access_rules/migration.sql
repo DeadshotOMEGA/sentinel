@@ -5,7 +5,7 @@ CREATE TABLE "access_rules" (
   "local_description" VARCHAR(500),
   "status" VARCHAR(30) NOT NULL DEFAULT 'active',
   "created_at" TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  "updated_at" TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "updated_at" TIMESTAMP(6) NOT NULL,
   "updated_by_member_id" UUID
 );
 
