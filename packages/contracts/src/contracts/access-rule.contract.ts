@@ -40,7 +40,7 @@ export const accessRuleContract = c.router({
 
   bulkUpdateRules: {
     method: 'PATCH',
-    path: '/api/access-rules/bulk',
+    path: '/api/access-rules/bulk/update',
     body: BulkUpdateAccessRulesSchema,
     responses: {
       200: BulkAccessRuleUpdateResponseSchema,
