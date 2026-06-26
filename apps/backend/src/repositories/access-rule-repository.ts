@@ -7,6 +7,7 @@ export interface AccessRuleRecord {
   id: string
   key: string
   configuredMinimumLevel: number
+  configuredFloorLevel?: number
   localDescription?: string
   status: AccessRuleStatus
   createdAt: Date
@@ -16,6 +17,7 @@ export interface AccessRuleRecord {
 
 export interface UpdateAccessRuleRecordInput {
   configuredMinimumLevel?: number
+  configuredFloorLevel?: number
   localDescription?: string | null
   status?: AccessRuleStatus
   updatedByMemberId?: string | null
@@ -26,6 +28,7 @@ function toAccessRuleRecord(rule: PrismaAccessRule): AccessRuleRecord {
     id: rule.id,
     key: rule.key,
     configuredMinimumLevel: rule.configuredMinimumLevel,
+    configuredFloorLevel: rule.configuredFloorLevel ?? undefined,
     localDescription: rule.localDescription ?? undefined,
     status: rule.status === 'retired_unknown' ? 'retired_unknown' : 'active',
     createdAt: rule.createdAt,
@@ -58,7 +61,11 @@ export class AccessRuleRepository {
   }
 
   async reconcile(
-    catalogRules: readonly { key: string; configuredMinimumLevel: number }[],
+    catalogRules: readonly {
+      key: string
+      configuredMinimumLevel: number
+      configuredFloorLevel: number
+    }[],
     updatedByMemberId?: string
   ): Promise<AccessRuleRecord[]> {
     const catalogKeys = new Set(catalogRules.map((rule) => rule.key))
@@ -70,11 +77,23 @@ export class AccessRuleRepository {
           create: {
             key: rule.key,
             configuredMinimumLevel: rule.configuredMinimumLevel,
+            configuredFloorLevel: rule.configuredFloorLevel,
             status: 'active',
             updatedByMemberId: updatedByMemberId ?? null,
           },
           update: {
             status: 'active',
+          },
+        })
+
+        await tx.accessRule.updateMany({
+          where: {
+            key: rule.key,
+            configuredFloorLevel: null,
+          },
+          data: {
+            configuredFloorLevel: rule.configuredFloorLevel,
+            updatedByMemberId: updatedByMemberId ?? null,
           },
         })
       }
@@ -106,6 +125,10 @@ export class AccessRuleRepository {
 
     if (data.configuredMinimumLevel !== undefined) {
       updateData.configuredMinimumLevel = data.configuredMinimumLevel
+    }
+
+    if (data.configuredFloorLevel !== undefined) {
+      updateData.configuredFloorLevel = data.configuredFloorLevel
     }
 
     if (data.localDescription !== undefined) {

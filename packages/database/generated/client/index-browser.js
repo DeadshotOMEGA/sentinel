@@ -656,6 +656,7 @@ exports.Prisma.AccessRuleScalarFieldEnum = {
   id: 'id',
   key: 'key',
   configuredMinimumLevel: 'configuredMinimumLevel',
+  configuredFloorLevel: 'configuredFloorLevel',
   localDescription: 'localDescription',
   status: 'status',
   createdAt: 'createdAt',

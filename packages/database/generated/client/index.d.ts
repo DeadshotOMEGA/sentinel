@@ -55528,16 +55528,19 @@ export namespace Prisma {
 
   export type AccessRuleAvgAggregateOutputType = {
     configuredMinimumLevel: number | null
+    configuredFloorLevel: number | null
   }
 
   export type AccessRuleSumAggregateOutputType = {
     configuredMinimumLevel: number | null
+    configuredFloorLevel: number | null
   }
 
   export type AccessRuleMinAggregateOutputType = {
     id: string | null
     key: string | null
     configuredMinimumLevel: number | null
+    configuredFloorLevel: number | null
     localDescription: string | null
     status: string | null
     createdAt: Date | null
@@ -55549,6 +55552,7 @@ export namespace Prisma {
     id: string | null
     key: string | null
     configuredMinimumLevel: number | null
+    configuredFloorLevel: number | null
     localDescription: string | null
     status: string | null
     createdAt: Date | null
@@ -55560,6 +55564,7 @@ export namespace Prisma {
     id: number
     key: number
     configuredMinimumLevel: number
+    configuredFloorLevel: number
     localDescription: number
     status: number
     createdAt: number
@@ -55571,16 +55576,19 @@ export namespace Prisma {
 
   export type AccessRuleAvgAggregateInputType = {
     configuredMinimumLevel?: true
+    configuredFloorLevel?: true
   }
 
   export type AccessRuleSumAggregateInputType = {
     configuredMinimumLevel?: true
+    configuredFloorLevel?: true
   }
 
   export type AccessRuleMinAggregateInputType = {
     id?: true
     key?: true
     configuredMinimumLevel?: true
+    configuredFloorLevel?: true
     localDescription?: true
     status?: true
     createdAt?: true
@@ -55592,6 +55600,7 @@ export namespace Prisma {
     id?: true
     key?: true
     configuredMinimumLevel?: true
+    configuredFloorLevel?: true
     localDescription?: true
     status?: true
     createdAt?: true
@@ -55603,6 +55612,7 @@ export namespace Prisma {
     id?: true
     key?: true
     configuredMinimumLevel?: true
+    configuredFloorLevel?: true
     localDescription?: true
     status?: true
     createdAt?: true
@@ -55701,6 +55711,7 @@ export namespace Prisma {
     id: string
     key: string
     configuredMinimumLevel: number
+    configuredFloorLevel: number | null
     localDescription: string | null
     status: string
     createdAt: Date
@@ -55731,6 +55742,7 @@ export namespace Prisma {
     id?: boolean
     key?: boolean
     configuredMinimumLevel?: boolean
+    configuredFloorLevel?: boolean
     localDescription?: boolean
     status?: boolean
     createdAt?: boolean
@@ -55743,6 +55755,7 @@ export namespace Prisma {
     id?: boolean
     key?: boolean
     configuredMinimumLevel?: boolean
+    configuredFloorLevel?: boolean
     localDescription?: boolean
     status?: boolean
     createdAt?: boolean
@@ -55755,6 +55768,7 @@ export namespace Prisma {
     id?: boolean
     key?: boolean
     configuredMinimumLevel?: boolean
+    configuredFloorLevel?: boolean
     localDescription?: boolean
     status?: boolean
     createdAt?: boolean
@@ -55767,6 +55781,7 @@ export namespace Prisma {
     id?: boolean
     key?: boolean
     configuredMinimumLevel?: boolean
+    configuredFloorLevel?: boolean
     localDescription?: boolean
     status?: boolean
     createdAt?: boolean
@@ -55774,7 +55789,7 @@ export namespace Prisma {
     updatedByMemberId?: boolean
   }
 
-  export type AccessRuleOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "key" | "configuredMinimumLevel" | "localDescription" | "status" | "createdAt" | "updatedAt" | "updatedByMemberId", ExtArgs["result"]["accessRule"]>
+  export type AccessRuleOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "key" | "configuredMinimumLevel" | "configuredFloorLevel" | "localDescription" | "status" | "createdAt" | "updatedAt" | "updatedByMemberId", ExtArgs["result"]["accessRule"]>
   export type AccessRuleInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     updatedByMember?: boolean | AccessRule$updatedByMemberArgs<ExtArgs>
   }
@@ -55794,6 +55809,7 @@ export namespace Prisma {
       id: string
       key: string
       configuredMinimumLevel: number
+      configuredFloorLevel: number | null
       localDescription: string | null
       status: string
       createdAt: Date
@@ -56226,6 +56242,7 @@ export namespace Prisma {
     readonly id: FieldRef<"AccessRule", 'String'>
     readonly key: FieldRef<"AccessRule", 'String'>
     readonly configuredMinimumLevel: FieldRef<"AccessRule", 'Int'>
+    readonly configuredFloorLevel: FieldRef<"AccessRule", 'Int'>
     readonly localDescription: FieldRef<"AccessRule", 'String'>
     readonly status: FieldRef<"AccessRule", 'String'>
     readonly createdAt: FieldRef<"AccessRule", 'DateTime'>
@@ -79886,6 +79903,7 @@ export namespace Prisma {
     id: 'id',
     key: 'key',
     configuredMinimumLevel: 'configuredMinimumLevel',
+    configuredFloorLevel: 'configuredFloorLevel',
     localDescription: 'localDescription',
     status: 'status',
     createdAt: 'createdAt',
@@ -83815,6 +83833,7 @@ export namespace Prisma {
     id?: UuidFilter<"AccessRule"> | string
     key?: StringFilter<"AccessRule"> | string
     configuredMinimumLevel?: IntFilter<"AccessRule"> | number
+    configuredFloorLevel?: IntNullableFilter<"AccessRule"> | number | null
     localDescription?: StringNullableFilter<"AccessRule"> | string | null
     status?: StringFilter<"AccessRule"> | string
     createdAt?: DateTimeFilter<"AccessRule"> | Date | string
@@ -83827,6 +83846,7 @@ export namespace Prisma {
     id?: SortOrder
     key?: SortOrder
     configuredMinimumLevel?: SortOrder
+    configuredFloorLevel?: SortOrderInput | SortOrder
     localDescription?: SortOrderInput | SortOrder
     status?: SortOrder
     createdAt?: SortOrder
@@ -83842,6 +83862,7 @@ export namespace Prisma {
     OR?: AccessRuleWhereInput[]
     NOT?: AccessRuleWhereInput | AccessRuleWhereInput[]
     configuredMinimumLevel?: IntFilter<"AccessRule"> | number
+    configuredFloorLevel?: IntNullableFilter<"AccessRule"> | number | null
     localDescription?: StringNullableFilter<"AccessRule"> | string | null
     status?: StringFilter<"AccessRule"> | string
     createdAt?: DateTimeFilter<"AccessRule"> | Date | string
@@ -83854,6 +83875,7 @@ export namespace Prisma {
     id?: SortOrder
     key?: SortOrder
     configuredMinimumLevel?: SortOrder
+    configuredFloorLevel?: SortOrderInput | SortOrder
     localDescription?: SortOrderInput | SortOrder
     status?: SortOrder
     createdAt?: SortOrder
@@ -83873,6 +83895,7 @@ export namespace Prisma {
     id?: UuidWithAggregatesFilter<"AccessRule"> | string
     key?: StringWithAggregatesFilter<"AccessRule"> | string
     configuredMinimumLevel?: IntWithAggregatesFilter<"AccessRule"> | number
+    configuredFloorLevel?: IntNullableWithAggregatesFilter<"AccessRule"> | number | null
     localDescription?: StringNullableWithAggregatesFilter<"AccessRule"> | string | null
     status?: StringWithAggregatesFilter<"AccessRule"> | string
     createdAt?: DateTimeWithAggregatesFilter<"AccessRule"> | Date | string
@@ -89381,6 +89404,7 @@ export namespace Prisma {
     id?: string
     key: string
     configuredMinimumLevel: number
+    configuredFloorLevel?: number | null
     localDescription?: string | null
     status?: string
     createdAt?: Date | string
@@ -89392,6 +89416,7 @@ export namespace Prisma {
     id?: string
     key: string
     configuredMinimumLevel: number
+    configuredFloorLevel?: number | null
     localDescription?: string | null
     status?: string
     createdAt?: Date | string
@@ -89403,6 +89428,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     key?: StringFieldUpdateOperationsInput | string
     configuredMinimumLevel?: IntFieldUpdateOperationsInput | number
+    configuredFloorLevel?: NullableIntFieldUpdateOperationsInput | number | null
     localDescription?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -89414,6 +89440,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     key?: StringFieldUpdateOperationsInput | string
     configuredMinimumLevel?: IntFieldUpdateOperationsInput | number
+    configuredFloorLevel?: NullableIntFieldUpdateOperationsInput | number | null
     localDescription?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -89425,6 +89452,7 @@ export namespace Prisma {
     id?: string
     key: string
     configuredMinimumLevel: number
+    configuredFloorLevel?: number | null
     localDescription?: string | null
     status?: string
     createdAt?: Date | string
@@ -89436,6 +89464,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     key?: StringFieldUpdateOperationsInput | string
     configuredMinimumLevel?: IntFieldUpdateOperationsInput | number
+    configuredFloorLevel?: NullableIntFieldUpdateOperationsInput | number | null
     localDescription?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -89446,6 +89475,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     key?: StringFieldUpdateOperationsInput | string
     configuredMinimumLevel?: IntFieldUpdateOperationsInput | number
+    configuredFloorLevel?: NullableIntFieldUpdateOperationsInput | number | null
     localDescription?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -93666,6 +93696,7 @@ export namespace Prisma {
     id?: SortOrder
     key?: SortOrder
     configuredMinimumLevel?: SortOrder
+    configuredFloorLevel?: SortOrder
     localDescription?: SortOrder
     status?: SortOrder
     createdAt?: SortOrder
@@ -93675,12 +93706,14 @@ export namespace Prisma {
 
   export type AccessRuleAvgOrderByAggregateInput = {
     configuredMinimumLevel?: SortOrder
+    configuredFloorLevel?: SortOrder
   }
 
   export type AccessRuleMaxOrderByAggregateInput = {
     id?: SortOrder
     key?: SortOrder
     configuredMinimumLevel?: SortOrder
+    configuredFloorLevel?: SortOrder
     localDescription?: SortOrder
     status?: SortOrder
     createdAt?: SortOrder
@@ -93692,6 +93725,7 @@ export namespace Prisma {
     id?: SortOrder
     key?: SortOrder
     configuredMinimumLevel?: SortOrder
+    configuredFloorLevel?: SortOrder
     localDescription?: SortOrder
     status?: SortOrder
     createdAt?: SortOrder
@@ -93701,6 +93735,7 @@ export namespace Prisma {
 
   export type AccessRuleSumOrderByAggregateInput = {
     configuredMinimumLevel?: SortOrder
+    configuredFloorLevel?: SortOrder
   }
 
   export type AlertConfigCountOrderByAggregateInput = {
@@ -103910,6 +103945,7 @@ export namespace Prisma {
     id?: string
     key: string
     configuredMinimumLevel: number
+    configuredFloorLevel?: number | null
     localDescription?: string | null
     status?: string
     createdAt?: Date | string
@@ -103920,6 +103956,7 @@ export namespace Prisma {
     id?: string
     key: string
     configuredMinimumLevel: number
+    configuredFloorLevel?: number | null
     localDescription?: string | null
     status?: string
     createdAt?: Date | string
@@ -104698,6 +104735,7 @@ export namespace Prisma {
     id?: UuidFilter<"AccessRule"> | string
     key?: StringFilter<"AccessRule"> | string
     configuredMinimumLevel?: IntFilter<"AccessRule"> | number
+    configuredFloorLevel?: IntNullableFilter<"AccessRule"> | number | null
     localDescription?: StringNullableFilter<"AccessRule"> | string | null
     status?: StringFilter<"AccessRule"> | string
     createdAt?: DateTimeFilter<"AccessRule"> | Date | string
@@ -118806,6 +118844,7 @@ export namespace Prisma {
     id?: string
     key: string
     configuredMinimumLevel: number
+    configuredFloorLevel?: number | null
     localDescription?: string | null
     status?: string
     createdAt?: Date | string
@@ -119778,6 +119817,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     key?: StringFieldUpdateOperationsInput | string
     configuredMinimumLevel?: IntFieldUpdateOperationsInput | number
+    configuredFloorLevel?: NullableIntFieldUpdateOperationsInput | number | null
     localDescription?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -119788,6 +119828,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     key?: StringFieldUpdateOperationsInput | string
     configuredMinimumLevel?: IntFieldUpdateOperationsInput | number
+    configuredFloorLevel?: NullableIntFieldUpdateOperationsInput | number | null
     localDescription?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -119798,6 +119839,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     key?: StringFieldUpdateOperationsInput | string
     configuredMinimumLevel?: IntFieldUpdateOperationsInput | number
+    configuredFloorLevel?: NullableIntFieldUpdateOperationsInput | number | null
     localDescription?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string

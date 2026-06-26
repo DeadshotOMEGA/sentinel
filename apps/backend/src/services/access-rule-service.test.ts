@@ -24,11 +24,27 @@ class InMemoryAccessRuleStore {
   }
 
   async reconcile(
-    catalogRules: readonly { key: string; configuredMinimumLevel: number }[]
+    catalogRules: readonly {
+      key: string
+      configuredMinimumLevel: number
+      configuredFloorLevel: number
+    }[]
   ): Promise<AccessRuleRecord[]> {
     for (const rule of catalogRules) {
       if (!this.records.has(rule.key)) {
-        this.records.set(rule.key, createRecord(rule.key, rule.configuredMinimumLevel))
+        this.records.set(
+          rule.key,
+          createRecord(rule.key, rule.configuredMinimumLevel, rule.configuredFloorLevel)
+        )
+        continue
+      }
+
+      const existing = this.records.get(rule.key)
+      if (existing && existing.configuredFloorLevel === undefined) {
+        this.records.set(rule.key, {
+          ...existing,
+          configuredFloorLevel: rule.configuredFloorLevel,
+        })
       }
     }
 
@@ -51,6 +67,7 @@ class InMemoryAccessRuleStore {
     const updated: AccessRuleRecord = {
       ...existing,
       configuredMinimumLevel: data.configuredMinimumLevel ?? existing.configuredMinimumLevel,
+      configuredFloorLevel: data.configuredFloorLevel ?? existing.configuredFloorLevel,
       localDescription:
         data.localDescription === undefined
           ? existing.localDescription
@@ -67,12 +84,14 @@ class InMemoryAccessRuleStore {
 function createRecord(
   key: string,
   configuredMinimumLevel: number,
+  configuredFloorLevel = configuredMinimumLevel,
   status: AccessRuleRecord['status'] = 'active'
 ): AccessRuleRecord {
   return {
     id: key,
     key,
     configuredMinimumLevel,
+    configuredFloorLevel,
     status,
     createdAt: new Date('2026-06-24T17:00:00.000Z'),
     updatedAt: new Date('2026-06-24T17:00:00.000Z'),
@@ -91,23 +110,32 @@ describe('AccessRuleService', () => {
     expect(allowed.accountLevel).toBe(AccountLevel.COMMAND)
   })
 
-  it('rejects lowering a rule below its Access Rule floor', async () => {
+  it('allows a Developer to lower a rule floor and threshold with a reason', async () => {
     const service = new AccessRuleService(
       new InMemoryAccessRuleStore([createRecord('accessRules.manage', AccountLevel.DEVELOPER)])
     )
 
-    await expect(
-      service.updateRule(
-        'accessRules.manage',
-        { configuredMinimumLevel: AccountLevel.ADMIN, reason: 'Delegate temporarily' },
-        'member-1'
-      )
-    ).rejects.toBeInstanceOf(AccessRuleValidationError)
+    const rule = await service.updateRule(
+      'accessRules.manage',
+      {
+        configuredFloorLevel: AccountLevel.ADMIN,
+        configuredMinimumLevel: AccountLevel.ADMIN,
+        reason: 'Delegate temporarily',
+      },
+      'member-1'
+    )
+
+    expect(rule.configuredFloorLevel).toBe(AccountLevel.ADMIN)
+    expect(rule.floorLevel).toBe(AccountLevel.ADMIN)
+    expect(rule.configuredMinimumLevel).toBe(AccountLevel.ADMIN)
+    expect(rule.effectiveMinimumLevel).toBe(AccountLevel.ADMIN)
   })
 
   it('requires a reason when lowering an Access Rule threshold', async () => {
     const service = new AccessRuleService(
-      new InMemoryAccessRuleStore([createRecord('reports.viewOperational', AccountLevel.ADMIN)])
+      new InMemoryAccessRuleStore([
+        createRecord('reports.viewOperational', AccountLevel.ADMIN, AccountLevel.COMMAND),
+      ])
     )
 
     await expect(
@@ -119,9 +147,46 @@ describe('AccessRuleService', () => {
     ).rejects.toBeInstanceOf(AccessRuleValidationError)
   })
 
+  it('requires a reason when lowering an Access Rule floor and threshold together', async () => {
+    const service = new AccessRuleService(
+      new InMemoryAccessRuleStore([createRecord('accessRules.manage', AccountLevel.DEVELOPER)])
+    )
+
+    await expect(
+      service.updateRule(
+        'accessRules.manage',
+        {
+          configuredFloorLevel: AccountLevel.ADMIN,
+          configuredMinimumLevel: AccountLevel.ADMIN,
+        },
+        'member-1'
+      )
+    ).rejects.toBeInstanceOf(AccessRuleValidationError)
+  })
+
+  it('raises the configured threshold when the floor is raised above it', async () => {
+    const service = new AccessRuleService(
+      new InMemoryAccessRuleStore([
+        createRecord('reports.viewOperational', AccountLevel.COMMAND, AccountLevel.COMMAND),
+      ])
+    )
+
+    const rule = await service.updateRule(
+      'reports.viewOperational',
+      { configuredFloorLevel: AccountLevel.ADMIN },
+      'member-1'
+    )
+
+    expect(rule.configuredFloorLevel).toBe(AccountLevel.ADMIN)
+    expect(rule.configuredMinimumLevel).toBe(AccountLevel.ADMIN)
+    expect(rule.effectiveMinimumLevel).toBe(AccountLevel.ADMIN)
+  })
+
   it('allows lowering with a reason when the new level respects the floor', async () => {
     const service = new AccessRuleService(
-      new InMemoryAccessRuleStore([createRecord('reports.viewOperational', AccountLevel.ADMIN)])
+      new InMemoryAccessRuleStore([
+        createRecord('reports.viewOperational', AccountLevel.ADMIN, AccountLevel.COMMAND),
+      ])
     )
 
     const rule = await service.updateRule(

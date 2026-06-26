@@ -54,6 +54,7 @@ const GROUP_ORDER: AccessRuleGroup[] = [
 
 type RuleDraft = {
   configuredMinimumLevel: number
+  configuredFloorLevel: number
   localDescription: string
 }
 
@@ -76,6 +77,7 @@ function buildDrafts(rules: readonly AccessRuleResponse[]): RuleDrafts {
       rule.key,
       {
         configuredMinimumLevel: rule.configuredMinimumLevel,
+        configuredFloorLevel: rule.configuredFloorLevel,
         localDescription: rule.localDescription ?? '',
       },
     ])
@@ -89,6 +91,7 @@ function hasRuleChanged(rule: AccessRuleResponse, draft: RuleDraft | undefined):
 
   return (
     draft.configuredMinimumLevel !== rule.configuredMinimumLevel ||
+    draft.configuredFloorLevel !== rule.configuredFloorLevel ||
     draft.localDescription.trim() !== (rule.localDescription ?? '')
   )
 }
@@ -100,12 +103,19 @@ function getChangedRules(
   return rules.filter((rule) => hasRuleChanged(rule, drafts[rule.key]))
 }
 
-function getLevelOptions(rule: AccessRuleResponse): number[] {
+function getLevelOptions(minimumLevel = 1): number[] {
   const options: number[] = []
-  for (let level = rule.floorLevel; level <= 6; level += 1) {
+  for (let level = minimumLevel; level <= 6; level += 1) {
     options.push(level)
   }
   return options
+}
+
+function getEffectiveLevel(input: {
+  configuredMinimumLevel: number
+  configuredFloorLevel: number
+}): number {
+  return Math.max(input.configuredMinimumLevel, input.configuredFloorLevel)
 }
 
 export function AdminAccessRulesPage() {
@@ -146,15 +156,22 @@ function AdminAccessRulesEditor({ policyData }: { policyData: AccessRulePolicyRe
   const changedRules = useMemo(() => getChangedRules(rules, drafts), [drafts, rules])
   const loweredRules = changedRules.filter((rule) => {
     const draft = drafts[rule.key]
-    return draft ? draft.configuredMinimumLevel < rule.configuredMinimumLevel : false
+    return draft ? getEffectiveLevel(draft) < rule.effectiveMinimumLevel : false
   })
   const raisedRules = changedRules.filter((rule) => {
     const draft = drafts[rule.key]
-    return draft ? draft.configuredMinimumLevel > rule.configuredMinimumLevel : false
+    return draft ? getEffectiveLevel(draft) > rule.effectiveMinimumLevel : false
+  })
+  const floorChanges = changedRules.filter((rule) => {
+    const draft = drafts[rule.key]
+    return draft ? draft.configuredFloorLevel !== rule.configuredFloorLevel : false
   })
   const descriptionOnlyChanges = changedRules.filter((rule) => {
     const draft = drafts[rule.key]
-    return draft ? draft.configuredMinimumLevel === rule.configuredMinimumLevel : false
+    return draft
+      ? draft.configuredMinimumLevel === rule.configuredMinimumLevel &&
+          draft.configuredFloorLevel === rule.configuredFloorLevel
+      : false
   })
 
   const groupedRules = useMemo(() => {
@@ -181,9 +198,26 @@ function AdminAccessRulesEditor({ policyData }: { policyData: AccessRulePolicyRe
       ...current,
       [rule.key]: {
         configuredMinimumLevel: value,
+        configuredFloorLevel: current[rule.key]?.configuredFloorLevel ?? rule.configuredFloorLevel,
         localDescription: current[rule.key]?.localDescription ?? rule.localDescription ?? '',
       },
     }))
+  }
+
+  const handleFloorChange = (rule: AccessRuleResponse, value: number) => {
+    setDrafts((current) => {
+      const configuredMinimumLevel =
+        current[rule.key]?.configuredMinimumLevel ?? rule.configuredMinimumLevel
+
+      return {
+        ...current,
+        [rule.key]: {
+          configuredMinimumLevel: Math.max(configuredMinimumLevel, value),
+          configuredFloorLevel: value,
+          localDescription: current[rule.key]?.localDescription ?? rule.localDescription ?? '',
+        },
+      }
+    })
   }
 
   const handleDescriptionChange = (rule: AccessRuleResponse, value: string) => {
@@ -192,6 +226,7 @@ function AdminAccessRulesEditor({ policyData }: { policyData: AccessRulePolicyRe
       [rule.key]: {
         configuredMinimumLevel:
           current[rule.key]?.configuredMinimumLevel ?? rule.configuredMinimumLevel,
+        configuredFloorLevel: current[rule.key]?.configuredFloorLevel ?? rule.configuredFloorLevel,
         localDescription: value,
       },
     }))
@@ -202,6 +237,7 @@ function AdminAccessRulesEditor({ policyData }: { policyData: AccessRulePolicyRe
       ...current,
       [rule.key]: {
         configuredMinimumLevel: rule.builtInDefaultLevel,
+        configuredFloorLevel: rule.builtInFloorLevel,
         localDescription: '',
       },
     }))
@@ -236,6 +272,7 @@ function AdminAccessRulesEditor({ policyData }: { policyData: AccessRulePolicyRe
           return {
             key: rule.key,
             configuredMinimumLevel: draft?.configuredMinimumLevel,
+            configuredFloorLevel: draft?.configuredFloorLevel,
             localDescription: draft?.localDescription.trim() || null,
           }
         }),
@@ -256,8 +293,8 @@ function AdminAccessRulesEditor({ policyData }: { policyData: AccessRulePolicyRe
               Policy summary
             </AppCardTitle>
             <AppCardDescription>
-              Access Rules define the minimum Account Level for Sentinel workflows. Floors are
-              enforced by Sentinel and cannot be lowered here.
+              Access Rules define the minimum Account Level for Sentinel workflows. Developer
+              changes to floors and thresholds are enforced by Sentinel.
             </AppCardDescription>
           </AppCardHeader>
           <AppCardContent>
@@ -310,6 +347,7 @@ function AdminAccessRulesEditor({ policyData }: { policyData: AccessRulePolicyRe
           <ChangeSummary
             loweredCount={loweredRules.length}
             raisedCount={raisedRules.length}
+            floorCount={floorChanges.length}
             descriptionOnlyCount={descriptionOnlyChanges.length}
           />
           <fieldset className="fieldset max-w-2xl">
@@ -344,6 +382,7 @@ function AdminAccessRulesEditor({ policyData }: { policyData: AccessRulePolicyRe
             rules={group.rules}
             drafts={drafts}
             onLevelChange={handleLevelChange}
+            onFloorChange={handleFloorChange}
             onDescriptionChange={handleDescriptionChange}
             onResetRule={handleResetRule}
           />
@@ -366,6 +405,7 @@ function AdminAccessRulesEditor({ policyData }: { policyData: AccessRulePolicyRe
                   <tr>
                     <th>Rule</th>
                     <th>Configured level</th>
+                    <th>Floor</th>
                     <th>Last updated</th>
                   </tr>
                 </thead>
@@ -374,6 +414,7 @@ function AdminAccessRulesEditor({ policyData }: { policyData: AccessRulePolicyRe
                     <tr key={rule.key}>
                       <td className="font-mono text-xs">{rule.key}</td>
                       <td>{getLevelLabel(rule.configuredMinimumLevel)}</td>
+                      <td>{getLevelLabel(rule.floorLevel)}</td>
                       <td>{rule.updatedAt ?? 'Unknown'}</td>
                     </tr>
                   ))}
@@ -401,14 +442,16 @@ function PolicyMetric({ label, value }: { label: string; value: number }) {
 function ChangeSummary({
   loweredCount,
   raisedCount,
+  floorCount,
   descriptionOnlyCount,
 }: {
   loweredCount: number
   raisedCount: number
+  floorCount: number
   descriptionOnlyCount: number
 }) {
   return (
-    <div className="grid gap-(--space-2) md:grid-cols-3">
+    <div className="grid gap-(--space-2) md:grid-cols-4">
       <div className="rounded-box bg-warning-fadded p-(--space-3) text-warning-fadded-content">
         <p className="text-xl font-bold">{loweredCount}</p>
         <p className="text-xs font-semibold uppercase tracking-wide">Lowered access</p>
@@ -416,6 +459,10 @@ function ChangeSummary({
       <div className="rounded-box bg-info-fadded p-(--space-3) text-info-fadded-content">
         <p className="text-xl font-bold">{raisedCount}</p>
         <p className="text-xs font-semibold uppercase tracking-wide">Raised access</p>
+      </div>
+      <div className="rounded-box bg-primary-fadded p-(--space-3) text-primary-fadded-content">
+        <p className="text-xl font-bold">{floorCount}</p>
+        <p className="text-xs font-semibold uppercase tracking-wide">Floor changes</p>
       </div>
       <div className="rounded-box bg-neutral-fadded p-(--space-3) text-neutral-fadded-content">
         <p className="text-xl font-bold">{descriptionOnlyCount}</p>
@@ -430,6 +477,7 @@ function AccessRuleGroupTable({
   rules,
   drafts,
   onLevelChange,
+  onFloorChange,
   onDescriptionChange,
   onResetRule,
 }: {
@@ -437,6 +485,7 @@ function AccessRuleGroupTable({
   rules: readonly AccessRuleResponse[]
   drafts: RuleDrafts
   onLevelChange: (rule: AccessRuleResponse, value: number) => void
+  onFloorChange: (rule: AccessRuleResponse, value: number) => void
   onDescriptionChange: (rule: AccessRuleResponse, value: string) => void
   onResetRule: (rule: AccessRuleResponse) => void
 }) {
@@ -452,9 +501,9 @@ function AccessRuleGroupTable({
             <thead>
               <tr>
                 <th className="w-[18rem]">Rule</th>
-                <th>Current</th>
-                <th>Default</th>
+                <th>Required level</th>
                 <th>Floor</th>
+                <th>Defaults</th>
                 <th className="w-[18rem]">Local description</th>
                 <th className="w-24 text-right">Actions</th>
               </tr>
@@ -464,6 +513,7 @@ function AccessRuleGroupTable({
                 const draft = drafts[rule.key]
                 const changed = hasRuleChanged(rule, draft)
                 const description = getRuleDescription(rule)
+                const draftFloorLevel = draft?.configuredFloorLevel ?? rule.configuredFloorLevel
 
                 return (
                   <tr key={rule.key} className={cn(changed && 'bg-warning-fadded/50')}>
@@ -493,7 +543,7 @@ function AccessRuleGroupTable({
                         onChange={(event) => onLevelChange(rule, Number(event.target.value))}
                         aria-label={`${rule.label} required Account Level`}
                       >
-                        {getLevelOptions(rule).map((level) => (
+                        {getLevelOptions(draftFloorLevel).map((level) => (
                           <option key={level} value={level}>
                             {getLevelLabel(level)}
                           </option>
@@ -501,14 +551,28 @@ function AccessRuleGroupTable({
                       </select>
                     </td>
                     <td className="align-top">
-                      <Chip color="zinc" variant="flat" size="sm">
-                        {getLevelLabel(rule.builtInDefaultLevel)}
-                      </Chip>
+                      <select
+                        className="select select-bordered select-sm min-w-44"
+                        value={draftFloorLevel}
+                        onChange={(event) => onFloorChange(rule, Number(event.target.value))}
+                        aria-label={`${rule.label} floor Account Level`}
+                      >
+                        {getLevelOptions().map((level) => (
+                          <option key={level} value={level}>
+                            {getLevelLabel(level)}
+                          </option>
+                        ))}
+                      </select>
                     </td>
                     <td className="align-top">
-                      <Chip color="blue" variant="flat" size="sm">
-                        {getLevelLabel(rule.floorLevel)}
-                      </Chip>
+                      <div className="flex flex-col items-start gap-(--space-1)">
+                        <Chip color="zinc" variant="flat" size="sm">
+                          Required {getLevelLabel(rule.builtInDefaultLevel)}
+                        </Chip>
+                        <Chip color="blue" variant="flat" size="sm">
+                          Floor {getLevelLabel(rule.builtInFloorLevel)}
+                        </Chip>
+                      </div>
                     </td>
                     <td className="align-top">
                       <textarea

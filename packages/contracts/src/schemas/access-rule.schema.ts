@@ -43,7 +43,9 @@ export const AccessRuleResponseSchema = v.object({
   configuredMinimumLevel: AccountLevelNumberSchema,
   effectiveMinimumLevel: AccountLevelNumberSchema,
   builtInDefaultLevel: AccountLevelNumberSchema,
+  configuredFloorLevel: AccountLevelNumberSchema,
   floorLevel: AccountLevelNumberSchema,
+  builtInFloorLevel: AccountLevelNumberSchema,
   status: AccessRuleStatusSchema,
   differsFromDefault: v.boolean(),
   updatedAt: v.nullable(v.string()),
@@ -64,6 +66,7 @@ export const AllowedAccessRulesResponseSchema = v.object({
 
 export const UpdateAccessRuleSchema = v.object({
   configuredMinimumLevel: v.optional(AccountLevelNumberSchema),
+  configuredFloorLevel: v.optional(AccountLevelNumberSchema),
   localDescription: v.optional(
     v.nullable(
       v.pipe(
@@ -83,6 +86,7 @@ export const UpdateAccessRuleSchema = v.object({
 export const BulkAccessRuleUpdateItemSchema = v.object({
   key: AccessRuleKeySchema,
   configuredMinimumLevel: v.optional(AccountLevelNumberSchema),
+  configuredFloorLevel: v.optional(AccountLevelNumberSchema),
   localDescription: v.optional(
     v.nullable(
       v.pipe(

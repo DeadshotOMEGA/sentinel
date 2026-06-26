@@ -892,6 +892,7 @@ model AccessRule {
   id                     String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   key                    String   @unique @db.VarChar(120)
   configuredMinimumLevel Int      @map("configured_minimum_level")
+  configuredFloorLevel   Int?     @map("configured_floor_level")
   localDescription       String?  @map("local_description") @db.VarChar(500)
   status                 String   @default("active") @db.VarChar(30)
   createdAt              DateTime @default(now()) @map("created_at") @db.Timestamp(6)
