@@ -294,37 +294,64 @@ export class AuthService {
       synced: true,
     })
 
-    broadcastCheckin({
-      id: checkin.id,
-      memberId,
-      memberName: member.displayName ?? `${member.firstName} ${member.lastName}`,
-      rank: member.rank,
-      division: member.division?.name ?? 'Unknown',
-      direction: 'in',
-      timestamp: checkin.timestamp.toISOString(),
-      kioskId: remoteSystemId,
-    })
-
-    await this.presenceService.broadcastStatsUpdate()
-
-    await this.auditRepo.log({
-      adminUserId: null,
-      action: 'checkin_login',
-      entityType: 'checkin',
-      entityId: checkin.id,
-      details: {
-        actorMemberId: member.id,
-        actorName: formatAuditMemberName(member),
-        actorServiceNumber: member.serviceNumber,
-        actorType: 'member',
-        memberName: formatAuditMemberName(member),
-        memberRank: member.rank,
+    try {
+      broadcastCheckin({
+        id: checkin.id,
+        memberId,
+        memberName: member.displayName ?? `${member.firstName} ${member.lastName}`,
+        rank: member.rank,
+        division: member.division?.name ?? 'Unknown',
         direction: 'in',
+        timestamp: checkin.timestamp.toISOString(),
         kioskId: remoteSystemId,
-        method: 'login',
-      },
-      ipAddress: 'unknown',
-    })
+      })
+    } catch (error) {
+      authLogger.error('Login check-in broadcast failed after check-in creation', {
+        memberId,
+        checkinId: checkin.id,
+        remoteSystemId,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      })
+    }
+
+    try {
+      await this.presenceService.broadcastStatsUpdate()
+    } catch (error) {
+      authLogger.error('Login presence stats broadcast failed after check-in creation', {
+        memberId,
+        checkinId: checkin.id,
+        remoteSystemId,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      })
+    }
+
+    try {
+      await this.auditRepo.log({
+        adminUserId: null,
+        action: 'checkin_login',
+        entityType: 'checkin',
+        entityId: checkin.id,
+        details: {
+          actorMemberId: member.id,
+          actorName: formatAuditMemberName(member),
+          actorServiceNumber: member.serviceNumber,
+          actorType: 'member',
+          memberName: formatAuditMemberName(member),
+          memberRank: member.rank,
+          direction: 'in',
+          kioskId: remoteSystemId,
+          method: 'login',
+        },
+        ipAddress: 'unknown',
+      })
+    } catch (error) {
+      authLogger.error('Login check-in audit log failed after check-in creation', {
+        memberId,
+        checkinId: checkin.id,
+        remoteSystemId,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      })
+    }
 
     return {
       created: true,

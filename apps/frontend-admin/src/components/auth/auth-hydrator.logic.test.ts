@@ -28,8 +28,32 @@ describe('auth hydrator logic', () => {
       shouldIgnoreStaleUnauthorizedSessionCheck({
         wasAuthenticatedAtRequestStart: true,
         isAuthenticatedNow: true,
+        sessionIdAtRequestStart: 'session-1',
+        sessionIdNow: 'session-1',
       })
     ).toBe(false)
+  })
+
+  it('ignores stale unauthorized responses when a different session became current', () => {
+    expect(
+      shouldIgnoreStaleUnauthorizedSessionCheck({
+        wasAuthenticatedAtRequestStart: true,
+        isAuthenticatedNow: true,
+        sessionIdAtRequestStart: 'session-1',
+        sessionIdNow: 'session-2',
+      })
+    ).toBe(true)
+  })
+
+  it('ignores a daily-reset-ended session check after a fresh login becomes current', () => {
+    expect(
+      shouldIgnoreStaleUnauthorizedSessionCheck({
+        wasAuthenticatedAtRequestStart: true,
+        isAuthenticatedNow: true,
+        sessionIdAtRequestStart: 'session-ended-by-daily-reset',
+        sessionIdNow: 'session-created-by-first-login',
+      })
+    ).toBe(true)
   })
 
   it('does not start session heartbeats while a fresh login is still on the login page', () => {

@@ -25,7 +25,9 @@ export function AuthHydrator() {
   const shouldHeartbeat = shouldRunSessionHeartbeat({ isAuthenticated, pathname })
 
   const validateSession = useEffectEvent(async () => {
-    const wasAuthenticatedAtRequestStart = useAuthStore.getState().isAuthenticated
+    const authStateAtRequestStart = useAuthStore.getState()
+    const wasAuthenticatedAtRequestStart = authStateAtRequestStart.isAuthenticated
+    const sessionIdAtRequestStart = authStateAtRequestStart.session?.sessionId ?? null
 
     try {
       const response = await apiClient.auth.getSession()
@@ -44,10 +46,13 @@ export function AuthHydrator() {
       }
 
       if (response.status === 401) {
+        const authStateNow = useAuthStore.getState()
         if (
           shouldIgnoreStaleUnauthorizedSessionCheck({
             wasAuthenticatedAtRequestStart,
-            isAuthenticatedNow: useAuthStore.getState().isAuthenticated,
+            isAuthenticatedNow: authStateNow.isAuthenticated,
+            sessionIdAtRequestStart,
+            sessionIdNow: authStateNow.session?.sessionId ?? null,
           })
         ) {
           return

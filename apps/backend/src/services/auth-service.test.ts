@@ -290,4 +290,83 @@ describe('AuthService', () => {
 
     expect(sessionRepository.endById).toHaveBeenCalledWith('session-1', 'auto_checkin_failed')
   })
+
+  it('keeps login successful when presence broadcasting fails after auto checkin', async () => {
+    const prisma = createPrismaMock()
+    const service = new AuthService(prisma)
+    const sessionRepository = attachSessionRepository(service)
+    const checkinRepository = attachCheckinRepository(service)
+    const presenceService = attachPresenceService(service)
+    attachAuditRepository(service)
+
+    presenceService.broadcastStatsUpdate.mockRejectedValueOnce(new Error('stats unavailable'))
+
+    await expect(
+      service.login(
+        'serial-1',
+        {
+          remoteSystemId: 'remote-1',
+          remoteSystemName: 'Server',
+        },
+        '127.0.0.1',
+        'vitest'
+      )
+    ).resolves.toMatchObject({
+      sessionId: 'session-1',
+      member: {
+        id: 'member-1',
+      },
+    })
+
+    expect(checkinRepository.create).toHaveBeenCalled()
+    expect(sessionRepository.endById).not.toHaveBeenCalled()
+  })
+
+  it('keeps first post-reset login successful when presence broadcasting fails', async () => {
+    const prisma = createPrismaMock()
+    const service = new AuthService(prisma)
+    const sessionRepository = attachSessionRepository(service)
+    const checkinRepository = attachCheckinRepository(service)
+    const presenceService = attachPresenceService(service)
+    attachAuditRepository(service)
+
+    checkinRepository.findLatestByMember.mockResolvedValue({
+      id: 'daily-reset-checkout',
+      memberId: 'member-1',
+      direction: 'out',
+      timestamp: new Date('2026-04-02T03:00:00.000Z'),
+      kioskId: 'SYSTEM',
+      method: 'system',
+      synced: true,
+      createdAt: new Date('2026-04-02T03:00:00.000Z'),
+    })
+    presenceService.broadcastStatsUpdate.mockRejectedValueOnce(new Error('stats unavailable'))
+
+    await expect(
+      service.login(
+        'serial-1',
+        {
+          remoteSystemId: 'remote-1',
+          remoteSystemName: 'Server',
+        },
+        '127.0.0.1',
+        'vitest'
+      )
+    ).resolves.toMatchObject({
+      sessionId: 'session-1',
+      member: {
+        id: 'member-1',
+      },
+    })
+
+    expect(checkinRepository.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        memberId: 'member-1',
+        direction: 'in',
+        kioskId: 'remote-1',
+        method: 'login',
+      })
+    )
+    expect(sessionRepository.endById).not.toHaveBeenCalled()
+  })
 })
