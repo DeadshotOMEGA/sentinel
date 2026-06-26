@@ -1,9 +1,27 @@
 export function shouldIgnoreStaleUnauthorizedSessionCheck(input: {
   wasAuthenticatedAtRequestStart: boolean
   isAuthenticatedNow: boolean
+  sessionIdAtRequestStart?: string | null
+  sessionIdNow?: string | null
 }): boolean {
-  const { wasAuthenticatedAtRequestStart, isAuthenticatedNow } = input
-  return !wasAuthenticatedAtRequestStart && isAuthenticatedNow
+  const {
+    wasAuthenticatedAtRequestStart,
+    isAuthenticatedNow,
+    sessionIdAtRequestStart = null,
+    sessionIdNow = null,
+  } = input
+
+  if (!isAuthenticatedNow) {
+    return false
+  }
+
+  if (!wasAuthenticatedAtRequestStart) {
+    return true
+  }
+
+  return Boolean(
+    sessionIdAtRequestStart && sessionIdNow && sessionIdAtRequestStart !== sessionIdNow
+  )
 }
 
 export function shouldRunSessionHeartbeat(input: {
