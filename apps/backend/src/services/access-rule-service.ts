@@ -38,7 +38,11 @@ export class AccessRuleNotFoundError extends Error {
 interface AccessRuleStore {
   findByKey(key: string): Promise<AccessRuleRecord | null>
   reconcile(
-    catalogRules: readonly { key: string; configuredMinimumLevel: number }[],
+    catalogRules: readonly {
+      key: string
+      configuredMinimumLevel: number
+      configuredFloorLevel: number
+    }[],
     updatedByMemberId?: string
   ): Promise<AccessRuleRecord[]>
   updateByKey(key: string, data: UpdateAccessRuleRecordInput): Promise<AccessRuleRecord>
@@ -52,6 +56,7 @@ export class AccessRuleService {
       ACCESS_RULE_CATALOG.map((definition) => ({
         key: definition.key,
         configuredMinimumLevel: definition.builtInDefaultLevel,
+        configuredFloorLevel: definition.floorLevel,
       }))
     )
 
@@ -102,16 +107,20 @@ export class AccessRuleService {
       ? this.toResponse(definition, existing)
       : this.toResponse(definition, this.createDefaultRecord(definition))
 
-    const configuredMinimumLevel = input.configuredMinimumLevel ?? previous.configuredMinimumLevel
-    this.assertValidConfiguredLevel(definition, configuredMinimumLevel)
+    const configuredFloorLevel = input.configuredFloorLevel ?? previous.configuredFloorLevel
+    const configuredMinimumLevel = Math.max(
+      input.configuredMinimumLevel ?? previous.configuredMinimumLevel,
+      configuredFloorLevel
+    )
     this.assertReasonWhenLowering(
-      previous.configuredMinimumLevel,
+      previous.effectiveMinimumLevel,
       configuredMinimumLevel,
       input.reason
     )
 
     const updated = await this.repository.updateByKey(key, {
       configuredMinimumLevel,
+      configuredFloorLevel,
       localDescription:
         input.localDescription === undefined
           ? previous.localDescription
@@ -139,12 +148,15 @@ export class AccessRuleService {
         ? this.toResponse(definition, existing)
         : this.toResponse(definition, this.createDefaultRecord(definition))
 
-      const configuredMinimumLevel =
-        change.configuredMinimumLevel ?? previous.configuredMinimumLevel
-      this.assertValidConfiguredLevel(definition, configuredMinimumLevel)
+      const configuredFloorLevel = change.configuredFloorLevel ?? previous.configuredFloorLevel
+      const configuredMinimumLevel = Math.max(
+        change.configuredMinimumLevel ?? previous.configuredMinimumLevel,
+        configuredFloorLevel
+      )
 
       const updated = await this.repository.updateByKey(change.key, {
         configuredMinimumLevel,
+        configuredFloorLevel,
         localDescription:
           change.localDescription === undefined
             ? previous.localDescription
@@ -189,6 +201,7 @@ export class AccessRuleService {
     record: AccessRuleRecord
   ): AccessRuleResponse {
     const effectiveMinimumLevel = this.resolveEffectiveLevel(definition, record)
+    const configuredFloorLevel = this.resolveConfiguredFloorLevel(definition, record)
 
     return {
       key: definition.key,
@@ -199,9 +212,13 @@ export class AccessRuleService {
       configuredMinimumLevel: this.normalizeHumanAccountLevel(record.configuredMinimumLevel),
       effectiveMinimumLevel,
       builtInDefaultLevel: definition.builtInDefaultLevel,
-      floorLevel: definition.floorLevel,
+      configuredFloorLevel,
+      floorLevel: configuredFloorLevel,
+      builtInFloorLevel: definition.floorLevel,
       status: record.status,
-      differsFromDefault: effectiveMinimumLevel !== definition.builtInDefaultLevel,
+      differsFromDefault:
+        effectiveMinimumLevel !== definition.builtInDefaultLevel ||
+        configuredFloorLevel !== definition.floorLevel,
       updatedAt: record.updatedAt.toISOString(),
       updatedByMemberId: record.updatedByMemberId ?? null,
     }
@@ -219,7 +236,9 @@ export class AccessRuleService {
       configuredMinimumLevel: level,
       effectiveMinimumLevel: level,
       builtInDefaultLevel: level,
+      configuredFloorLevel: level,
       floorLevel: level,
+      builtInFloorLevel: level,
       status: 'retired_unknown',
       differsFromDefault: false,
       updatedAt: record.updatedAt.toISOString(),
@@ -234,6 +253,7 @@ export class AccessRuleService {
       id: definition.key,
       key: definition.key,
       configuredMinimumLevel: definition.builtInDefaultLevel,
+      configuredFloorLevel: definition.floorLevel,
       status: 'active',
       createdAt: timestamp,
       updatedAt: timestamp,
@@ -245,41 +265,36 @@ export class AccessRuleService {
     record: AccessRuleRecord
   ): number {
     const configured = this.normalizeHumanAccountLevel(record.configuredMinimumLevel)
+    const floor = this.resolveConfiguredFloorLevel(definition, record)
 
-    if (configured < definition.floorLevel) {
-      serviceLogger.warn('Access Rule configured level is below floor; using built-in default', {
+    if (configured < floor) {
+      serviceLogger.warn('Access Rule configured level is below floor; using floor level', {
         key: definition.key,
         configuredMinimumLevel: configured,
-        floorLevel: definition.floorLevel,
+        floorLevel: floor,
         builtInDefaultLevel: definition.builtInDefaultLevel,
       })
-      return definition.builtInDefaultLevel
+      return floor
     }
 
     return configured
   }
 
-  private assertValidConfiguredLevel(
+  private resolveConfiguredFloorLevel(
     definition: AccessRuleDefinition,
-    configuredMinimumLevel: number
-  ): void {
-    const normalized = this.normalizeHumanAccountLevel(configuredMinimumLevel)
-
-    if (normalized < definition.floorLevel) {
-      throw new AccessRuleValidationError(
-        `Access Rule '${definition.key}' cannot be lowered below level ${definition.floorLevel}`
-      )
-    }
+    record: AccessRuleRecord
+  ): number {
+    return this.normalizeHumanAccountLevel(record.configuredFloorLevel ?? definition.floorLevel)
   }
 
   private assertReasonWhenLowering(
-    previousLevel: number,
-    nextLevel: number,
+    previousEffectiveLevel: number,
+    nextEffectiveLevel: number,
     reason: string | undefined
   ): void {
-    if (nextLevel < previousLevel && (!reason || reason.trim().length === 0)) {
+    if (nextEffectiveLevel < previousEffectiveLevel && (!reason || reason.trim().length === 0)) {
       throw new AccessRuleValidationError(
-        'A reason is required when lowering an Access Rule threshold'
+        'A reason is required when lowering an Access Rule threshold or floor'
       )
     }
   }

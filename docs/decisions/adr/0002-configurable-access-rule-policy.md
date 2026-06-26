@@ -52,16 +52,16 @@ Key factors:
 
 ## Decision
 
-Sentinel will use a fixed, Sentinel-defined Access Rule catalog with configurable minimum Account Levels stored as dedicated database records.
+Sentinel will use a fixed, Sentinel-defined Access Rule catalog with configurable minimum Account Levels and floor levels stored as dedicated database records.
 
-In short: application code defines what Access Rules exist and their safety floors; the database stores the active required Account Level for each rule.
+In short: application code defines what Access Rules exist and their built-in default policy; the database stores the active required Account Level and floor Account Level for each rule.
 
 Specifically:
 
-- Each Access Rule has a stable key, built-in default Account Level, and non-configurable safety floor.
+- Each Access Rule has a stable key, built-in default Account Level, and built-in default floor.
 - Page visibility and page actions may use separate Access Rules even when their built-in defaults are the same.
-- Each Access Rule stores its configured minimum Account Level in a dedicated table rather than in a generic settings blob.
-- Missing Access Rule records are created from the built-in catalog while existing configured levels are preserved.
+- Each Access Rule stores its configured minimum Account Level and configured floor Account Level in a dedicated table rather than in a generic settings blob.
+- Missing Access Rule records are created from the built-in catalog while existing configured levels and configured floors are preserved.
 - Database records for Access Rules no longer present in the built-in catalog are marked retired or unknown for review rather than deleted automatically.
 - Backend authorization is the source of truth and applies Access Rule changes immediately.
 - Frontend navigation and controls use the same Access Rules for visibility.
@@ -75,14 +75,14 @@ Specifically:
 - The v1 catalog includes Admin Settings & Configuration rules for Admin Control Centre visibility, configuration viewing, member/list/type/qualification/tag/event/holiday/timing/display management, Access Rule viewing, Access Rule editing, and bulk Access Rule editing.
 - The v1 catalog includes System & Infrastructure rules for system health, updates, network state/management, remote systems, database viewing/export, backups, kiosk status, and kiosk/device management.
 - Live WebSocket subscriptions use the same Access Rules as their matching pages or feature actions.
-- Access Rule keys and labels are fixed by the built-in catalog; Developers may edit local descriptions only, with both built-in and local descriptions shown when they differ.
+- Access Rule keys and labels are fixed by the built-in catalog; Developers may edit local descriptions, configured minimum Account Levels, and configured floors, with both built-in and local descriptions shown when they differ.
 - Access Rule keys use a stable dotted naming convention and should not be changed casually.
 - Missing or invalid configured rules fall back to built-in defaults and raise an operational warning.
-- The Access Rule that governs Access Rule management remains Developer-floor.
+- The Access Rules that govern Access Rule visibility and management ship with Developer floors and may only be changed by someone who already has Developer access to the Access Rules page.
 - Access Rule changes are audited governance changes.
 - Access Rule local description changes are audited governance changes.
 - Bulk Access Rule editing is allowed, but must present a review step and write per-rule audit entries for every changed rule.
-- Bulk changes and threshold-lowering changes require a reason note.
+- Bulk changes require a reason note; single-rule edits require a reason note when the effective required Account Level is lowered.
 - Developers can produce a printable Access Rules report showing current policy, defaults, floors, default differences, and recent change history.
 
 ## Options Considered
