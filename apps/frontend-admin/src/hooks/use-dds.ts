@@ -76,6 +76,24 @@ export function useKioskResponsibilityState(memberId: string, enabled: boolean =
   })
 }
 
+export function useLoginResponsibilityState(enabled: boolean = true) {
+  return useQuery({
+    queryKey: ['dds', 'login-state'],
+    queryFn: async () => {
+      const response = await apiClient.dds.getLoginResponsibilityState()
+      if (response.status !== 200) {
+        throw new Error(
+          extractErrorMessage(response.body, 'Failed to fetch login responsibility state')
+        )
+      }
+      return response.body
+    },
+    enabled,
+    staleTime: 0,
+    refetchOnMount: 'always',
+  })
+}
+
 export function useAcceptDds() {
   const queryClient = useQueryClient()
 
@@ -93,6 +111,7 @@ export function useAcceptDds() {
       void Promise.allSettled([
         queryClient.invalidateQueries({ queryKey: ['dds-status'] }),
         queryClient.invalidateQueries({ queryKey: ['dds', 'kiosk-state'] }),
+        queryClient.invalidateQueries({ queryKey: ['dds', 'login-state'] }),
         invalidateDashboardQueries(queryClient),
       ])
     },
@@ -117,6 +136,7 @@ export function useSetTodayDds() {
         queryClient.invalidateQueries({ queryKey: ['dds-status'] }),
         queryClient.invalidateQueries({ queryKey: ['dds', 'current'] }),
         queryClient.invalidateQueries({ queryKey: ['dds', 'kiosk-state'] }),
+        queryClient.invalidateQueries({ queryKey: ['dds', 'login-state'] }),
         invalidateDashboardQueries(queryClient),
       ])
     },
@@ -141,6 +161,7 @@ export function useTransferDds() {
         queryClient.invalidateQueries({ queryKey: ['dds-status'] }),
         queryClient.invalidateQueries({ queryKey: ['dds', 'current'] }),
         queryClient.invalidateQueries({ queryKey: ['dds', 'kiosk-state'] }),
+        queryClient.invalidateQueries({ queryKey: ['dds', 'login-state'] }),
         invalidateDashboardQueries(queryClient),
       ])
     },

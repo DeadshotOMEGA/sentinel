@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { AlertTriangle, Clock3, DoorOpen, ShieldCheck, UserCheck, Users } from 'lucide-react'
 import {
   AppCard,
@@ -24,6 +24,7 @@ interface KioskResponsibilityPromptProps {
   state: KioskResponsibilityStateResponse
   isPending: boolean
   errorMessage?: string | null
+  mode?: 'kiosk' | 'login'
   onDecline: () => void
   onSubmit: (action: ResponsibilityActionChoice) => void
 }
@@ -73,17 +74,23 @@ export function KioskResponsibilityPrompt({
   state,
   isPending,
   errorMessage,
+  mode = 'kiosk',
   onDecline,
   onSubmit,
 }: KioskResponsibilityPromptProps) {
   const presentation = useMemo(() => getKioskResponsibilityPromptPresentation(state), [state])
-  const [selectedAction, setSelectedAction] = useState<ResponsibilityActionChoice | null>(
-    presentation.defaultAction
-  )
-
-  useEffect(() => {
-    setSelectedAction(presentation.defaultAction)
-  }, [presentation.defaultAction, state.member.id, state.promptVariant])
+  const selectionKey = `${state.member.id}:${state.promptVariant}:${presentation.defaultAction ?? 'none'}`
+  const [selectedActionState, setSelectedActionState] = useState<{
+    key: string
+    action: ResponsibilityActionChoice | null
+  }>(() => ({
+    key: selectionKey,
+    action: presentation.defaultAction,
+  }))
+  const selectedAction =
+    selectedActionState.key === selectionKey
+      ? selectedActionState.action
+      : presentation.defaultAction
 
   const selectedOption =
     presentation.actionOptions.find((option) => option.value === selectedAction) ?? null
@@ -96,10 +103,14 @@ export function KioskResponsibilityPrompt({
       'Arrival was recorded. Another member still needs to resolve responsibility.')
   const cardStatus = state.promptVariant === 'expected_dds' ? 'info' : 'warning'
   const openContext = state.currentOpenContext
+  const actorLabel = mode === 'login' ? 'Signed-in Member' : 'Scanned Member'
+  const recordedText =
+    mode === 'login' ? 'This login has checked you in.' : 'This arrival is already recorded.'
+  const declineLabel = mode === 'login' ? 'Skip for now' : 'Not Me'
 
   return (
     <div
-      className="absolute inset-0 z-(--z-modal) bg-base-300/80 backdrop-blur-[2px]"
+      className="fixed inset-0 z-[calc(var(--z-tooltip)+1)] bg-base-300/80 backdrop-blur-[2px]"
       data-testid={TID.dashboard.kiosk.responsibilityPrompt}
     >
       <div className="flex h-full items-center justify-center p-(--space-4)">
@@ -194,7 +205,9 @@ export function KioskResponsibilityPrompt({
                           name="kiosk-responsibility-action"
                           className="radio radio-primary radio-lg mt-1"
                           checked={selectedAction === option.value}
-                          onChange={() => setSelectedAction(option.value)}
+                          onChange={() =>
+                            setSelectedActionState({ key: selectionKey, action: option.value })
+                          }
                         />
                         <div className="min-w-0">
                           <p className="text-lg font-semibold">{option.title}</p>
@@ -238,7 +251,7 @@ export function KioskResponsibilityPrompt({
                   disabled={isPending}
                   data-testid={TID.dashboard.kiosk.responsibilityDecline}
                 >
-                  Not Me
+                  {declineLabel}
                 </button>
                 {selectedOption && primaryLabel && (
                   <button
@@ -262,9 +275,9 @@ export function KioskResponsibilityPrompt({
                     <div className="stat-figure text-primary">
                       <UserCheck className="h-5 w-5" />
                     </div>
-                    <div className="stat-title">Scanned Member</div>
+                    <div className="stat-title">{actorLabel}</div>
                     <div className="stat-value text-xl">{formatMemberName(state.member)}</div>
-                    <div className="stat-desc">This arrival is already recorded.</div>
+                    <div className="stat-desc">{recordedText}</div>
                   </div>
 
                   <div className="stat border-t border-base-300 px-0 py-3">

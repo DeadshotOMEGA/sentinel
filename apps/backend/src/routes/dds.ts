@@ -185,6 +185,56 @@ export const ddsRouter = s.router(ddsContract, {
     }
   },
 
+  getLoginResponsibilityState: async ({ req }: { req: Request }) => {
+    try {
+      if (!req.member) {
+        return {
+          status: 401 as const,
+          body: {
+            error: 'UNAUTHORIZED',
+            message: 'Authentication required',
+          },
+        }
+      }
+
+      const state = await ddsService.getLoginResponsibilityState(req.member.id)
+
+      return {
+        status: 200 as const,
+        body: state,
+      }
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('not found')) {
+        return {
+          status: 404 as const,
+          body: {
+            error: 'NOT_FOUND',
+            message: error.message,
+          },
+        }
+      }
+
+      if (error instanceof Error && error.message.includes('Invalid')) {
+        return {
+          status: 400 as const,
+          body: {
+            error: 'VALIDATION_ERROR',
+            message: error.message,
+          },
+        }
+      }
+
+      return {
+        status: 500 as const,
+        body: {
+          error: 'INTERNAL_ERROR',
+          message:
+            error instanceof Error ? error.message : 'Failed to fetch login responsibility state',
+        },
+      }
+    }
+  },
+
   getKioskResponsibilityState: async ({ params }: { params: IdParam }) => {
     try {
       const state = await ddsService.getKioskResponsibilityState(params.id)

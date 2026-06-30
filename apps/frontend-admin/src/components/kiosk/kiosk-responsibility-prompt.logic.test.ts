@@ -58,19 +58,29 @@ function createState(
 }
 
 describe('getKioskResponsibilityPromptPresentation', () => {
-  it('defaults the expected DDS flow to accepting DDS and opening the building', () => {
+  it('shows accepting DDS as the only expected DDS action when the member can accept', () => {
     const state = createState()
 
     const presentation = getKioskResponsibilityPromptPresentation(state)
 
     expect(presentation.defaultAction).toBe('accept_dds')
-    expect(presentation.actionOptions.map((option) => option.value)).toEqual([
-      'accept_dds',
-      'open_building',
-    ])
+    expect(presentation.headline).toBe("You're today's DDS. Accept responsibility now.")
+    expect(presentation.actionOptions.map((option) => option.value)).toEqual(['accept_dds'])
     expect(getResponsibilityPrimaryLabel(state, presentation.defaultAction ?? 'accept_dds')).toBe(
       'Accept DDS and Open Building'
     )
+  })
+
+  it('falls back to open building for the expected DDS only when DDS acceptance is unavailable', () => {
+    const state = createState({
+      canAcceptDds: false,
+      canOpenBuilding: true,
+    })
+
+    const presentation = getKioskResponsibilityPromptPresentation(state)
+
+    expect(presentation.defaultAction).toBe('open_building')
+    expect(presentation.actionOptions.map((option) => option.value)).toEqual(['open_building'])
   })
 
   it('defaults the replacement candidate flow to opening the building first', () => {
