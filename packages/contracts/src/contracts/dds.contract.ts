@@ -70,6 +70,24 @@ export const ddsContract = c.router({
   },
 
   /**
+   * Get login responsibility state for the authenticated member
+   */
+  getLoginResponsibilityState: {
+    method: 'GET',
+    path: '/api/dds/login-state',
+    responses: {
+      200: KioskResponsibilityStateResponseSchema,
+      400: ErrorResponseSchema,
+      401: ErrorResponseSchema,
+      404: ErrorResponseSchema,
+      500: ErrorResponseSchema,
+    },
+    summary: 'Get login DDS responsibility state',
+    description:
+      'Get responsibility context for the authenticated member after Sentinel login, including DDS and open-building state',
+  },
+
+  /**
    * Get kiosk responsibility state for a checked-in member
    */
   getKioskResponsibilityState: {

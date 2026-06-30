@@ -108,22 +108,20 @@ export function getKioskResponsibilityPromptPresentation(
 
       if (state.canAcceptDds) {
         actionOptions.push(buildAcceptDdsOption(state))
-      }
-
-      if (state.needsBuildingOpen && state.canOpenBuilding) {
+      } else if (state.needsBuildingOpen && state.canOpenBuilding) {
         actionOptions.push(buildCommonOpenOnlyOption(state))
       }
 
       return {
-        headline: "You're today's expected DDS.",
+        headline: "You're today's DDS. Accept responsibility now.",
         helperText: state.needsBuildingOpen
-          ? 'Accept DDS in one step to activate duty and open the building.'
-          : 'Accept DDS now so later arrivals can continue without another stop.',
+          ? 'Accept DDS and open the building in one step before continuing.'
+          : 'Accept DDS now before continuing with daily operations.',
         bannerTone: 'info',
-        bannerTitle: 'This badge matches the expected DDS for today.',
+        bannerTitle: 'This badge matches the scheduled DDS for today.',
         bannerDescription: state.needsBuildingOpen
-          ? 'The safe default is to accept DDS now so opening and lockup transfer happen together.'
-          : 'The building is already open. Accept DDS now to clear the remaining daily responsibility.',
+          ? 'Use the primary action unless someone else is formally taking over DDS.'
+          : 'The building is already open. Accept DDS now to clear the daily responsibility.',
         defaultAction: actionOptions[0]?.value ?? null,
         actionOptions,
         blockedMessage: actionOptions.length === 0 ? buildBlockedMessage(state) : null,

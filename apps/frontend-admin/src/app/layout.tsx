@@ -10,6 +10,7 @@ import { queryClient } from '@/lib/query-client'
 import { AppNavbar } from '@/components/layout/app-navbar'
 import { AppSidebar } from '@/components/layout/app-sidebar'
 import { AuthHydrator } from '@/components/auth/auth-hydrator'
+import { DailyResponsibilityGate } from '@/components/dashboard/daily-responsibility-gate'
 import { AutomatedHotspotRecoveryNotice } from '@/components/network/automated-hotspot-recovery-notice'
 import './globals.css'
 
@@ -48,6 +49,7 @@ export default function RootLayout({
               <div className="drawer-content flex flex-col">
                 <AppNavbar drawerId={DRAWER_ID} isDrawerOpen={isDrawerOpen} />
                 <main className="flex-1 overflow-y-auto p-4 lg:p-6">{children}</main>
+                <DailyResponsibilityGate />
               </div>
 
               {/* Sidebar */}

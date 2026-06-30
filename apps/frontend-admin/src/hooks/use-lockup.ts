@@ -332,6 +332,8 @@ export function useOpenBuilding() {
       queryClient.invalidateQueries({ queryKey: ['presence'] })
       queryClient.invalidateQueries({ queryKey: ['checkins'] })
       queryClient.invalidateQueries({ queryKey: ['eligible-openers'] })
+      queryClient.invalidateQueries({ queryKey: ['dds', 'login-state'] })
+      queryClient.invalidateQueries({ queryKey: ['dds', 'kiosk-state'] })
       void invalidateDashboardQueries(queryClient)
     },
   })
