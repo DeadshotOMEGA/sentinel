@@ -11,6 +11,7 @@ import {
   ListChecks,
   Network,
   ScrollText,
+  ScanLine,
   Shield,
   Terminal,
   UserPlus,
@@ -46,6 +47,8 @@ export function AdminIcon({ icon, ...props }: AdminIconProps) {
       return <ScrollText {...props} />
     case 'network':
       return <Network {...props} />
+    case 'scan':
+      return <ScanLine {...props} />
     case 'shield':
       return <Shield {...props} />
     case 'volume':

@@ -20,6 +20,7 @@ export const AdminNavigationRouteIdValues = [
   'config',
   'timings',
   'kiosk-sounds',
+  'kiosk-scanner',
   'account-levels',
   'access-rules',
   'dashboard-sorting',

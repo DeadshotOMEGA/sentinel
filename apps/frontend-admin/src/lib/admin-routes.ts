@@ -23,6 +23,7 @@ export type AdminRouteId =
   | 'config'
   | 'timings'
   | 'kiosk-sounds'
+  | 'kiosk-scanner'
   | 'account-levels'
   | 'access-rules'
   | 'dashboard-sorting'
@@ -51,6 +52,7 @@ export type AdminIconKey =
   | 'list'
   | 'logs'
   | 'network'
+  | 'scan'
   | 'shield'
   | 'volume'
   | 'terminal'
@@ -266,6 +268,22 @@ export const ADMIN_NAV_ROUTES = [
     description: 'Choose audio feedback for kiosk badge scan results.',
     aliases: ['scan sounds', 'audio feedback', 'badge sounds', 'kiosk audio'],
     keywords: ['kiosk', 'sounds', 'audio', 'scan', 'badge', 'feedback'],
+    searchWeight: 78,
+    requiredRole: ADMIN_ROLE_LEVEL.ADMIN,
+    requiredCapabilities: ['admin:view', 'config:manage'],
+    navVisibility: 'sidebar',
+    featureStatus: 'available',
+  },
+  {
+    id: 'kiosk-scanner',
+    label: 'Kiosk Scanner',
+    href: '/admin/kiosk-scanner',
+    group: 'Settings',
+    tier: 1,
+    icon: 'scan',
+    description: 'Calibrate keyboard-wedge NFC scanner timing for the kiosk.',
+    aliases: ['scanner timing', 'badge scanner', 'nfc scanner', 'keyboard wedge', 'kiosk scan'],
+    keywords: ['kiosk', 'scanner', 'nfc', 'badge', 'timing', 'calibration'],
     searchWeight: 78,
     requiredRole: ADMIN_ROLE_LEVEL.ADMIN,
     requiredCapabilities: ['admin:view', 'config:manage'],
