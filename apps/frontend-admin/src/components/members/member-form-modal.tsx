@@ -27,6 +27,12 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { ButtonSpinner } from '@/components/ui/loading-spinner'
+import {
+  buildCreateImportedMemberFields,
+  buildUpdateImportedMemberFields,
+  getImportedMemberFormDefaults,
+  hasImportedMemberDetails,
+} from './member-form-modal.logic'
 import type {
   BadgeWithAssignmentResponse,
   MemberResponse,
@@ -150,8 +156,14 @@ export function MemberFormModal({
       firstName: '',
       lastName: '',
       middleInitial: '',
+      employeeNumber: '',
       email: '',
       phoneNumber: '',
+      homePhone: '',
+      mobilePhone: '',
+      mess: '',
+      moc: '',
+      classDetails: '',
       divisionId: '',
       badgeId: '',
       memberSource: 'nominal_roll',
@@ -177,17 +189,27 @@ export function MemberFormModal({
     mode === 'create'
       ? createProfile === 'civilian'
       : resolvedMember?.memberSource === 'civilian_manual'
+  const importedDetailsDefaultOpen =
+    mode === 'create' || hasImportedMemberDetails(resolvedMember ?? null)
 
   useEffect(() => {
     if (mode === 'edit' && resolvedMember) {
+      const importedDefaults = getImportedMemberFormDefaults(resolvedMember)
+
       reset({
         serviceNumber: resolvedMember.serviceNumber,
         rank: resolvedMember.rank,
         firstName: resolvedMember.firstName,
         lastName: resolvedMember.lastName,
         middleInitial: resolvedMember.middleInitial ?? '',
+        employeeNumber: importedDefaults.employeeNumber,
         email: resolvedMember.email ?? '',
         phoneNumber: resolvedMember.phoneNumber ?? '',
+        homePhone: importedDefaults.homePhone,
+        mobilePhone: importedDefaults.mobilePhone,
+        mess: importedDefaults.mess,
+        moc: importedDefaults.moc,
+        classDetails: importedDefaults.classDetails,
         divisionId: resolvedMember.divisionId ?? '',
         badgeId: resolvedMember.badgeId ?? '',
         memberSource: resolvedMember.memberSource,
@@ -202,8 +224,14 @@ export function MemberFormModal({
         firstName: '',
         lastName: '',
         middleInitial: '',
+        employeeNumber: '',
         email: '',
         phoneNumber: '',
+        homePhone: '',
+        mobilePhone: '',
+        mess: '',
+        moc: '',
+        classDetails: '',
         divisionId: '',
         badgeId: '',
         memberSource: createProfile === 'civilian' ? 'civilian_manual' : 'nominal_roll',
@@ -283,9 +311,9 @@ export function MemberFormModal({
           firstName: data.firstName,
           lastName: data.lastName,
           middleInitial: data.middleInitial || undefined,
+          ...buildCreateImportedMemberFields(data),
           divisionId: data.divisionId,
           email: data.email || undefined,
-          phoneNumber: data.phoneNumber || undefined,
           memberSource: data.memberSource,
           memberTypeId: data.memberTypeId || undefined,
           memberStatusId: data.memberStatusId || undefined,
@@ -303,9 +331,9 @@ export function MemberFormModal({
           firstName: data.firstName,
           lastName: data.lastName,
           middleInitial: data.middleInitial || undefined,
+          ...buildUpdateImportedMemberFields(data),
           divisionId: data.divisionId,
           email: data.email || undefined,
-          phoneNumber: data.phoneNumber || undefined,
           memberSource: data.memberSource,
           badgeId: data.badgeId ? data.badgeId : null,
           memberTypeId: data.memberTypeId || undefined,
@@ -572,12 +600,12 @@ export function MemberFormModal({
                       </label>
 
                       <label className="input input-bordered input-sm w-full min-w-0">
-                        <span className="label">Phone Number</span>
+                        <span className="label">Mobile Phone</span>
                         <input
                           className="grow disabled:cursor-not-allowed disabled:opacity-50"
-                          id="phoneNumber"
+                          id="mobilePhone"
                           type="tel"
-                          {...register('phoneNumber')}
+                          {...register('mobilePhone')}
                           placeholder="555-1234"
                         />
                       </label>
@@ -595,6 +623,82 @@ export function MemberFormModal({
                     </div>
                   </AppCardContent>
                 </AppCard>
+
+                <div
+                  key={`nominal-roll-details-${mode}-${resolvedMember?.id ?? createProfile}-${importedDetailsDefaultOpen ? 'open' : 'closed'}`}
+                  className="collapse collapse-arrow rounded-box border border-base-300 bg-base-100 shadow-sm"
+                >
+                  <input
+                    type="checkbox"
+                    aria-label="Toggle nominal roll details"
+                    defaultChecked={importedDetailsDefaultOpen}
+                  />
+                  <div className="collapse-title border-b border-base-300 pr-(--space-10)">
+                    <p className="text-base font-semibold">Nominal Roll Details</p>
+                    <p className="mt-(--space-1) text-sm text-base-content/60">
+                      Employee number, MOC, mess, class details, and home phone.
+                    </p>
+                  </div>
+                  <div className="collapse-content pt-(--space-3)">
+                    <div className="grid gap-(--space-3) md:grid-cols-2 xl:grid-cols-3">
+                      <label className="input input-bordered input-sm w-full min-w-0">
+                        <span className="label">Employee #</span>
+                        <input
+                          className="grow disabled:cursor-not-allowed disabled:opacity-50"
+                          id="employeeNumber"
+                          {...register('employeeNumber')}
+                          placeholder="123456"
+                          maxLength={20}
+                        />
+                      </label>
+
+                      <label className="input input-bordered input-sm w-full min-w-0">
+                        <span className="label">MOC</span>
+                        <input
+                          className="grow disabled:cursor-not-allowed disabled:opacity-50"
+                          id="moc"
+                          {...register('moc')}
+                          placeholder="00375"
+                          maxLength={100}
+                        />
+                      </label>
+
+                      <label className="input input-bordered input-sm w-full min-w-0">
+                        <span className="label">Mess</span>
+                        <input
+                          className="grow disabled:cursor-not-allowed disabled:opacity-50"
+                          id="mess"
+                          {...register('mess')}
+                          placeholder="Jr Ranks"
+                          maxLength={50}
+                        />
+                      </label>
+
+                      <label className="input input-bordered input-sm w-full min-w-0">
+                        <span className="label">Home Phone</span>
+                        <input
+                          className="grow disabled:cursor-not-allowed disabled:opacity-50"
+                          id="homePhone"
+                          type="tel"
+                          {...register('homePhone')}
+                          placeholder="555-1234"
+                          maxLength={30}
+                        />
+                      </label>
+
+                      <label className="input input-bordered input-sm w-full min-w-0 md:col-span-2">
+                        <span className="label">Class Details</span>
+                        <input
+                          className="grow disabled:cursor-not-allowed disabled:opacity-50"
+                          id="classDetails"
+                          {...register('classDetails')}
+                          placeholder="Class A"
+                          maxLength={100}
+                        />
+                      </label>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div className="min-w-0 space-y-(--space-3)">
