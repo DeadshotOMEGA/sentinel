@@ -58,38 +58,38 @@ export interface MemberWithDivision extends Member {
 }
 export interface CreateMemberInput {
     serviceNumber: string;
-    employeeNumber?: string;
+    employeeNumber?: string | null;
     firstName: string;
     lastName: string;
-    initials?: string;
+    initials?: string | null;
     rank: string;
     divisionId: string;
-    mess?: string;
-    moc?: string;
+    mess?: string | null;
+    moc?: string | null;
     memberType: MemberType;
-    classDetails?: string;
+    classDetails?: string | null;
     status?: MemberStatus;
     email?: string;
-    homePhone?: string;
-    mobilePhone?: string;
+    homePhone?: string | null;
+    mobilePhone?: string | null;
     badgeId?: string;
 }
 export interface UpdateMemberInput {
     serviceNumber?: string;
-    employeeNumber?: string;
+    employeeNumber?: string | null;
     firstName?: string;
     lastName?: string;
-    initials?: string;
+    initials?: string | null;
     rank?: string;
     divisionId?: string;
-    mess?: string;
-    moc?: string;
+    mess?: string | null;
+    moc?: string | null;
     memberType?: MemberType;
-    classDetails?: string;
+    classDetails?: string | null;
     status?: MemberStatus;
     email?: string;
-    homePhone?: string;
-    mobilePhone?: string;
+    homePhone?: string | null;
+    mobilePhone?: string | null;
     badgeId?: string;
     tagIds?: string[];
 }

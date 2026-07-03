@@ -13,6 +13,43 @@ export const RankCodeSchema = v.pipe(
   v.maxLength(10, 'Rank code must be at most 10 characters')
 )
 
+const OptionalEmployeeNumberSchema = v.optional(
+  v.pipe(v.string(), v.maxLength(20, 'Employee number must be at most 20 characters'))
+)
+const OptionalNullableEmployeeNumberSchema = v.optional(
+  v.nullable(v.pipe(v.string(), v.maxLength(20, 'Employee number must be at most 20 characters')))
+)
+const OptionalMessSchema = v.optional(
+  v.pipe(v.string(), v.maxLength(50, 'Mess must be at most 50 characters'))
+)
+const OptionalNullableMessSchema = v.optional(
+  v.nullable(v.pipe(v.string(), v.maxLength(50, 'Mess must be at most 50 characters')))
+)
+const OptionalMocSchema = v.optional(
+  v.pipe(v.string(), v.maxLength(100, 'MOC must be at most 100 characters'))
+)
+const OptionalNullableMocSchema = v.optional(
+  v.nullable(v.pipe(v.string(), v.maxLength(100, 'MOC must be at most 100 characters')))
+)
+const OptionalClassDetailsSchema = v.optional(
+  v.pipe(v.string(), v.maxLength(100, 'Class details must be at most 100 characters'))
+)
+const OptionalNullableClassDetailsSchema = v.optional(
+  v.nullable(v.pipe(v.string(), v.maxLength(100, 'Class details must be at most 100 characters')))
+)
+const OptionalHomePhoneSchema = v.optional(
+  v.pipe(v.string(), v.maxLength(30, 'Home phone must be at most 30 characters'))
+)
+const OptionalNullableHomePhoneSchema = v.optional(
+  v.nullable(v.pipe(v.string(), v.maxLength(30, 'Home phone must be at most 30 characters')))
+)
+const OptionalMobilePhoneSchema = v.optional(
+  v.pipe(v.string(), v.maxLength(50, 'Mobile phone must be at most 50 characters'))
+)
+const OptionalNullableMobilePhoneSchema = v.optional(
+  v.nullable(v.pipe(v.string(), v.maxLength(50, 'Mobile phone must be at most 50 characters')))
+)
+
 /**
  * Create member request schema
  */
@@ -36,9 +73,15 @@ export const CreateMemberSchema = v.object({
   middleInitial: v.optional(
     v.pipe(v.string(), v.maxLength(5, 'Middle initial must be at most 5 characters'))
   ),
+  employeeNumber: OptionalEmployeeNumberSchema,
   divisionId: v.pipe(v.string('Division is required'), v.uuid('Invalid division ID')),
   email: v.optional(v.pipe(v.string(), v.email('Invalid email address'))),
   phoneNumber: v.optional(v.string()),
+  homePhone: OptionalHomePhoneSchema,
+  mobilePhone: OptionalMobilePhoneSchema,
+  mess: OptionalMessSchema,
+  moc: OptionalMocSchema,
+  classDetails: OptionalClassDetailsSchema,
   memberSource: v.optional(MemberSourceSchema),
   memberTypeId: v.optional(v.pipe(v.string(), v.uuid('Invalid member type ID'))),
   memberStatusId: v.optional(v.pipe(v.string(), v.uuid('Invalid member status ID'))),
@@ -82,9 +125,15 @@ export const UpdateMemberSchema = v.object({
   middleInitial: v.optional(
     v.pipe(v.string(), v.maxLength(5, 'Middle initial must be at most 5 characters'))
   ),
+  employeeNumber: OptionalNullableEmployeeNumberSchema,
   divisionId: v.optional(v.pipe(v.string(), v.uuid('Invalid division ID'))),
   email: v.optional(v.pipe(v.string(), v.email('Invalid email address'))),
   phoneNumber: v.optional(v.string()),
+  homePhone: OptionalNullableHomePhoneSchema,
+  mobilePhone: OptionalNullableMobilePhoneSchema,
+  mess: OptionalNullableMessSchema,
+  moc: OptionalNullableMocSchema,
+  classDetails: OptionalNullableClassDetailsSchema,
   memberSource: v.optional(MemberSourceSchema),
   memberTypeId: v.optional(v.pipe(v.string(), v.uuid('Invalid member type ID'))),
   memberStatusId: v.optional(v.pipe(v.string(), v.uuid('Invalid member status ID'))),
@@ -141,12 +190,16 @@ export const MemberResponseSchema = v.object({
   firstName: v.string(),
   lastName: v.string(),
   middleInitial: v.nullable(v.string()),
+  employeeNumber: v.nullable(v.string()),
+  mess: v.nullable(v.string()),
   moc: v.nullable(v.string()),
   classDetails: v.nullable(v.string()),
   memberType: v.string(),
   memberSource: MemberSourceSchema,
   email: v.nullable(v.string()),
   phoneNumber: v.nullable(v.string()),
+  homePhone: v.nullable(v.string()),
+  mobilePhone: v.nullable(v.string()),
   divisionId: v.nullable(v.string()),
   badgeId: v.nullable(v.string()),
   accountLevel: v.number(),
