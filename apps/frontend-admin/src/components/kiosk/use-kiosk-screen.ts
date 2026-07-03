@@ -2,10 +2,11 @@
 
 /* global HTMLInputElement */
 
-import { startTransition, useEffect, useMemo, useRef, useState } from 'react'
+import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useReducedMotion } from 'motion/react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAcceptDds, useDdsStatus, useKioskResponsibilityState } from '@/hooks/use-dds'
+import { useKioskScannerTimingSettings } from '@/hooks/use-kiosk-scanner-timing-settings'
 import { useKioskSoundSettings } from '@/hooks/use-kiosk-sound-settings'
 import { useCheckoutOptions, useLockupStatus, useOpenBuilding } from '@/hooks/use-lockup'
 import { useCurrentDds, useTonightDutyWatch } from '@/hooks/use-schedules'
@@ -20,6 +21,15 @@ import {
   type KioskSoundEvent,
   type KioskSoundSettings,
 } from '@/lib/kiosk-sound-settings'
+import {
+  classifyScannerKeystroke,
+  createEditableTargetSnapshot,
+  createScannerClassifierState,
+  getDefaultKioskScannerTimingSettings,
+  removeScannerPrefixFromEditableTarget,
+  type EditableTargetSnapshot,
+  type KioskScannerTimingSettings,
+} from '@/lib/kiosk-scanner-timing'
 import {
   ASSIGNMENT_SUMMARY_CACHE_MS,
   BADGE_FOCUS_REQUEST_EVENT,
@@ -85,11 +95,17 @@ export function useKioskScreen() {
   })
   const replayInFlightRef = useRef(false)
   const kioskSoundSettingsRef = useRef<KioskSoundSettings>(getDefaultKioskSoundSettings())
+  const scannerTimingSettingsRef = useRef<KioskScannerTimingSettings>(
+    getDefaultKioskScannerTimingSettings()
+  )
+  const scannerClassifierStateRef = useRef(createScannerClassifierState())
+  const scannerEditableSnapshotRef = useRef<EditableTargetSnapshot | null>(null)
 
   const { data: checkoutOptions, isLoading: loadingCheckoutOptions } = useCheckoutOptions(
     pendingLockup?.memberId ?? ''
   )
   const systemStatusQuery = useSystemStatus()
+  const kioskScannerTimingSettingsQuery = useKioskScannerTimingSettings()
   const kioskSoundSettingsQuery = useKioskSoundSettings()
   const ddsStatusQuery = useDdsStatus()
   const lockupStatusQuery = useLockupStatus()
@@ -226,6 +242,14 @@ export function useKioskScreen() {
     kioskSoundSettingsRef.current = kioskSoundSettingsQuery.data
     preloadKioskSounds(kioskSoundSettingsQuery.data)
   }, [kioskSoundSettingsQuery.data])
+
+  useEffect(() => {
+    if (!kioskScannerTimingSettingsQuery.data) {
+      return
+    }
+
+    scannerTimingSettingsRef.current = kioskScannerTimingSettingsQuery.data
+  }, [kioskScannerTimingSettingsQuery.data])
 
   useEffect(() => {
     const currentQueue = loadQueuedScans()
@@ -625,21 +649,26 @@ export function useKioskScreen() {
     }
   }, [queryClient, result.memberId, result.timestamp, visitorCompletion, visitorFlowActive])
 
-  const resultTone = visitorCompletion ? 'success' : visitorFlowActive ? 'neutral' : result.tone
+  const hasScannerActivity = scanMutation.isPending || result.tone !== 'neutral'
+  const resultTone = visitorCompletion
+    ? 'success'
+    : visitorFlowActive && !hasScannerActivity
+      ? 'neutral'
+      : result.tone
   const stageSurfaceClass = resultToneToSurfaceClass(resultTone)
-  const scanningDisabled = scanMutation.isPending || visitorFlowActive
+  const manualScanningDisabled = scanMutation.isPending || visitorFlowActive
   const visitorScanPromptVisible =
     !visitorFlowActive && !visitorCompletion && result.eyebrow === 'Visitor Badge'
   const resultTitle = visitorCompletion
     ? visitorCompletion.title
-    : visitorFlowActive
+    : visitorFlowActive && !hasScannerActivity
       ? 'Member scan paused'
       : fatalOperationalOutage
         ? 'Kiosk services are unavailable'
         : result.title
   const resultMessage = visitorCompletion
     ? visitorCompletion.message
-    : visitorFlowActive
+    : visitorFlowActive && !hasScannerActivity
       ? visitorFlowMode === 'signin'
         ? 'Visitor sign-in is active on the right. Member scanning resumes when that flow is closed or finished.'
         : 'Visitor sign-out is active on the right. Member scanning resumes when that flow is closed or finished.'
@@ -648,7 +677,7 @@ export function useKioskScreen() {
         : result.message
   const resultEyebrow = visitorCompletion
     ? 'Visitor Complete'
-    : visitorFlowActive
+    : visitorFlowActive && !hasScannerActivity
       ? visitorFlowMode === 'signin'
         ? 'Visitor Sign-In'
         : 'Visitor Sign-Out'
@@ -657,12 +686,12 @@ export function useKioskScreen() {
         : result.eyebrow
   const resultMemberId = visitorCompletion
     ? undefined
-    : visitorFlowActive
+    : visitorFlowActive && !hasScannerActivity
       ? undefined
       : result.memberId
   const resultDirection = visitorCompletion
     ? undefined
-    : visitorFlowActive
+    : visitorFlowActive && !hasScannerActivity
       ? undefined
       : result.direction
   const resultPill: ResultPill | null = scanMutation.isPending
@@ -684,10 +713,7 @@ export function useKioskScreen() {
     assignmentSummary && (assignmentSummary.isDdsToday || assignmentSummary.isDutyWatchToday)
   )
   const assignmentBadges: AssignmentBadge[] = getAssignmentBadges(
-    resultMemberId &&
-      assignmentSummaryMemberId === resultMemberId &&
-      !visitorFlowActive &&
-      !visitorCompletion
+    resultMemberId && assignmentSummaryMemberId === resultMemberId && !visitorCompletion
       ? assignmentSummary
       : null
   )
@@ -697,17 +723,95 @@ export function useKioskScreen() {
     refocusBadgeInput()
   }, [showLockupOptions, visitorFlowActive, scanMutation.isPending])
 
+  const submitScannedSerial = useCallback(
+    (rawSerial: string) => {
+      const liveSerial = rawSerial.trim()
+      if (!liveSerial) return
+
+      setPendingLockup(null)
+      setShowLockupOptions(false)
+      void unlockKioskSoundPlayback(kioskSoundSettingsRef.current)
+      scanMutation.mutate(liveSerial)
+    },
+    [scanMutation]
+  )
+
   const submitCurrentSerial = () => {
-    if (scanningDisabled) return
+    if (manualScanningDisabled) return
 
     const liveSerial = inputRef.current?.value ?? serial
-    if (!liveSerial.trim()) return
-
-    setPendingLockup(null)
-    setShowLockupOptions(false)
-    void unlockKioskSoundPlayback(kioskSoundSettingsRef.current)
-    scanMutation.mutate(liveSerial)
+    submitScannedSerial(liveSerial)
   }
+
+  useEffect(() => {
+    const backgroundScannerBlocked =
+      fatalOperationalOutage ||
+      scanMutation.isPending ||
+      showLockupOptions ||
+      responsibilityPromptVisible ||
+      Boolean(pendingLockup)
+
+    if (backgroundScannerBlocked) {
+      scannerClassifierStateRef.current = createScannerClassifierState()
+      scannerEditableSnapshotRef.current = null
+      return
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const previousState = scannerClassifierStateRef.current
+      const shouldSnapshotEditableTarget = !previousState.buffer
+      const editableSnapshot = shouldSnapshotEditableTarget
+        ? createEditableTargetSnapshot(event.target)
+        : scannerEditableSnapshotRef.current
+
+      const decision = classifyScannerKeystroke(
+        previousState,
+        {
+          key: event.key,
+          timestamp: event.timeStamp,
+          ctrlKey: event.ctrlKey,
+          altKey: event.altKey,
+          metaKey: event.metaKey,
+        },
+        scannerTimingSettingsRef.current
+      )
+
+      if (decision.shouldPreventDefault) {
+        event.preventDefault()
+        event.stopPropagation()
+      }
+
+      if (
+        decision.kind === 'buffering' &&
+        decision.state.capturing &&
+        previousState.buffer &&
+        !previousState.capturing
+      ) {
+        removeScannerPrefixFromEditableTarget(editableSnapshot, previousState.buffer.value)
+        scannerEditableSnapshotRef.current = null
+      } else if (decision.kind === 'buffering' && !decision.state.capturing) {
+        scannerEditableSnapshotRef.current = editableSnapshot
+      } else if (decision.kind !== 'buffering') {
+        scannerEditableSnapshotRef.current = null
+      }
+
+      scannerClassifierStateRef.current = decision.state
+
+      if (decision.kind === 'accepted') {
+        submitScannedSerial(decision.sample.value)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown, { capture: true })
+    return () => window.removeEventListener('keydown', handleKeyDown, { capture: true })
+  }, [
+    fatalOperationalOutage,
+    pendingLockup,
+    responsibilityPromptVisible,
+    scanMutation.isPending,
+    showLockupOptions,
+    submitScannedSerial,
+  ])
 
   const resolveLockupCheckout = async (action: 'transfer' | 'execute') => {
     if (!pendingLockup) return
@@ -913,7 +1017,7 @@ export function useKioskScreen() {
       visitorScanPromptVisible,
       visitorFlowActive,
       visitorFlowMode,
-      scanningDisabled,
+      scanningDisabled: manualScanningDisabled,
       syncState,
       serial,
       onSerialChange: setSerial,

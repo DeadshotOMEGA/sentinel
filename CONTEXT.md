@@ -12,6 +12,10 @@ _Avoid_: User, account, attendee
 A person recorded for a specific visit to the Unit.
 _Avoid_: Guest, temporary member
 
+**Visitor Self-Service**:
+A Visitor-facing workflow for recording a Visitor's own visit details or departure.
+_Avoid_: Visitor log, guest book
+
 **Temporary Personnel**:
 A non-member person temporarily working at the Unit who needs repeatable check-in access for a defined assignment.
 _Avoid_: Visitor, guest, temporary member
@@ -43,6 +47,10 @@ _Avoid_: Building occupancy
 **NFC Tag**:
 A physical badge or tag scanned to identify a person during check-in workflows.
 _Avoid_: Card, token
+
+**NFC Scanner Input**:
+The badge identifier produced when an NFC Tag is scanned at a Sentinel check-in station.
+_Avoid_: Manual typing, visitor text entry
 
 **Presence-Only NFC Tag**:
 An NFC Tag that can record presence but cannot grant Sentinel authentication or Unit responsibilities.
@@ -131,6 +139,7 @@ _Avoid_: Operational report
 ## Relationships
 
 - A **Member** may have one **NFC Tag**
+- **NFC Scanner Input** identifies an **NFC Tag**, not a Visitor form response
 - A **Member** has one **Account Level**
 - A **Member** may have one or more **Operational Qualifications**
 - An **Access Rule** has one minimum **Account Level**
@@ -176,6 +185,10 @@ _Avoid_: Operational report
 - Revoking a **Temporary Personnel Assignment** revokes all Temporary Personnel access under it
 - Ended or revoked temporary access is not reactivated; a later need creates a new temporary access history
 - A **Visitor** represents one visit, not a reusable person identity
+- **Visitor Self-Service** records Visitors without making them Members or Temporary Personnel
+- **NFC Scanner Input** may be accepted during **Visitor Self-Service** without becoming Visitor form content
+- **NFC Scanner Input** may record Member or Temporary Personnel presence while **Visitor Self-Service** remains in progress
+- A Visitor-assigned **NFC Tag** is not the same as **Visitor Self-Service** sign-out
 - **Temporary Personnel** appear as **Present People** but do not count as Unit Members
 - **Building Occupancy** includes Members, Visitors, and Temporary Personnel
 - **Member Presence** includes Members only
@@ -190,6 +203,9 @@ _Avoid_: Operational report
 
 > **Dev:** "Should court staff be entered as **Visitors** every morning?"
 > **Domain expert:** "No - they are **Temporary Personnel** while assigned here, so their **NFC Tag** should let them check in repeatedly without creating a new visitor sign-in each time."
+
+> **Dev:** "Is the Visitor log the same thing as the self-service visitor flow?"
+> **Domain expert:** "Use **Visitor Self-Service** for the Visitor-facing workflow; reports and history views are separate records of what happened."
 
 > **Dev:** "Do **Temporary Personnel** count toward member strength or duty eligibility?"
 > **Domain expert:** "No - they can appear as **Present People**, but they are not **Members**."
@@ -338,6 +354,7 @@ _Avoid_: Operational report
 ## Flagged Ambiguities
 
 - "temporary people" could mean repeat visitors or short-term personnel - resolved: people working at the Unit for a defined assignment are **Temporary Personnel**.
+- "visitor log" could mean Visitor Self-Service, a report, or a history view - resolved: use **Visitor Self-Service** for the Visitor-facing kiosk workflow.
 - "option" could mean a page, button, API endpoint, or workflow - resolved: configurable access thresholds are **Access Rules**.
 - "permission" could mean Account Level authority or operational approval - resolved: **Access Rules** govern Account Level authority, while **Operational Qualifications** govern approved responsibilities.
 - "role" could mean Account Level authority, duty assignment, or organizational position - resolved: use **Access Rule** for configurable workflow thresholds and **Account Level** for member authority tiers.

@@ -2,7 +2,7 @@
 
 **Purpose:** Immutable record of all architectural decisions
 
-**Last Updated:** 2026-06-24
+**Last Updated:** 2026-07-03
 
 ---
 
@@ -25,20 +25,21 @@ Architecture Decision Records document:
 | Status     | Count | Description                     |
 | ---------- | ----- | ------------------------------- |
 | Proposed   | 0     | Under review                    |
-| Accepted   | 2     | Approved and active             |
+| Accepted   | 3     | Approved and active             |
 | Deprecated | 0     | Superseded but kept for history |
 | Rejected   | 0     | Proposed but not approved       |
 
-**Total ADRs:** 2
+**Total ADRs:** 3
 
 ---
 
 ## All Decisions (Chronological)
 
-| ADR                                                    | Title                              | Status   | Date       | Supersedes | Superseded By |
-| ------------------------------------------------------ | ---------------------------------- | -------- | ---------- | ---------- | ------------- |
-| [ADR-0001](0001-temporary-personnel-presence-model.md) | Temporary Personnel Presence Model | Accepted | 2026-05-22 | -          | -             |
-| [ADR-0002](0002-configurable-access-rule-policy.md)    | Configurable Access Rule Policy    | Accepted | 2026-06-24 | -          | -             |
+| ADR                                                          | Title                                    | Status   | Date       | Supersedes | Superseded By |
+| ------------------------------------------------------------ | ---------------------------------------- | -------- | ---------- | ---------- | ------------- |
+| [ADR-0001](0001-temporary-personnel-presence-model.md)       | Temporary Personnel Presence Model       | Accepted | 2026-05-22 | -          | -             |
+| [ADR-0002](0002-configurable-access-rule-policy.md)          | Configurable Access Rule Policy          | Accepted | 2026-06-24 | -          | -             |
+| [ADR-0003](0003-kiosk-keyboard-wedge-nfc-scanner-capture.md) | Kiosk Keyboard-Wedge NFC Scanner Capture | Accepted | 2026-07-03 | -          | -             |
 
 ---
 
@@ -63,7 +64,7 @@ _No ADRs yet_
 
 ### Frontend
 
-_No ADRs yet_
+- [ADR-0003: Kiosk Keyboard-Wedge NFC Scanner Capture](0003-kiosk-keyboard-wedge-nfc-scanner-capture.md)
 
 ---
 
@@ -76,6 +77,7 @@ _No ADRs yet_
 ### Architectural Patterns
 
 - [ADR-0001: Temporary Personnel Presence Model](0001-temporary-personnel-presence-model.md)
+- [ADR-0003: Kiosk Keyboard-Wedge NFC Scanner Capture](0003-kiosk-keyboard-wedge-nfc-scanner-capture.md)
 
 ### Process & Workflow
 
@@ -194,8 +196,8 @@ rg "better-auth|testcontainers|ts-rest" docs/decisions/adr/
 
 ## ADR Statistics
 
-- **Total ADRs:** 2
-- **Accepted:** 2
+- **Total ADRs:** 3
+- **Accepted:** 3
 - **Deprecated:** 0
 - **Rejected:** 0
 - **Average Time to Decision:** N/A
