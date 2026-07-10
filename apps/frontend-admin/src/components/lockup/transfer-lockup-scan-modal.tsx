@@ -12,7 +12,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
-import { BadgeScanInput } from '@/components/auth/badge-scan-input'
 import { useTransferLockup, useVerifyBadge } from '@/hooks/use-lockup'
 import type { EligibleRecipient } from '@sentinel/contracts'
 
@@ -38,25 +37,33 @@ export function TransferLockupScanModal({
   const [step, setStep] = useState<Step>('select')
   const [selectedRecipient, setSelectedRecipient] = useState<EligibleRecipient | null>(null)
   const [scanError, setScanError] = useState<string | null>(null)
+  const [authorizationIdentifier, setAuthorizationIdentifier] = useState('')
   const [newHolder, setNewHolder] = useState<EligibleRecipient | null>(null)
 
   const verifyBadge = useVerifyBadge()
   const transferLockup = useTransferLockup()
 
-  const handleScan = async (serialNumber: string) => {
+  const handleAuthorizeTransfer = async (identifier: string) => {
+    const trimmedIdentifier = identifier.trim()
+
+    if (!trimmedIdentifier) {
+      setScanError('Enter or scan the current holder, Admin, or Developer badge or service number.')
+      return
+    }
+
     setScanError(null)
 
     let verifyResult
     try {
-      verifyResult = await verifyBadge.mutateAsync({ serialNumber })
+      verifyResult = await verifyBadge.mutateAsync({ identifier: trimmedIdentifier })
     } catch {
-      setScanError('Badge not recognized. Ensure the badge is assigned to a member and try again.')
+      setScanError('Badge or service number not recognized. Check the entry and try again.')
       return
     }
 
     if (!verifyResult.authorized) {
       setScanError(
-        'This badge is not authorized to approve lockup transfers. Only the current lockup holder or an Admin/Developer may authorize.'
+        'This identity is not authorized to approve lockup transfers. Use the current lockup holder, Admin, or Developer.'
       )
       return
     }
@@ -70,6 +77,7 @@ export function TransferLockupScanModal({
         notes: notes?.trim() ? notes.trim() : null,
       })
       setNewHolder(selectedRecipient)
+      setAuthorizationIdentifier('')
       setStep('success')
     } catch {
       setScanError('Transfer failed. Please try again.')
@@ -83,6 +91,7 @@ export function TransferLockupScanModal({
     setStep('select')
     setSelectedRecipient(null)
     setScanError(null)
+    setAuthorizationIdentifier('')
     setNewHolder(null)
     onOpenChange(false)
   }
@@ -178,12 +187,18 @@ export function TransferLockupScanModal({
                 Authorize Transfer
               </DialogTitle>
               <DialogDescription>
-                Transferring lockup to {formatName(selectedRecipient)}. Scan an authorized keycard
-                to confirm.
+                Transferring lockup to {formatName(selectedRecipient)}. Authorize with the current
+                holder, Admin, or Developer.
               </DialogDescription>
             </DialogHeader>
 
-            <div className="space-y-4 py-4">
+            <form
+              className="space-y-4 py-4"
+              onSubmit={(event) => {
+                event.preventDefault()
+                void handleAuthorizeTransfer(authorizationIdentifier)
+              }}
+            >
               <div className="p-3 bg-base-200/50 rounded-lg border text-sm">
                 <p className="text-base-content/60 text-xs mb-1">Authorized identities:</p>
                 <p className="font-medium">{formatName(currentHolder)} (current holder)</p>
@@ -193,10 +208,30 @@ export function TransferLockupScanModal({
               {isPending ? (
                 <div className="flex flex-col items-center gap-3 py-6">
                   <ButtonSpinner className="h-8 w-8" />
-                  <p className="text-sm text-base-content/60">Verifying badge...</p>
+                  <p className="text-sm text-base-content/60">Verifying authorization...</p>
                 </div>
               ) : (
-                <BadgeScanInput onScan={handleScan} />
+                <fieldset className="fieldset space-y-(--space-3)">
+                  <legend className="fieldset-legend">Badge or service number</legend>
+                  <label className="input input-lg w-full">
+                    <Shield className="h-5 w-5 text-base-content/50" />
+                    <input
+                      type="text"
+                      className="grow font-mono tracking-[0.12em]"
+                      placeholder="Scan badge or enter service number"
+                      value={authorizationIdentifier}
+                      onChange={(event) => {
+                        setAuthorizationIdentifier(event.target.value)
+                        setScanError(null)
+                      }}
+                      autoComplete="off"
+                      autoFocus
+                    />
+                  </label>
+                  <p className="label text-base-content/60">
+                    Press Enter or choose Authorize Transfer.
+                  </p>
+                </fieldset>
               )}
 
               {scanError && (
@@ -205,7 +240,7 @@ export function TransferLockupScanModal({
                   <span>{scanError}</span>
                 </div>
               )}
-            </div>
+            </form>
 
             <DialogFooter>
               <button
@@ -218,6 +253,17 @@ export function TransferLockupScanModal({
                 }}
               >
                 Back
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary btn-md"
+                disabled={isPending || !authorizationIdentifier.trim()}
+                onClick={() => {
+                  void handleAuthorizeTransfer(authorizationIdentifier)
+                }}
+              >
+                {isPending ? <ButtonSpinner /> : null}
+                Authorize Transfer
               </button>
             </DialogFooter>
           </>

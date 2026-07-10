@@ -224,25 +224,46 @@ export const lockupRouter = s.router(lockupContract, {
   },
 
   /**
-   * Verify badge authorization for lockup transfer
-   * Checks if the scanned badge belongs to the current lockup holder or an Admin/Developer.
+   * Verify identity authorization for lockup transfer.
+   * Accepts a badge serial number or member service number.
    * Does NOT create any checkin record.
    */
   verifyBadge: async ({ body }) => {
     try {
-      const result = await badgeRepository.findBySerialNumberWithMember(body.serialNumber)
+      const identifier = (body.identifier ?? body.serialNumber ?? '').trim()
 
-      if (!result || !result.member) {
+      if (!identifier) {
         return {
           status: 403 as const,
           body: {
-            error: 'BADGE_NOT_FOUND',
-            message: 'Badge not found or not assigned to a member',
+            error: 'IDENTIFIER_REQUIRED',
+            message: 'Badge or service number is required',
           },
         }
       }
 
-      const { member } = result
+      const badgeResult = await badgeRepository.findBySerialNumberWithMember(identifier)
+      const member =
+        badgeResult?.member ??
+        (await getPrismaClient().member.findUnique({
+          where: { serviceNumber: identifier },
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            rank: true,
+          },
+        }))
+
+      if (!member) {
+        return {
+          status: 403 as const,
+          body: {
+            error: 'IDENTITY_NOT_FOUND',
+            message: 'Badge or service number not found for an active member',
+          },
+        }
+      }
 
       // Fetch accountLevel directly — not in shared types package
       const memberRecord = await getPrismaClient().member.findUnique({

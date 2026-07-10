@@ -336,7 +336,8 @@ export const CheckLockupAuthResponseSchema = v.object({
  * Verify badge request schema
  */
 export const VerifyBadgeSchema = v.object({
-  serialNumber: v.string(),
+  serialNumber: v.optional(v.string()),
+  identifier: v.optional(v.string()),
 })
 
 /**
