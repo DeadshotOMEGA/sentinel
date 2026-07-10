@@ -147,6 +147,9 @@ htmlcov/
 # Plans (temporary)
 .claude/plans/
 docs/plans/
+!docs/plans/
+!docs/plans/active/
+!docs/plans/active/2026-07-09-wiki-refresh-page-by-page.md
 docs/reviews/
 
 # External skills (installed from other projects)
