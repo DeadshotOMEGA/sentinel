@@ -789,8 +789,12 @@ export class DdsService {
     const todayCycles = await this.getTodayLockupCycles(lockupStatus)
     const currentOpenContext = this.buildCurrentOpenContext(lockupStatus, todayCycles)
 
+    const shouldPrompt =
+      needsBuildingOpen ||
+      (needsDds && (!assumeMemberPresent || expectedDds?.matchesScannedMember === true))
+
     return {
-      shouldPrompt: needsDds || needsBuildingOpen,
+      shouldPrompt,
       promptVariant,
       isFirstMemberCheckin,
       needsDds,
