@@ -2,7 +2,7 @@
 
 **Purpose:** Central registry of all implementation plans
 
-**Last Updated:** 2026-04-22
+**Last Updated:** 2026-07-09
 
 ---
 
@@ -10,11 +10,12 @@
 
 Currently executing plans tracked here:
 
-| Plan | Started | Status | Current Phase | Progress |
-| ---- | ------- | ------ | ------------- | -------- |
-| [Sentinel Self-Update V2](active/2026-04-22-sentinel-self-update-v2.md) | 2026-04-22 | Active | Phases 4-6 validation | Phases 1-3 manually validated on an Ubuntu VM; backend bridge/systemd path validated; published-release, UI, and rollback validation still pending |
+| Plan                                                                        | Started    | Status | Current Phase         | Progress                                                                                                                                           |
+| --------------------------------------------------------------------------- | ---------- | ------ | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [Sentinel Self-Update V2](active/2026-04-22-sentinel-self-update-v2.md)     | 2026-04-22 | Active | Phases 4-6 validation | Phases 1-3 manually validated on an Ubuntu VM; backend bridge/systemd path validated; published-release, UI, and rollback validation still pending |
+| [Wiki Page-By-Page Refresh](active/2026-07-09-wiki-refresh-page-by-page.md) | 2026-07-09 | Active | Phase 1 inventory     | Missing help pages and slug index in progress                                                                                                      |
 
-**Total Active:** 1
+**Total Active:** 2
 
 ---
 
@@ -22,12 +23,12 @@ Currently executing plans tracked here:
 
 Successfully finished plans:
 
-| Plan                                                                                 | Completed  | Duration | Outcome                                                                          |
-| ------------------------------------------------------------------------------------ | ---------- | -------- | -------------------------------------------------------------------------------- |
-| [Backend Rebuild](completed/backend-rebuild-plan.md)                                 | 2026-01-23 | 8 days   | Phases 1-3 complete: 63 API endpoints, 634 tests, WebSocket infrastructure       |
-| [Backend Phase 4 Completion](completed/2026-01-23-phase-4-completion.md)             | 2026-01-23 | 5 hours  | Production readiness: Documentation, infrastructure verification, security audit |
-| [Frontend Admin MVP](completed/2026-01-23-frontend-admin-mvp.md)                     | 2026-01-26 | 3 days   | All 4 phases complete: Dashboard, Members, Check-ins pages fully implemented     |
-| [Duty Roles & Lockup System](completed/2026-01-27-duty-roles-lockup-system.md)       | 2026-01-27 | 1 day    | All 10 phases complete: Qualifications, Schedules, Lockup, Alerts, Kiosk flows   |
+| Plan                                                                           | Completed  | Duration | Outcome                                                                          |
+| ------------------------------------------------------------------------------ | ---------- | -------- | -------------------------------------------------------------------------------- |
+| [Backend Rebuild](completed/backend-rebuild-plan.md)                           | 2026-01-23 | 8 days   | Phases 1-3 complete: 63 API endpoints, 634 tests, WebSocket infrastructure       |
+| [Backend Phase 4 Completion](completed/2026-01-23-phase-4-completion.md)       | 2026-01-23 | 5 hours  | Production readiness: Documentation, infrastructure verification, security audit |
+| [Frontend Admin MVP](completed/2026-01-23-frontend-admin-mvp.md)               | 2026-01-26 | 3 days   | All 4 phases complete: Dashboard, Members, Check-ins pages fully implemented     |
+| [Duty Roles & Lockup System](completed/2026-01-27-duty-roles-lockup-system.md) | 2026-01-27 | 1 day    | All 10 phases complete: Qualifications, Schedules, Lockup, Alerts, Kiosk flows   |
 
 **Total Completed:** 4
 
@@ -47,7 +48,7 @@ Plans that were cancelled, superseded, or no longer relevant:
 
 ## Plan Statistics
 
-- **Active:** 1
+- **Active:** 2
 - **Completed:** 4
 - **Archived:** 0
 - **Success Rate:** 100% (4 completed successfully, 1 active)
