@@ -6,6 +6,7 @@ import type { ProcedureDefinition, ProcedureDriver, ProcedureDriverHandlers } fr
 import { emitActiveHelpStep } from './help-events'
 import { openHelpTarget } from './orchestrator'
 import { HELP_START_HERE_ROUTE_ID, resolveRouteIdFromPathname } from './help-registry'
+import { resolvePreferredTargetElement } from './runtime'
 
 const HELP_ICON_SVG =
   '<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.5A2.5 2.5 0 0 1 4.5 4H11v16H4.5A2.5 2.5 0 0 1 2 17.5z"/><path d="M22 6.5A2.5 2.5 0 0 0 19.5 4H13v16h6.5a2.5 2.5 0 0 0 2.5-2.5z"/></svg>'
@@ -70,7 +71,9 @@ export class DriverJsProcedureDriver implements ProcedureDriver {
     const routeId = resolveRouteIdFromPathname(definition.route) ?? HELP_START_HERE_ROUTE_ID
 
     const steps = definition.steps.map<DriveStep>((step, index) => ({
-      element: step.target,
+      element: step.target
+        ? () => resolvePreferredTargetElement(step.target ?? '') ?? document.body
+        : undefined,
       popover: {
         title: step.popover.title,
         description: step.popover.description,

@@ -19,6 +19,11 @@ export interface HelpTourRequestDetail {
   timestamp: string
 }
 
+export interface ProcedureHelpOpenDetail {
+  routeId: string
+  timestamp: string
+}
+
 export interface ActiveHelpStepDetail {
   routeId: string
   procedureId: string
@@ -30,6 +35,7 @@ export interface ActiveHelpStepDetail {
 
 const HELP_OPEN_EVENT = 'sentinel:help-open'
 const HELP_TOUR_REQUEST_EVENT = 'sentinel:help-request-tour'
+const PROCEDURE_HELP_OPEN_EVENT = 'sentinel:help-open-procedures'
 const HELP_ACTIVE_STEP_EVENT = 'sentinel:help-active-step'
 
 let activeHelpStep: ActiveHelpStepDetail | null = null
@@ -80,6 +86,27 @@ export function subscribeHelpTourRequest(
 
   window.addEventListener(HELP_TOUR_REQUEST_EVENT, listener)
   return () => window.removeEventListener(HELP_TOUR_REQUEST_EVENT, listener)
+}
+
+export function emitProcedureHelpOpen(routeId: string): void {
+  dispatchSentinelEvent<ProcedureHelpOpenDetail>(PROCEDURE_HELP_OPEN_EVENT, {
+    routeId,
+    timestamp: new Date().toISOString(),
+  })
+}
+
+export function subscribeProcedureHelpOpen(
+  handler: (detail: ProcedureHelpOpenDetail) => void
+): () => void {
+  if (typeof window === 'undefined') return () => undefined
+
+  const listener = (event: Event) => {
+    const customEvent = event as globalThis.CustomEvent<ProcedureHelpOpenDetail>
+    handler(customEvent.detail)
+  }
+
+  window.addEventListener(PROCEDURE_HELP_OPEN_EVENT, listener)
+  return () => window.removeEventListener(PROCEDURE_HELP_OPEN_EVENT, listener)
 }
 
 export function emitActiveHelpStep(detail: ActiveHelpStepDetail | null): void {

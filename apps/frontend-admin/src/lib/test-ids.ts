@@ -339,6 +339,8 @@ export const TID = {
     scan: {
       input: 'dashboard-scan-input',
       result: 'dashboard-scan-result',
+      hide: 'dashboard-scan-hide',
+      show: 'dashboard-scan-show',
     },
     kiosk: {
       launchTab: 'dashboard-kiosk-launch-tab',

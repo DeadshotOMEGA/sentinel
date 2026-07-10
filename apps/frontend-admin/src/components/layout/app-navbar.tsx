@@ -124,7 +124,12 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
       <div className="navbar-start">
         {/* Sidebar Toggle - only visible when drawer is closed */}
         {!isDrawerOpen && (
-          <label htmlFor={drawerId} aria-label="open sidebar" className="btn btn-square btn-ghost">
+          <label
+            htmlFor={drawerId}
+            aria-label="open sidebar"
+            className="btn btn-square btn-ghost"
+            data-help-id="nav.sidebar-toggle"
+          >
             <Menu className="h-6 w-6 lg:hidden" />
             <PanelLeftOpen className="hidden h-5 w-5 lg:block" />
           </label>

@@ -154,7 +154,10 @@ interface PersonCardProps {
   isDds?: boolean
   isSelected?: boolean
   onCheckoutVisitor?: (id: string) => void
-  onSelectMember?: (person: PresentPerson, sideHint: 'left' | 'right') => void
+  onSelectMember?: (
+    person: PresentPerson,
+    anchorRect: ReturnType<Element['getBoundingClientRect']>
+  ) => void
 }
 
 export const PersonCard = memo(function PersonCard({
@@ -204,23 +207,23 @@ export const PersonCard = memo(function PersonCard({
     return (ftsTag ?? nonPositionalTags?.[0])?.id
   })()
 
-  // Card border color: subtle indicator for member vs visitor
-  const cardBorderClass = isSelected
-    ? 'border-primary shadow-md ring-1 ring-primary/20'
-    : isMember
-      ? 'border-primary/50'
-      : isTemporaryPersonnel
-        ? 'border-secondary/50'
-        : 'border-neutral/50'
+  // Keep card borders neutral; role/type color is carried by avatars and badges.
+  const cardBorderClass = isSelected ? 'border-base-300 shadow-md' : 'border-base-300'
   const cardSurfaceClass = isMember
     ? 'card-elevated'
     : isTemporaryPersonnel
       ? 'card-elevated'
       : 'card-elevated-neutral'
 
-  const handleMemberSelect = (sideHint: 'left' | 'right') => {
+  const handleMemberSelect = (anchorElement: HTMLElement) => {
     if (isInteractive) {
-      onSelectMember?.(person, sideHint)
+      const cardElement = anchorElement.firstElementChild
+      const anchorRect =
+        cardElement instanceof HTMLElement
+          ? cardElement.getBoundingClientRect()
+          : anchorElement.getBoundingClientRect()
+
+      onSelectMember?.(person, anchorRect)
     }
   }
 
@@ -228,7 +231,7 @@ export const PersonCard = memo(function PersonCard({
     <div
       className={`card border h-full min-w-0 ${cardSurfaceClass} ${cardBorderClass} ${
         isInteractive
-          ? 'group-hover:border-primary group-hover:shadow-md group-focus-visible:ring-2 group-focus-visible:ring-primary/40'
+          ? 'group-hover:border-base-500 group-hover:shadow-md group-active:border-base-500 group-active:ring-1 group-active:ring-base-300/70 group-focus-visible:ring-2 group-focus-visible:ring-base-400/50'
           : ''
       }`}
     >
@@ -379,7 +382,7 @@ export const PersonCard = memo(function PersonCard({
             <span>{formatRelativeTime(person.checkInTime)}</span>
           </div>
           {isInteractive && (
-            <span className="font-medium text-primary/80">
+            <span className="font-medium text-base-content/60">
               {isSelected ? 'Actions open' : 'Open actions'}
             </span>
           )}
@@ -414,7 +417,7 @@ export const PersonCard = memo(function PersonCard({
       onClick={
         isInteractive
           ? (event) => {
-              handleMemberSelect(event.clientX >= window.innerWidth / 2 ? 'left' : 'right')
+              handleMemberSelect(event.currentTarget)
             }
           : undefined
       }
@@ -423,9 +426,7 @@ export const PersonCard = memo(function PersonCard({
           ? (event) => {
               if (event.key === 'Enter' || event.key === ' ') {
                 event.preventDefault()
-                const rect = event.currentTarget.getBoundingClientRect()
-                const centerX = rect.left + rect.width / 2
-                handleMemberSelect(centerX >= window.innerWidth / 2 ? 'left' : 'right')
+                handleMemberSelect(event.currentTarget)
               }
             }
           : undefined

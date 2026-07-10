@@ -14,12 +14,12 @@ import { AccountLevel } from '@/store/auth-store'
 
 const HISTORY_GROUPS: ProcedureGroup[] = [
   {
-    title: 'Review history',
+    title: 'Review History',
     summary: 'Find records and understand the audit table.',
     procedureIds: ['history.admin.orientation.v1'],
   },
   {
-    title: 'Correct records',
+    title: 'Correct Records',
     summary: 'Edit only verified member or visitor records.',
     procedureIds: ['history.admin.corrections.v1'],
   },
@@ -27,12 +27,12 @@ const HISTORY_GROUPS: ProcedureGroup[] = [
 
 const MEMBERS_GROUPS: ProcedureGroup[] = [
   {
-    title: 'Learn the roster',
+    title: 'Learn the Roster',
     summary: 'Use filters, row actions, and bulk tools safely.',
     procedureIds: ['members.admin.orientation.v1'],
   },
   {
-    title: 'Maintain records',
+    title: 'Maintain Records',
     summary: 'Create, import, and sync member records.',
     procedureIds: ['members.admin.records.v1'],
   },
@@ -40,7 +40,7 @@ const MEMBERS_GROUPS: ProcedureGroup[] = [
 
 const EVENTS_GROUPS: ProcedureGroup[] = [
   {
-    title: 'Plan events',
+    title: 'Plan Events',
     summary: 'Create events, read status, and open details.',
     procedureIds: ['events.planner.orientation.v1'],
   },
@@ -53,12 +53,12 @@ const EVENTS_GROUPS: ProcedureGroup[] = [
 
 const SCHEDULES_GROUPS: ProcedureGroup[] = [
   {
-    title: 'Plan coverage',
+    title: 'Plan Coverage',
     summary: 'Read week, month, and quarter schedule views.',
     procedureIds: ['schedules.scheduler.orientation.v1'],
   },
   {
-    title: 'Publish coverage',
+    title: 'Publish Coverage',
     summary: 'Assign and publish DDS or Duty Watch coverage.',
     procedureIds: ['schedules.scheduler.publish.v1'],
   },
@@ -69,8 +69,8 @@ export function HistoryHelpLauncher() {
     <ProcedureHelpLauncher
       routeId="checkins"
       routePath="/checkins"
-      title="History procedures"
-      intro="Choose the procedure that matches your review or correction task. Use History as evidence, then confirm live Presence when changes affect who is on site."
+      title="History Tutorials"
+      intro="Choose the tutorial that matches your review or correction task. Use History as evidence, then confirm live Presence when changes affect who is on site."
       procedureGroups={HISTORY_GROUPS}
       procedures={historyProcedureDefinitions}
       minAccountLevel={AccountLevel.COMMAND}
@@ -84,8 +84,8 @@ export function MembersHelpLauncher() {
     <ProcedureHelpLauncher
       routeId="members"
       routePath="/members"
-      title="Members procedures"
-      intro="Choose the procedure that matches your member-record task. Member changes can affect access, schedules, badges, and qualifications."
+      title="Members Tutorials"
+      intro="Choose the tutorial that matches your member-record task. Member changes can affect access, schedules, badges, and qualifications."
       procedureGroups={MEMBERS_GROUPS}
       procedures={membersProcedureDefinitions}
       minAccountLevel={AccountLevel.ADMIN}
@@ -99,8 +99,8 @@ export function EventsHelpLauncher() {
     <ProcedureHelpLauncher
       routeId="events"
       routePath="/events"
-      title="Events procedures"
-      intro="Choose the procedure that matches your event-planning task. Keep event details current before planning supporting duties."
+      title="Events Tutorials"
+      intro="Choose the tutorial that matches your event-planning task. Keep event details current before planning supporting duties."
       procedureGroups={EVENTS_GROUPS}
       procedures={eventsProcedureDefinitions}
       minAccountLevel={AccountLevel.BASIC}
@@ -114,8 +114,8 @@ export function SchedulesHelpLauncher() {
     <ProcedureHelpLauncher
       routeId="schedules"
       routePath="/schedules"
-      title="Schedules procedures"
-      intro="Choose the procedure that matches your scheduling task. Publish only after validating people, dates, and coverage gaps."
+      title="Schedules Tutorials"
+      intro="Choose the tutorial that matches your scheduling task. Publish only after validating people, dates, and coverage gaps."
       procedureGroups={SCHEDULES_GROUPS}
       procedures={schedulesProcedureDefinitions}
       minAccountLevel={AccountLevel.COMMAND}

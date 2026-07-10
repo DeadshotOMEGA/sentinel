@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { findReachableIndex, isProcedureEligible, resolveNextStepIndex } from './runtime'
+import {
+  findReachableIndex,
+  isProcedureEligible,
+  resolveNextStepIndex,
+  resolvePreferredTargetSelector,
+} from './runtime'
 import type { ProcedureContext, ProcedureDefinition } from './types'
 
 const baseContext: ProcedureContext = {
@@ -75,5 +80,34 @@ describe('findReachableIndex', () => {
   it('returns out-of-range index when no reachable step exists', () => {
     const index = findReachableIndex(definition, 0, 1, () => false)
     expect(index).toBe(2)
+  })
+})
+
+describe('resolvePreferredTargetSelector', () => {
+  it('prefers fallback selectors in declaration order instead of DOM order', () => {
+    const existingSelectors = new Set([
+      '[data-help-id="dashboard.stat.building"]',
+      '[data-help-id="dashboard.stat.lockup-holder"]',
+    ])
+    const selector =
+      '[data-help-id="dashboard.stat.lockup-holder"], [data-help-id="dashboard.stat.building"]'
+
+    const preferredSelector = resolvePreferredTargetSelector(selector, (candidateSelector) =>
+      existingSelectors.has(candidateSelector)
+    )
+
+    expect(preferredSelector).toBe('[data-help-id="dashboard.stat.lockup-holder"]')
+  })
+
+  it('uses the fallback selector when the preferred selector is unavailable', () => {
+    const existingSelectors = new Set(['[data-help-id="dashboard.status-stats"]'])
+    const selector =
+      '[data-help-id="dashboard.stat.duty-watch"], [data-help-id="dashboard.status-stats"]'
+
+    const preferredSelector = resolvePreferredTargetSelector(selector, (candidateSelector) =>
+      existingSelectors.has(candidateSelector)
+    )
+
+    expect(preferredSelector).toBe('[data-help-id="dashboard.status-stats"]')
   })
 })

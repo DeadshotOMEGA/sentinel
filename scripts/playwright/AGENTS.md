@@ -17,13 +17,16 @@ These scripts are the maintained Playwright CLI utilities for:
 - Use `playwright-cli`, not Playwright MCP, for these scripts.
 - Treat `.playwright-cli/` as the canonical local state and artifact directory for Playwright CLI work in this repo.
 - Do not recreate or rely on `.playwright/` for Codex Playwright workflows.
-- When calling `playwright-cli` directly, pass `--config=.playwright-cli/cli.config.json` unless the task explicitly requires another config.
+- When opening a local browser session, pass `open --browser=chromium --config=.playwright-cli/cli.config.json` unless the task explicitly requires another config.
+- Do not pass `--config` as a global `playwright-cli` option; commands such as `close`, `snapshot`, `screenshot`, and `state-load` do not accept it.
 - Save auth state under `.playwright-cli/auth/`.
 - Save scripted capture sets under `.playwright-cli/runs/<workflow>/<YYYY-MM-DD>/<run-id>/`.
 - Save script-managed logs under `.playwright-cli/logs/<workflow>/<YYYY-MM-DD>/`.
 - If `playwright-cli` emits root-level `console-*.log` or `page-*.yml` files, move them into the matching workflow log/run folder before the script exits.
 - Default authentication should use the Sentinel bootstrap account:
   - Badge: `0000000000`
+- Default workstation confirmation should use `Brow`; do not use `Kiosk` for admin frontend verification.
+- If `Brow` is unavailable, fail clearly unless the task explicitly provides a different `PLAYWRIGHT_REMOTE_SYSTEM`.
 - Support overrides via environment variables when a different account is intentionally required.
 - Treat `apps/frontend-admin` as a desktop-only webapp for these workflows unless the product requirements explicitly change.
 - Browser size for Codex Playwright work in this repo must be `1920x1080`.
