@@ -893,6 +893,267 @@ describe('DdsService', () => {
     expect(state.currentOpenContext?.currentHolderAcquiredAt).toBe('2026-03-04T08:30:00.000Z')
   })
 
+  it('does not block dashboard refresh for a non-DDS member when the open building is already covered', async () => {
+    prismaMock.member.findUnique.mockResolvedValue(
+      createMemberSummary({
+        id: 'member-4',
+        firstName: 'Cortney',
+        lastName: 'Sauk',
+        rank: 'MS',
+      })
+    )
+    prismaMock.member.findMany.mockResolvedValue([
+      createMemberSummary({
+        id: 'member-1',
+        firstName: 'Marian',
+        lastName: 'Alolor',
+        rank: 'S1',
+      }),
+      createMemberSummary({
+        id: 'member-2',
+        firstName: 'Vincent',
+        lastName: 'Molina',
+        rank: 'A/SLt',
+      }),
+    ])
+    prismaMock.responsibilityAuditLog.findMany.mockResolvedValue([
+      {
+        id: 'log-open-1',
+        memberId: 'member-1',
+        tagName: 'Lockup',
+        action: 'building_opened',
+        fromMemberId: null,
+        toMemberId: null,
+        performedBy: 'member-1',
+        performedByType: 'member',
+        timestamp: new Date('2026-03-04T07:34:00.000Z'),
+        notes: null,
+      },
+    ])
+
+    const service = new DdsService(prismaMock as unknown as PrismaClient)
+    ;(
+      service as unknown as {
+        getCurrentDds: ReturnType<typeof vi.fn>
+      }
+    ).getCurrentDds = vi.fn().mockResolvedValue(
+      createAssignment({
+        memberId: 'member-1',
+        status: 'pending',
+        member: {
+          id: 'member-1',
+          firstName: 'Marian',
+          lastName: 'Alolor',
+          rank: 'S1',
+          division: {
+            name: 'Operations',
+          },
+        },
+      })
+    )
+    ;(
+      service as unknown as {
+        scheduleService: { getCurrentDdsFromSchedule: ReturnType<typeof vi.fn> }
+      }
+    ).scheduleService = {
+      getCurrentDdsFromSchedule: vi.fn().mockResolvedValue({
+        dds: createScheduledDds({
+          member: {
+            id: 'member-1',
+            firstName: 'Marian',
+            lastName: 'Alolor',
+            rank: 'S1',
+            serviceNumber: '12345',
+          },
+        }),
+        operationalDate: '2026-03-04',
+      }),
+    }
+    ;(
+      service as unknown as {
+        lockupService: {
+          getCurrentStatus: ReturnType<typeof vi.fn>
+          canMemberExerciseLockupAuthority: ReturnType<typeof vi.fn>
+        }
+      }
+    ).lockupService = {
+      getCurrentStatus: vi.fn().mockResolvedValue(
+        createLockupStatus({
+          buildingStatus: 'open',
+          currentHolderId: 'member-2',
+          acquiredAt: new Date('2026-03-04T14:59:00.000Z'),
+          currentHolder: {
+            id: 'member-2',
+            firstName: 'Vincent',
+            lastName: 'Molina',
+            rank: 'A/SLt',
+            serviceNumber: '22334',
+          },
+        })
+      ),
+      canMemberExerciseLockupAuthority: vi.fn().mockResolvedValue(true),
+    }
+    ;(
+      service as unknown as {
+        presenceService: {
+          getPresentMembers: ReturnType<typeof vi.fn>
+          getActiveVisitorCount: ReturnType<typeof vi.fn>
+        }
+      }
+    ).presenceService = {
+      getPresentMembers: vi.fn().mockResolvedValue([
+        {
+          id: 'member-4',
+          firstName: 'Cortney',
+          lastName: 'Sauk',
+          rank: 'MS',
+          checkedInAt: '2026-03-04T18:57:00.000Z',
+        },
+      ]),
+      getActiveVisitorCount: vi.fn().mockResolvedValue(0),
+    }
+    ;(
+      service as unknown as {
+        qualificationService: {
+          memberHasActiveQualificationCode: ReturnType<typeof vi.fn>
+          canMemberReceiveLockup: ReturnType<typeof vi.fn>
+        }
+      }
+    ).qualificationService = {
+      memberHasActiveQualificationCode: vi.fn().mockResolvedValue(true),
+      canMemberReceiveLockup: vi.fn().mockResolvedValue(true),
+    }
+    stubNoHandover(service)
+
+    const state = await service.getLoginResponsibilityState('member-4')
+
+    expect(state.needsDds).toBe(true)
+    expect(state.needsBuildingOpen).toBe(false)
+    expect(state.promptVariant).toBe('building_open_dds_pending')
+    expect(state.shouldPrompt).toBe(false)
+    expect(state.expectedDds?.matchesScannedMember).toBe(false)
+    expect(state.currentLockupHolder?.id).toBe('member-2')
+  })
+
+  it('still prompts the expected DDS on dashboard refresh when they need to accept', async () => {
+    prismaMock.member.findUnique.mockResolvedValue(
+      createMemberSummary({
+        id: 'member-1',
+        firstName: 'Marian',
+        lastName: 'Alolor',
+        rank: 'S1',
+      })
+    )
+    prismaMock.member.findMany.mockResolvedValue([
+      createMemberSummary({
+        id: 'member-1',
+        firstName: 'Marian',
+        lastName: 'Alolor',
+        rank: 'S1',
+      }),
+    ])
+    prismaMock.responsibilityAuditLog.findMany.mockResolvedValue([])
+
+    const service = new DdsService(prismaMock as unknown as PrismaClient)
+    ;(
+      service as unknown as {
+        getCurrentDds: ReturnType<typeof vi.fn>
+      }
+    ).getCurrentDds = vi.fn().mockResolvedValue(
+      createAssignment({
+        memberId: 'member-1',
+        status: 'pending',
+        member: {
+          id: 'member-1',
+          firstName: 'Marian',
+          lastName: 'Alolor',
+          rank: 'S1',
+          division: {
+            name: 'Operations',
+          },
+        },
+      })
+    )
+    ;(
+      service as unknown as {
+        scheduleService: { getCurrentDdsFromSchedule: ReturnType<typeof vi.fn> }
+      }
+    ).scheduleService = {
+      getCurrentDdsFromSchedule: vi.fn().mockResolvedValue({
+        dds: createScheduledDds({
+          member: {
+            id: 'member-1',
+            firstName: 'Marian',
+            lastName: 'Alolor',
+            rank: 'S1',
+            serviceNumber: '12345',
+          },
+        }),
+        operationalDate: '2026-03-04',
+      }),
+    }
+    ;(
+      service as unknown as {
+        lockupService: {
+          getCurrentStatus: ReturnType<typeof vi.fn>
+          canMemberExerciseLockupAuthority: ReturnType<typeof vi.fn>
+        }
+      }
+    ).lockupService = {
+      getCurrentStatus: vi.fn().mockResolvedValue(
+        createLockupStatus({
+          buildingStatus: 'open',
+          currentHolderId: 'member-2',
+          acquiredAt: new Date('2026-03-04T14:59:00.000Z'),
+          currentHolder: {
+            id: 'member-2',
+            firstName: 'Vincent',
+            lastName: 'Molina',
+            rank: 'A/SLt',
+            serviceNumber: '22334',
+          },
+        })
+      ),
+      canMemberExerciseLockupAuthority: vi.fn().mockResolvedValue(true),
+    }
+    ;(
+      service as unknown as {
+        presenceService: {
+          getPresentMembers: ReturnType<typeof vi.fn>
+          getActiveVisitorCount: ReturnType<typeof vi.fn>
+        }
+      }
+    ).presenceService = {
+      getPresentMembers: vi.fn().mockResolvedValue([
+        {
+          id: 'member-1',
+          firstName: 'Marian',
+          lastName: 'Alolor',
+          rank: 'S1',
+          checkedInAt: '2026-03-04T07:34:00.000Z',
+        },
+      ]),
+      getActiveVisitorCount: vi.fn().mockResolvedValue(0),
+    }
+    ;(
+      service as unknown as {
+        qualificationService: {
+          memberHasActiveQualificationCode: ReturnType<typeof vi.fn>
+          canMemberReceiveLockup: ReturnType<typeof vi.fn>
+        }
+      }
+    ).qualificationService = {
+      memberHasActiveQualificationCode: vi.fn().mockResolvedValue(true),
+      canMemberReceiveLockup: vi.fn().mockResolvedValue(true),
+    }
+    stubNoHandover(service)
+
+    const state = await service.getLoginResponsibilityState('member-1')
+
+    expect(state.shouldPrompt).toBe(true)
+    expect(state.expectedDds?.matchesScannedMember).toBe(true)
+  })
+
   it('builds same-day open and close cycles with the current cycle highlighted', async () => {
     prismaMock.member.findUnique.mockResolvedValue(createMemberSummary({ id: 'member-3' }))
     prismaMock.member.findMany.mockResolvedValue([

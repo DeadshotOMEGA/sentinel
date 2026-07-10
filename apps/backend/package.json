@@ -1,6 +1,6 @@
 {
   "name": "@sentinel/backend",
-  "version": "3.4.22",
+  "version": "3.4.23",
   "private": true,
   "description": "Backend API for Sentinel RFID Attendance System",
   "main": "./src/index.ts",
