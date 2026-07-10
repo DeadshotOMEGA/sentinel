@@ -9,7 +9,8 @@ Applies when editing files under: `scripts/`
 - Canonical browser automation for Codex in this repo is `playwright-cli`.
 - Use `scripts/playwright/` as the maintained Playwright CLI workflow.
 - Use `.playwright-cli/` as the canonical local auth/artifact folder for that workflow.
-- When using `playwright-cli` directly, pass `--config=.playwright-cli/cli.config.json` so the browser channel stays consistent.
+- When opening a local browser session, pass `open --browser=chromium --config=.playwright-cli/cli.config.json` so the workflow uses the bundled Playwright browser instead of a possibly missing system Chrome install.
+- Do not pass `--config` as a global `playwright-cli` option; commands such as `close`, `snapshot`, `screenshot`, and `state-load` do not accept it.
 - Keep workflow output organized under `.playwright-cli/auth`, `.playwright-cli/runs`, `.playwright-cli/logs`, and `.playwright-cli/artifacts`.
 - Treat older one-off capture utilities under `scripts/visuals/` as legacy unless the task explicitly targets them.
 - For Codex-driven browser QA, use the Sentinel bootstrap account:

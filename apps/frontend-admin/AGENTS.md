@@ -43,7 +43,14 @@ Applies when editing files under: `apps/frontend-admin/`
 - MUST NOT add mobile, tablet, or responsive-breakpoint Playwright coverage for `apps/frontend-admin` unless the task explicitly requires a product change away from the desktop-only constraint.
 - MUST use `playwright-cli` for the visual sanity check when the task is primarily about frontend layout/UX, when the user reports a visual defect, or when a local route is available and the change materially affects layout.
 - MUST NOT use Playwright MCP tools for frontend verification when `playwright-cli` is available.
-- MUST use the Sentinel bootstrap account (`0000000000` / `0000`) or a freshly generated `playwright-cli` auth state unless the task explicitly requires a different login.
+- MUST use `playwright-cli open --browser=chromium --config=.playwright-cli/cli.config.json ...` for local browser sessions; do not rely on the default system Chrome channel.
+- MUST use a freshly generated `playwright-cli` auth state when possible:
+  - Run `scripts/playwright/save-cli-auth-state.sh` to save `.playwright-cli/auth/bootstrap.json`.
+  - Then load it with `playwright-cli state-load .playwright-cli/auth/bootstrap.json`.
+- MUST use the Sentinel bootstrap login flow unless the task explicitly requires a different account:
+  - Badge: `0000000000`
+  - Confirm workstation: use `Brow`; do not use `Kiosk` for admin frontend verification.
+  - Click `Sign In`; do not assume the current flow will show a PIN prompt.
 - MUST include frontend evidence sections in completion responses:
   - `DaisyUI Fit Check`
   - `Research Notes`

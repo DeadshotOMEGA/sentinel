@@ -5,6 +5,7 @@ import { CircleHelp } from 'lucide-react'
 import { useAuthStore } from '@/store/auth-store'
 import { cn } from '@/lib/utils'
 import { useHelpContext } from '@/help/useHelpContext'
+import { emitProcedureHelpOpen } from '@/help/help-events'
 import { openHelpTarget } from '@/help/orchestrator'
 import { TID } from '@/lib/test-ids'
 
@@ -40,6 +41,24 @@ export function HelpButton({ routeId, className, showLabel = true }: HelpButtonP
     } finally {
       setIsOpening(false)
     }
+  }
+
+  const isDashboardTutorialsButton = helpContext.routeId === 'dashboard'
+
+  if (isDashboardTutorialsButton) {
+    return (
+      <button
+        type="button"
+        className={cn('btn btn-ghost btn-sm gap-1.5', className)}
+        onClick={() => emitProcedureHelpOpen('dashboard')}
+        aria-label="Open Guided Tutorials"
+        title="Open Guided Tutorials"
+        data-testid={TID.nav.helpBtn}
+      >
+        <CircleHelp className="h-4 w-4" />
+        {showLabel && <span className="hidden sm:inline">Help</span>}
+      </button>
+    )
   }
 
   return (

@@ -12,7 +12,7 @@ export const historyProcedureDefinitions: ProcedureDefinition[] = [
   {
     id: 'history.admin.orientation.v1',
     version: 1,
-    title: 'History orientation',
+    title: 'History Orientation',
     summary: 'Learn the history filters, records table, corrections, and paging controls.',
     route: '/checkins',
     personas: ['admin'],
@@ -95,7 +95,7 @@ export const historyProcedureDefinitions: ProcedureDefinition[] = [
   {
     id: 'history.admin.corrections.v1',
     version: 1,
-    title: 'History corrections',
+    title: 'History Corrections',
     summary: 'Correct member or visitor history only after matching Sentinel to real evidence.',
     route: '/checkins',
     personas: ['admin'],
@@ -157,7 +157,7 @@ export const membersProcedureDefinitions: ProcedureDefinition[] = [
   {
     id: 'members.admin.orientation.v1',
     version: 1,
-    title: 'Members orientation',
+    title: 'Members Orientation',
     summary: 'Learn the member roster, filters, row actions, and high-impact admin controls.',
     route: '/members',
     personas: ['admin'],
@@ -240,7 +240,7 @@ export const membersProcedureDefinitions: ProcedureDefinition[] = [
   {
     id: 'members.admin.records.v1',
     version: 1,
-    title: 'Maintain member records',
+    title: 'Maintain Member Records',
     summary: 'Create, import, edit, and keep member qualifications aligned.',
     route: '/members',
     personas: ['admin'],
@@ -302,7 +302,7 @@ export const eventsProcedureDefinitions: ProcedureDefinition[] = [
   {
     id: 'events.planner.orientation.v1',
     version: 1,
-    title: 'Events orientation',
+    title: 'Events Orientation',
     summary: 'Learn event list filters, creation, details, status flow, and Duty Watch planning.',
     route: '/events',
     personas: ['user'],
@@ -446,7 +446,7 @@ export const schedulesProcedureDefinitions: ProcedureDefinition[] = [
   {
     id: 'schedules.scheduler.orientation.v1',
     version: 1,
-    title: 'Schedules orientation',
+    title: 'Schedules Orientation',
     summary: 'Learn week, month, and quarter views for DDS and Duty Watch coverage.',
     route: '/schedules',
     personas: ['user'],
@@ -529,7 +529,7 @@ export const schedulesProcedureDefinitions: ProcedureDefinition[] = [
   {
     id: 'schedules.scheduler.publish.v1',
     version: 1,
-    title: 'Publish schedules',
+    title: 'Publish Schedules',
     summary: 'Assign, review, and publish DDS or Duty Watch schedules.',
     route: '/schedules',
     personas: ['user'],

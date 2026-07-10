@@ -33,7 +33,7 @@ const HELP_REGISTRY: HelpRegistryEntry[] = [
     fallbackMode: 'local',
     localFallback: {
       title: 'General Help',
-      summary: 'Use role-based quick links and operational procedures to find the right workflow.',
+      summary: 'Use role-based quick links and operational tutorials to find the right workflow.',
       quickSteps: [
         'Confirm your current task and role assignment before taking action.',
         'Open the page-level Help button for route-specific instructions.',
@@ -46,7 +46,7 @@ const HELP_REGISTRY: HelpRegistryEntry[] = [
     pathPrefixes: ['/dashboard'],
     wikiSlug: 'operations/dashboard/overview',
     roleScopes: ['basic', 'member', 'officer', 'manager', 'admin', 'developer'],
-    tourId: 'dashboard.admin.orientation.v2',
+    tourId: 'dashboard.admin.orientation.v3',
     fallbackMode: 'tour',
     localFallback: {
       title: 'Dashboard Quick Help',

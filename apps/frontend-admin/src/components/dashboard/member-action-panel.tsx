@@ -67,6 +67,7 @@ interface MenuActionButtonProps {
   description: string
   tone?: 'neutral' | 'info' | 'warning'
   badge?: ReactNode
+  helpId?: string
   onClick: () => void
 }
 
@@ -106,6 +107,7 @@ function MenuActionButton({
   description,
   tone = 'neutral',
   badge,
+  helpId,
   onClick,
 }: MenuActionButtonProps) {
   return (
@@ -114,6 +116,7 @@ function MenuActionButton({
         type="button"
         className="flex w-full items-start gap-(--space-3) rounded-box px-(--space-3) py-(--space-3) text-left hover:bg-base-200"
         onClick={onClick}
+        data-help-id={helpId}
       >
         <span
           className={cn(
@@ -477,6 +480,7 @@ export function MemberActionPanel({
           <MenuActionButton
             icon={NotebookPen}
             title="Manual Check Out"
+            helpId="dashboard.presence.member-action.manual-checkout"
             description={
               canManualCheckout
                 ? 'Record a corrective checkout when someone forgot to scan out.'
@@ -497,6 +501,7 @@ export function MemberActionPanel({
           <MenuActionButton
             icon={ShieldPlus}
             title="Temporary Role"
+            helpId="dashboard.presence.member-action.temporary-role"
             description={
               person.liveDutyAssignment
                 ? `Active now as ${person.liveDutyAssignment.dutyPosition.code}. Update or clear live coverage.`
@@ -519,6 +524,7 @@ export function MemberActionPanel({
           <MenuActionButton
             icon={ShieldCheck}
             title="Tonight Schedule Override"
+            helpId="dashboard.presence.member-action.tonight-override"
             description={
               tonightDutyWatch?.isDutyWatchNight
                 ? 'Write a same-night Duty Watch replacement for the operational roster.'
@@ -538,6 +544,7 @@ export function MemberActionPanel({
             <MenuActionButton
               icon={ArrowRightLeft}
               title="Transfer Lockup"
+              helpId="dashboard.presence.member-action.transfer-lockup"
               description="Move lockup responsibility to another qualified checked-in member."
               tone="warning"
               badge={
@@ -552,6 +559,7 @@ export function MemberActionPanel({
             <MenuActionButton
               icon={DoorOpen}
               title="Open Building"
+              helpId="dashboard.presence.member-action.open-building"
               description="Open the building as this member and record the opening note."
               tone="info"
               onClick={() => onViewChange('openBuilding')}
@@ -560,6 +568,7 @@ export function MemberActionPanel({
           <MenuActionButton
             icon={History}
             title="Recent Check-In History"
+            helpId="dashboard.presence.member-action.history"
             description="Review the latest check-in and checkout events for this member."
             onClick={() => onViewChange('history')}
           />

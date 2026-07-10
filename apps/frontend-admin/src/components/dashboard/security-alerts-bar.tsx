@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { AlertCircle, BookOpen, ExternalLink } from 'lucide-react'
 import { toast } from 'sonner'
 import { useSecurityAlerts, useAcknowledgeAlert } from '@/hooks/use-security-alerts'
@@ -20,6 +20,12 @@ import {
   DialogClose,
 } from '@/components/ui/dialog'
 import type { SecurityAlertResponse } from '@sentinel/contracts'
+import {
+  getActiveHelpStep,
+  subscribeActiveHelpStep,
+  type ActiveHelpStepDetail,
+} from '@/help/help-events'
+import { subscribeDashboardExampleSecurityAlert } from '@/help/dashboard-example-alert'
 import {
   buildSecurityAlertDisplayItems,
   getSecurityAlertTone,
@@ -46,9 +52,18 @@ function formatAlertType(alertType: string): string {
 }
 
 const WIKI_BASE_URL = 'http://docs.sentinel.local'
+const DASHBOARD_ALERT_TUTORIAL_STEP_KEYS = new Set([
+  'dashboard.admin.orientation.v3:alerts-first',
+  'dashboard.admin.daily-start.v2:alerts',
+])
 
 function buildWikiUrl(slug: string): string {
   return `${WIKI_BASE_URL}/${slug.replace(/^\/+/, '')}`
+}
+
+function isDashboardAlertTutorialStep(detail: ActiveHelpStepDetail | null): boolean {
+  if (!detail || detail.routeId !== 'dashboard') return false
+  return DASHBOARD_ALERT_TUTORIAL_STEP_KEYS.has(`${detail.procedureId}:${detail.stepId}`)
 }
 
 function getAlertWikiSlug(alertType: string): string {
@@ -100,6 +115,50 @@ function getAlertIconClass(tone: ReturnType<typeof getSecurityAlertTone>): strin
   }
 
   return 'h-6 w-6 shrink-0 text-error'
+}
+
+function ExampleSecurityAlert() {
+  return (
+    <div data-help-id="dashboard.security-alerts">
+      <AppAlert
+        tone="warning"
+        icon={<AlertCircle className={getAlertIconClass('warning')} />}
+        heading={
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="font-display font-bold">Example Security Alert</h3>
+            <Chip variant="flat" color="warning" size="sm">
+              Training Example
+            </Chip>
+            <AppBadge status="warning" size="sm">
+              Example
+            </AppBadge>
+          </div>
+        }
+        description={
+          <div className="space-y-2">
+            <p className="text-sm font-semibold leading-6 sm:text-base">
+              Duty Watch coverage needs review before routine operations continue.
+            </p>
+            <div className="flex flex-wrap items-center gap-(--space-2)">
+              <WikiLink slug="operations/dashboard/security-alerts">
+                What to check before acknowledging
+              </WikiLink>
+              <span className="text-sm leading-6 text-base-content/75">
+                Real alerts show the issue, procedure link, timestamp, and review action.
+              </span>
+            </div>
+          </div>
+        }
+        meta={<span className="font-mono">Example</span>}
+        actions={
+          <MotionButton className="btn btn-sm" disabled title="Training example only">
+            Review
+          </MotionButton>
+        }
+        className="shadow-lg"
+      />
+    </div>
+  )
 }
 
 function SecurityAlertItem({ alert }: { alert: SecurityAlertResponse }) {
@@ -393,6 +452,29 @@ export function SecurityAlertsList({ alerts }: { alerts: SecurityAlertResponse[]
 
 export function SecurityAlertsBar() {
   const { data, isLoading, isError } = useSecurityAlerts()
+  const [isExampleRequested, setIsExampleRequested] = useState(false)
+  const [isAlertStepActive, setIsAlertStepActive] = useState(() =>
+    isDashboardAlertTutorialStep(getActiveHelpStep())
+  )
+
+  useEffect(() => {
+    return subscribeDashboardExampleSecurityAlert((detail) => {
+      setIsExampleRequested(detail.visible)
+    })
+  }, [])
+
+  useEffect(() => {
+    return subscribeActiveHelpStep((detail) => {
+      const nextIsAlertStepActive = isDashboardAlertTutorialStep(detail)
+      setIsAlertStepActive(nextIsAlertStepActive)
+
+      if (!nextIsAlertStepActive) {
+        setIsExampleRequested(false)
+      }
+    })
+  }, [])
+
+  const shouldShowExampleAlert = isExampleRequested || isAlertStepActive
 
   if (isLoading) {
     return null
@@ -421,7 +503,7 @@ export function SecurityAlertsBar() {
   }
 
   if (!data?.alerts || data.alerts.length === 0) {
-    return null
+    return shouldShowExampleAlert ? <ExampleSecurityAlert /> : null
   }
 
   return <SecurityAlertsList alerts={data.alerts} />

@@ -2,6 +2,44 @@ import type { ProcedureContext, ProcedureDefinition } from './types'
 
 const ADMIN_LEVEL = 5
 
+export function resolvePreferredTargetSelector(
+  selector: string,
+  hasTarget: (candidateSelector: string) => boolean
+): string | null {
+  const candidateSelectors = selector
+    .split(',')
+    .map((candidateSelector) => candidateSelector.trim())
+    .filter(Boolean)
+
+  for (const candidateSelector of candidateSelectors) {
+    if (hasTarget(candidateSelector)) {
+      return candidateSelector
+    }
+  }
+
+  if (candidateSelectors.length > 1 && hasTarget(selector)) {
+    return selector
+  }
+
+  return null
+}
+
+export function resolvePreferredTargetElement(selector: string): Element | null {
+  if (typeof document === 'undefined') return null
+
+  const preferredSelector = resolvePreferredTargetSelector(selector, (candidateSelector) => {
+    try {
+      return document.querySelector(candidateSelector) !== null
+    } catch {
+      return false
+    }
+  })
+
+  if (!preferredSelector) return null
+
+  return document.querySelector(preferredSelector)
+}
+
 export function isAdminContext(context: ProcedureContext): boolean {
   return context.accountLevel >= ADMIN_LEVEL
 }

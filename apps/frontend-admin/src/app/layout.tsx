@@ -1,6 +1,6 @@
 'use client'
 
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { QueryClientProvider } from '@tanstack/react-query'
@@ -36,7 +36,14 @@ export default function RootLayout({
           {isBareRoute ? (
             children
           ) : (
-            <div className={`drawer min-h-screen ${isDrawerOpen ? 'drawer-open' : ''}`}>
+            <div
+              className={`drawer min-h-screen ${isDrawerOpen ? 'drawer-open' : ''}`}
+              style={
+                {
+                  '--app-sidebar-offset': isDrawerOpen ? '18.125rem' : '0rem',
+                } as CSSProperties
+              }
+            >
               <input
                 id={DRAWER_ID}
                 type="checkbox"

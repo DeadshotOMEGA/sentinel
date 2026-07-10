@@ -1,7 +1,8 @@
 /* global process */
 'use client'
 
-import { useState, useMemo, useTransition, useRef, useEffect, useCallback } from 'react'
+import { useState, useMemo, useTransition, useEffect, useCallback } from 'react'
+import type { CSSProperties } from 'react'
 import { UsersRound, Search, Radio } from 'lucide-react'
 import { usePresentPeople } from '@/hooks/use-present-people'
 import { useCheckoutVisitor } from '@/hooks/use-visitors'
@@ -11,11 +12,7 @@ import { useCurrentDds } from '@/hooks/use-schedules'
 import { useAuthStore, AccountLevel } from '@/store/auth-store'
 import { SimulateScanModal } from '@/components/dev/simulate-scan-modal'
 import { ManualCheckinModal } from '@/components/checkins/manual-checkin-modal'
-import {
-  MemberActionPanel,
-  type MemberActionDrawerSide,
-  type MemberActionView,
-} from './member-action-panel'
+import { MemberActionPanel, type MemberActionView } from './member-action-panel'
 import { PersonCard } from './person-card'
 import type { PresentPerson } from '@sentinel/contracts'
 import { TID } from '@/lib/test-ids'
@@ -23,9 +20,59 @@ import { MotionButton } from '@/components/ui/motion-button'
 import { isSentinelBootstrapServiceNumber } from '@/lib/system-bootstrap'
 import { applyDashboardPersonCardSort } from '@/lib/dashboard-person-card-sort'
 import { canEditHistoryEntries, getCurrentDdsEditorId } from '@/lib/history-permissions'
-import { cn } from '@/lib/utils'
 
 type FilterType = 'all' | 'member' | 'visitor' | 'temporary_personnel'
+type FloatingPanelSide = 'left' | 'right'
+type ElementBounds = ReturnType<Element['getBoundingClientRect']>
+
+interface FloatingMemberActionAnchor {
+  side: FloatingPanelSide
+  top: number
+  left?: number
+  right?: number
+  width: number
+}
+
+const FLOATING_PANEL_MAX_WIDTH_PX = 416
+const FLOATING_PANEL_MIN_WIDTH_PX = 320
+const FLOATING_PANEL_VIEWPORT_GUTTER_PX = 16
+
+function createFloatingMemberActionAnchor(anchorRect: ElementBounds): FloatingMemberActionAnchor {
+  const rightSpace = window.innerWidth - anchorRect.right
+  const leftSpace = anchorRect.left
+  const side: FloatingPanelSide = rightSpace >= leftSpace ? 'right' : 'left'
+  const availableWidth =
+    side === 'right'
+      ? window.innerWidth - anchorRect.right - FLOATING_PANEL_VIEWPORT_GUTTER_PX
+      : anchorRect.left - FLOATING_PANEL_VIEWPORT_GUTTER_PX
+  const width = Math.min(
+    FLOATING_PANEL_MAX_WIDTH_PX,
+    Math.max(FLOATING_PANEL_MIN_WIDTH_PX, availableWidth)
+  )
+  const top = Math.max(FLOATING_PANEL_VIEWPORT_GUTTER_PX, anchorRect.top)
+
+  if (side === 'right') {
+    return {
+      side,
+      top,
+      left: Math.min(
+        anchorRect.right,
+        window.innerWidth - width - FLOATING_PANEL_VIEWPORT_GUTTER_PX
+      ),
+      width,
+    }
+  }
+
+  return {
+    side,
+    top,
+    right: Math.min(
+      window.innerWidth - anchorRect.left,
+      window.innerWidth - width - FLOATING_PANEL_VIEWPORT_GUTTER_PX
+    ),
+    width,
+  }
+}
 
 export function PersonCardGrid() {
   const { data, isLoading, isError } = usePresentPeople()
@@ -43,8 +90,8 @@ export function PersonCardGrid() {
   const [isManualCheckinModalOpen, setIsManualCheckinModalOpen] = useState(false)
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null)
   const [selectedMemberActionView, setSelectedMemberActionView] = useState<MemberActionView>('menu')
-  const [selectedMemberActionSide, setSelectedMemberActionSide] =
-    useState<MemberActionDrawerSide>('right')
+  const [floatingMemberActionAnchor, setFloatingMemberActionAnchor] =
+    useState<FloatingMemberActionAnchor | null>(null)
   const [isPending, startTransition] = useTransition()
   const currentDdsMemberId = getCurrentDdsEditorId(scheduledDds)
   const canCreateManualCheckin = canEditHistoryEntries(member, currentDdsMemberId)
@@ -61,6 +108,7 @@ export function PersonCardGrid() {
   const closeSelectedMemberActions = useCallback(() => {
     setSelectedMemberId(null)
     setSelectedMemberActionView('menu')
+    setFloatingMemberActionAnchor(null)
   }, [])
 
   const handleFilterChange = (newFilter: FilterType) => {
@@ -105,14 +153,7 @@ export function PersonCardGrid() {
         ddsStatus?.assignment?.status === 'active' ? ddsStatus.assignment.memberId : null,
       scheduledDdsMemberId: scheduledDds?.dds?.member.id ?? null,
     })
-  }, [
-    dashboardSortConfig,
-    data?.people,
-    ddsStatus?.assignment,
-    filter,
-    scheduledDds?.dds?.member.id,
-    search,
-  ])
+  }, [dashboardSortConfig, data, ddsStatus, filter, scheduledDds, search])
 
   const memberCount = useMemo(
     () => data?.people?.filter((p) => p.type === 'member').length ?? 0,
@@ -128,11 +169,6 @@ export function PersonCardGrid() {
   )
 
   // Track whether initial animation has played to prevent replay on data updates
-  const hasAnimated = useRef(false)
-  useEffect(() => {
-    if (filteredPeople.length > 0) hasAnimated.current = true
-  }, [filteredPeople.length])
-
   // Force re-render every 60s to keep relative timestamps fresh
   const [, setTick] = useState(0)
   useEffect(() => {
@@ -141,16 +177,22 @@ export function PersonCardGrid() {
   }, [])
 
   useEffect(() => {
-    if (selectedMemberId && !selectedMember) {
-      closeSelectedMemberActions()
+    if (!selectedMemberId) {
+      return
     }
-  }, [closeSelectedMemberActions, selectedMember, selectedMemberId])
 
-  useEffect(() => {
-    if (selectedMemberId && !filteredPeople.some((person) => person.id === selectedMemberId)) {
-      closeSelectedMemberActions()
+    const selectedMemberIsVisible = filteredPeople.some((person) => person.id === selectedMemberId)
+
+    if (selectedMember && selectedMemberIsVisible) {
+      return
     }
-  }, [closeSelectedMemberActions, filteredPeople, selectedMemberId])
+
+    const timeoutId = window.setTimeout(() => closeSelectedMemberActions(), 0)
+
+    return () => {
+      window.clearTimeout(timeoutId)
+    }
+  }, [closeSelectedMemberActions, filteredPeople, selectedMember, selectedMemberId])
 
   useEffect(() => {
     if (!selectedMemberId) {
@@ -193,6 +235,15 @@ export function PersonCardGrid() {
       </div>
     )
   }
+
+  const floatingMemberActionPanelStyle: CSSProperties | undefined = floatingMemberActionAnchor
+    ? {
+        top: floatingMemberActionAnchor.top,
+        left: floatingMemberActionAnchor.left,
+        right: floatingMemberActionAnchor.right,
+        width: floatingMemberActionAnchor.width,
+      }
+    : undefined
 
   return (
     <div
@@ -290,120 +341,83 @@ export function PersonCardGrid() {
         />
       )}
 
-      <div
-        className={cn(
-          'drawer presence-member-drawer overflow-visible',
-          selectedMember && 'drawer-open'
-        )}
-        data-open={selectedMember ? 'true' : 'false'}
-        data-side={selectedMemberActionSide}
-      >
-        <input
-          type="checkbox"
-          className="drawer-toggle"
-          checked={Boolean(selectedMember)}
-          readOnly
-          aria-hidden="true"
-        />
-
-        <div className="drawer-content min-w-0">
-          <div className="presence-card-grid-shell" aria-live="polite" aria-atomic="false">
-            {filteredPeople.length > 0 ? (
-              <div
-                className={`grid gap-3 presence-card-grid transition-opacity duration-200 ${isPending ? 'opacity-60 blur-[1px]' : ''}`}
-                data-help-id="dashboard.presence.cards"
-              >
-                {filteredPeople.map((person: PresentPerson, index: number) => (
-                  <div
-                    key={`${person.type}-${person.id}`}
-                    className={`relative h-full min-w-0${person.type === 'member' && person.id === selectedMemberId ? ' z-(--z-dropdown)' : ''}${hasAnimated.current ? '' : ' animate-fade-in-up'}`}
-                    style={
-                      hasAnimated.current
-                        ? undefined
-                        : {
-                            animationDelay: `${Math.min(index, 12) * 50}ms`,
-                            animationFillMode: 'backwards',
-                          }
-                    }
-                  >
-                    <PersonCard
-                      person={person}
-                      dutyPosition={
-                        person.type === 'member'
-                          ? (person.liveDutyAssignment?.dutyPosition.code ??
-                            person.scheduledDutyTonight?.dutyPosition?.code ??
-                            null)
-                          : null
-                      }
-                      isDds={person.type === 'member' && person.id === ddsMemberId}
-                      isSelected={person.type === 'member' && person.id === selectedMemberId}
-                      onCheckoutVisitor={canCheckout ? handleCheckoutVisitor : undefined}
-                      onSelectMember={
-                        person.type === 'member'
-                          ? (selectedPerson, sideHint) => {
-                              if (selectedMemberId === selectedPerson.id) {
-                                closeSelectedMemberActions()
-                                return
-                              }
-
-                              const visibleMembers = filteredPeople.filter(
-                                (candidate): candidate is PresentPerson & { type: 'member' } =>
-                                  candidate.type === 'member'
-                              )
-                              const memberIndex = visibleMembers.findIndex(
-                                (candidate) => candidate.id === selectedPerson.id
-                              )
-                              const midpoint = Math.ceil(visibleMembers.length / 2)
-                              const resolvedSide =
-                                memberIndex >= 0
-                                  ? memberIndex < midpoint
-                                    ? 'right'
-                                    : 'left'
-                                  : sideHint
-
-                              setSelectedMemberActionSide(resolvedSide)
-                              setSelectedMemberId(selectedPerson.id)
-                              setSelectedMemberActionView('menu')
-                            }
-                          : undefined
-                      }
-                    />
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-12 text-base-content/50">
-                <UsersRound size={32} strokeWidth={1} className="mb-2" />
-                <p className="text-sm">
-                  {search.trim() || filter !== 'all'
-                    ? 'No people match your filters'
-                    : 'No one is currently checked in'}
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {selectedMember && (
+      <div className="presence-card-grid-shell min-w-0" aria-live="polite" aria-atomic="false">
+        {filteredPeople.length > 0 ? (
           <div
-            className="drawer-side presence-member-drawer-side min-w-0"
-            data-help-id="dashboard.presence.member-action-drawer"
+            className={`grid gap-3 presence-card-grid transition-opacity duration-200 ${isPending ? 'opacity-60 blur-[1px]' : ''}`}
+            data-help-id="dashboard.presence.cards"
           >
-            <MemberActionPanel
-              open
-              className="presence-member-drawer-panel"
-              person={selectedMember}
-              view={selectedMemberActionView}
-              onViewChange={setSelectedMemberActionView}
-              onOpenChange={(nextOpen) => {
-                if (!nextOpen) {
-                  closeSelectedMemberActions()
-                }
-              }}
-            />
+            {filteredPeople.map((person: PresentPerson) => (
+              <div
+                key={`${person.type}-${person.id}`}
+                className={`relative h-full min-w-0${person.type === 'member' && person.id === selectedMemberId ? ' z-(--z-dropdown)' : ''}`}
+              >
+                <PersonCard
+                  person={person}
+                  dutyPosition={
+                    person.type === 'member'
+                      ? (person.liveDutyAssignment?.dutyPosition.code ??
+                        person.scheduledDutyTonight?.dutyPosition?.code ??
+                        null)
+                      : null
+                  }
+                  isDds={person.type === 'member' && person.id === ddsMemberId}
+                  isSelected={person.type === 'member' && person.id === selectedMemberId}
+                  onCheckoutVisitor={canCheckout ? handleCheckoutVisitor : undefined}
+                  onSelectMember={
+                    person.type === 'member'
+                      ? (selectedPerson, anchorRect) => {
+                          if (selectedMemberId === selectedPerson.id) {
+                            closeSelectedMemberActions()
+                            return
+                          }
+
+                          setFloatingMemberActionAnchor(
+                            createFloatingMemberActionAnchor(anchorRect)
+                          )
+                          setSelectedMemberId(selectedPerson.id)
+                          setSelectedMemberActionView('menu')
+                        }
+                      : undefined
+                  }
+                />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center py-12 text-base-content/50">
+            <UsersRound size={32} strokeWidth={1} className="mb-2" />
+            <p className="text-sm">
+              {search.trim() || filter !== 'all'
+                ? 'No people match your filters'
+                : 'No one is currently checked in'}
+            </p>
           </div>
         )}
       </div>
+
+      {selectedMember && floatingMemberActionAnchor && (
+        <div
+          className="presence-member-floating-panel"
+          data-open="true"
+          data-side={floatingMemberActionAnchor.side}
+          data-help-id="dashboard.presence.member-action-drawer"
+          style={floatingMemberActionPanelStyle}
+        >
+          <MemberActionPanel
+            open
+            className="presence-member-floating-panel-card"
+            person={selectedMember}
+            view={selectedMemberActionView}
+            onViewChange={setSelectedMemberActionView}
+            onOpenChange={(nextOpen) => {
+              if (!nextOpen) {
+                closeSelectedMemberActions()
+              }
+            }}
+          />
+        </div>
+      )}
     </div>
   )
 }

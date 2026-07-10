@@ -26,7 +26,9 @@ import {
   createEditableTargetSnapshot,
   createScannerClassifierState,
   getDefaultKioskScannerTimingSettings,
+  insertTextIntoEditableTarget,
   removeScannerPrefixFromEditableTarget,
+  shouldHoldInitialScannerKeystroke,
   type EditableTargetSnapshot,
   type KioskScannerTimingSettings,
 } from '@/lib/kiosk-scanner-timing'
@@ -100,6 +102,11 @@ export function useKioskScreen() {
   )
   const scannerClassifierStateRef = useRef(createScannerClassifierState())
   const scannerEditableSnapshotRef = useRef<EditableTargetSnapshot | null>(null)
+  const scannerPendingEditableRef = useRef<{
+    snapshot: EditableTargetSnapshot
+    value: string
+  } | null>(null)
+  const scannerPendingFlushTimerRef = useRef<number | null>(null)
 
   const { data: checkoutOptions, isLoading: loadingCheckoutOptions } = useCheckoutOptions(
     pendingLockup?.memberId ?? ''
@@ -117,6 +124,46 @@ export function useKioskScreen() {
   )
   const acceptDdsMutation = useAcceptDds()
   const openBuildingMutation = useOpenBuilding()
+
+  const clearScannerPendingFlushTimer = useCallback(() => {
+    if (scannerPendingFlushTimerRef.current === null) return
+
+    window.clearTimeout(scannerPendingFlushTimerRef.current)
+    scannerPendingFlushTimerRef.current = null
+  }, [])
+
+  const flushPendingEditableScannerValue = useCallback(() => {
+    const pending = scannerPendingEditableRef.current
+    scannerPendingEditableRef.current = null
+    scannerEditableSnapshotRef.current = null
+    scannerClassifierStateRef.current = createScannerClassifierState()
+    clearScannerPendingFlushTimer()
+
+    if (!pending) {
+      return false
+    }
+
+    return insertTextIntoEditableTarget(pending.snapshot, pending.value)
+  }, [clearScannerPendingFlushTimer])
+
+  const schedulePendingEditableFlush = useCallback(
+    (value: string, maxGapMs: number) => {
+      clearScannerPendingFlushTimer()
+      scannerPendingFlushTimerRef.current = window.setTimeout(() => {
+        const pending = scannerPendingEditableRef.current
+        const scannerState = scannerClassifierStateRef.current
+
+        if (
+          pending?.value === value &&
+          !scannerState.capturing &&
+          scannerState.buffer?.value === value
+        ) {
+          flushPendingEditableScannerValue()
+        }
+      }, maxGapMs + 10)
+    },
+    [clearScannerPendingFlushTimer, flushPendingEditableScannerValue]
+  )
 
   const operationalQueries = [ddsStatusQuery, lockupStatusQuery]
   const allOperationalSettled = operationalQueries.every(
@@ -752,33 +799,56 @@ export function useKioskScreen() {
       Boolean(pendingLockup)
 
     if (backgroundScannerBlocked) {
+      flushPendingEditableScannerValue()
       scannerClassifierStateRef.current = createScannerClassifierState()
       scannerEditableSnapshotRef.current = null
       return
     }
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      const previousState = scannerClassifierStateRef.current
+      const scannerTimingSettings = scannerTimingSettingsRef.current
+      let previousState = scannerClassifierStateRef.current
+
+      if (previousState.buffer && !previousState.capturing) {
+        const previousTimestamp =
+          previousState.buffer.timestamps[previousState.buffer.timestamps.length - 1] ??
+          event.timeStamp
+        if (event.timeStamp - previousTimestamp > scannerTimingSettings.maxGapMs) {
+          flushPendingEditableScannerValue()
+          previousState = scannerClassifierStateRef.current
+        }
+      }
+
       const shouldSnapshotEditableTarget = !previousState.buffer
       const editableSnapshot = shouldSnapshotEditableTarget
         ? createEditableTargetSnapshot(event.target)
         : scannerEditableSnapshotRef.current
-
-      const decision = classifyScannerKeystroke(
+      const keystroke = {
+        key: event.key,
+        timestamp: event.timeStamp,
+        ctrlKey: event.ctrlKey,
+        altKey: event.altKey,
+        metaKey: event.metaKey,
+      }
+      const shouldHoldInitialEditableKeystroke = shouldHoldInitialScannerKeystroke(
         previousState,
-        {
-          key: event.key,
-          timestamp: event.timeStamp,
-          ctrlKey: event.ctrlKey,
-          altKey: event.altKey,
-          metaKey: event.metaKey,
-        },
-        scannerTimingSettingsRef.current
+        keystroke,
+        editableSnapshot !== null
       )
 
-      if (decision.shouldPreventDefault) {
+      const decision = classifyScannerKeystroke(previousState, keystroke, scannerTimingSettings)
+
+      if (decision.shouldPreventDefault || shouldHoldInitialEditableKeystroke) {
         event.preventDefault()
         event.stopPropagation()
+      }
+
+      if (shouldHoldInitialEditableKeystroke && editableSnapshot) {
+        scannerPendingEditableRef.current = {
+          snapshot: editableSnapshot,
+          value: event.key,
+        }
+        schedulePendingEditableFlush(event.key, scannerTimingSettings.maxGapMs)
       }
 
       if (
@@ -787,11 +857,18 @@ export function useKioskScreen() {
         previousState.buffer &&
         !previousState.capturing
       ) {
-        removeScannerPrefixFromEditableTarget(editableSnapshot, previousState.buffer.value)
+        if (scannerPendingEditableRef.current) {
+          scannerPendingEditableRef.current = null
+          clearScannerPendingFlushTimer()
+        } else {
+          removeScannerPrefixFromEditableTarget(editableSnapshot, previousState.buffer.value)
+        }
         scannerEditableSnapshotRef.current = null
       } else if (decision.kind === 'buffering' && !decision.state.capturing) {
         scannerEditableSnapshotRef.current = editableSnapshot
       } else if (decision.kind !== 'buffering') {
+        scannerPendingEditableRef.current = null
+        clearScannerPendingFlushTimer()
         scannerEditableSnapshotRef.current = null
       }
 
@@ -803,11 +880,17 @@ export function useKioskScreen() {
     }
 
     window.addEventListener('keydown', handleKeyDown, { capture: true })
-    return () => window.removeEventListener('keydown', handleKeyDown, { capture: true })
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown, { capture: true })
+      clearScannerPendingFlushTimer()
+    }
   }, [
+    clearScannerPendingFlushTimer,
     fatalOperationalOutage,
+    flushPendingEditableScannerValue,
     pendingLockup,
     responsibilityPromptVisible,
+    schedulePendingEditableFlush,
     scanMutation.isPending,
     showLockupOptions,
     submitScannedSerial,

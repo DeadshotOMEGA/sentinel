@@ -1,7 +1,12 @@
 'use client'
 
 import { clearProcedureProgress, loadProcedureProgress, saveProcedureProgress } from './persistence'
-import { findReachableIndex, isProcedureEligible, resolveNextStepIndex } from './runtime'
+import {
+  findReachableIndex,
+  isProcedureEligible,
+  resolveNextStepIndex,
+  resolvePreferredTargetElement,
+} from './runtime'
 import type {
   ProcedureContext,
   ProcedureController,
@@ -20,7 +25,7 @@ interface CreateProcedureControllerOptions {
 
 function hasTarget(selector: string): boolean {
   if (typeof document === 'undefined') return true
-  return document.querySelector(selector) !== null
+  return resolvePreferredTargetElement(selector) !== null
 }
 
 export function createProcedureController(
@@ -81,14 +86,14 @@ export function createProcedureController(
       stepIndex: reachableIndex,
     })
 
+    const currentStep = definition.steps[reachableIndex]
+    await currentStep?.before?.(options.context)
+
     if (options.driver.isActive()) {
       options.driver.moveTo(reachableIndex)
     } else {
       options.driver.drive(reachableIndex)
     }
-
-    const currentStep = definition.steps[reachableIndex]
-    await currentStep?.before?.(options.context)
 
     emit({
       type: 'step_viewed',

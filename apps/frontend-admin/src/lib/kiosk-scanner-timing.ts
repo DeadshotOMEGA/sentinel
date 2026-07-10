@@ -286,8 +286,21 @@ export function parseKioskScannerTimingSettings(value: unknown): KioskScannerTim
   return null
 }
 
-function isPrintableKey(key: string): boolean {
+export function isScannerPrintableKey(key: string): boolean {
   return key.length === 1
+}
+
+export function shouldHoldInitialScannerKeystroke(
+  currentState: ScannerClassifierState,
+  keystroke: ScannerKeystroke,
+  hasEditableTarget: boolean
+): boolean {
+  return (
+    hasEditableTarget &&
+    !currentState.buffer &&
+    !shouldIgnoreModifiedKey(keystroke) &&
+    isScannerPrintableKey(keystroke.key)
+  )
 }
 
 export function createScannerSample(
@@ -388,7 +401,7 @@ export function classifyScannerKeystroke(
         }
   }
 
-  if (!isPrintableKey(keystroke.key)) {
+  if (!isScannerPrintableKey(keystroke.key)) {
     return {
       kind: 'rejected',
       state: createScannerClassifierState(),
@@ -525,6 +538,20 @@ export function createEditableTargetSnapshot(
   }
 }
 
+function setEditableTargetValue(element: EditableScannerTarget, value: string): void {
+  const prototype =
+    element instanceof HTMLTextAreaElement
+      ? HTMLTextAreaElement.prototype
+      : HTMLInputElement.prototype
+  const valueDescriptor = Object.getOwnPropertyDescriptor(prototype, 'value')
+
+  if (valueDescriptor?.set) {
+    valueDescriptor.set.call(element, value)
+  } else {
+    element.value = value
+  }
+}
+
 export function removeScannerPrefixFromEditableTarget(
   snapshot: EditableTargetSnapshot | null,
   prefix: string
@@ -540,8 +567,29 @@ export function removeScannerPrefixFromEditableTarget(
   }
 
   const nextValue = `${value.slice(0, selectionStart)}${value.slice(selectionEnd)}`
-  element.value = nextValue
+  setEditableTargetValue(element, nextValue)
   element.setSelectionRange(selectionStart, selectionStart)
+  element.dispatchEvent(new Event('input', { bubbles: true }))
+  return true
+}
+
+export function insertTextIntoEditableTarget(
+  snapshot: EditableTargetSnapshot | null,
+  text: string
+): boolean {
+  if (!snapshot || text.length === 0) {
+    return false
+  }
+
+  const { element, selectionStart, selectionEnd, value } = snapshot
+  if (element.value !== value) {
+    return false
+  }
+
+  const nextValue = `${value.slice(0, selectionStart)}${text}${value.slice(selectionEnd)}`
+  setEditableTargetValue(element, nextValue)
+  const nextSelection = selectionStart + text.length
+  element.setSelectionRange(nextSelection, nextSelection)
   element.dispatchEvent(new Event('input', { bubbles: true }))
   return true
 }

@@ -1,15 +1,84 @@
 import type { ProcedureDefinition } from './types'
+import { setDashboardExampleSecurityAlertVisible } from './dashboard-example-alert'
+import {
+  setDashboardDdsTransferExampleVisible,
+  setDashboardDdsTransferModalExampleVisible,
+} from './dashboard-dds-transfer-example'
 
 const ADMIN_MIN_LEVEL = 5
 
 const adminGuard = (accountLevel: number) => accountLevel >= ADMIN_MIN_LEVEL
+const APP_DRAWER_ID = 'app-drawer'
+
+function waitForNextPaint(): Promise<void> {
+  if (typeof window === 'undefined') return Promise.resolve()
+
+  return new Promise((resolve) => {
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => resolve())
+    })
+  })
+}
+
+async function openRecentActivityDrawer(): Promise<void> {
+  if (typeof document === 'undefined') return
+
+  const drawerToggle = document.getElementById(APP_DRAWER_ID)
+  if (!drawerToggle || drawerToggle.tagName !== 'INPUT') return
+
+  const input = drawerToggle as Element & { checked?: boolean }
+  if (input.checked) return
+
+  const sidebarToggle = document.querySelector<HTMLElement>('[data-help-id="nav.sidebar-toggle"]')
+  sidebarToggle?.click()
+  await waitForNextPaint()
+}
+
+async function openFirstMemberActionPanel(): Promise<void> {
+  if (typeof document === 'undefined') return
+
+  const memberActionPanel = document.querySelector<HTMLElement>(
+    '[data-help-id="dashboard.presence.member-action-panel"]'
+  )
+  if (memberActionPanel) return
+
+  const firstMemberCard = document.querySelector<HTMLElement>(
+    '[data-help-id="dashboard.presence.person-card"][role="button"]'
+  )
+  firstMemberCard?.click()
+  await waitForNextPaint()
+}
+
+async function showExampleSecurityAlert(): Promise<void> {
+  setDashboardExampleSecurityAlertVisible(true)
+  await waitForNextPaint()
+}
+
+function hideExampleSecurityAlert(): void {
+  setDashboardExampleSecurityAlertVisible(false)
+}
+
+async function showExampleDdsTransferButton(): Promise<void> {
+  setDashboardDdsTransferExampleVisible(true)
+  await waitForNextPaint()
+}
+
+async function showExampleDdsTransferModal(): Promise<void> {
+  setDashboardDdsTransferExampleVisible(false)
+  setDashboardDdsTransferModalExampleVisible(true)
+  await waitForNextPaint()
+}
+
+function hideExampleDdsTransferModal(): void {
+  setDashboardDdsTransferModalExampleVisible(false)
+}
 
 export const dashboardProcedureDefinitions: ProcedureDefinition[] = [
   {
-    id: 'dashboard.admin.orientation.v2',
-    version: 2,
-    title: 'Dashboard orientation',
-    summary: 'Learn the navbar, system health, status blocks, and Presence area.',
+    id: 'dashboard.admin.orientation.v3',
+    version: 3,
+    title: 'Dashboard Orientation',
+    summary: 'Learn the dashboard map, live status areas, scanner, and follow-on tutorials.',
     route: '/dashboard',
     personas: ['admin'],
     guards: [(context) => adminGuard(context.accountLevel)],
@@ -20,12 +89,26 @@ export const dashboardProcedureDefinitions: ProcedureDefinition[] = [
         popover: {
           title: 'Confirm the system',
           description:
-            'Start by confirming the ship/unit name and server badge. This tells you which Sentinel appliance you are operating.',
+            'Start by confirming the ship or unit name and the server or remote-system badge when one is shown. This tells you which Sentinel appliance you are operating.',
           side: 'bottom',
           align: 'start',
         },
         help: {
           wikiSlug: 'operations/dashboard/navbar-brand',
+        },
+      },
+      {
+        id: 'sidebar-toggle',
+        target: '[data-help-id="nav.sidebar-toggle"]',
+        popover: {
+          title: 'Open recent activity',
+          description:
+            'Use this control to show or hide Recent Activity. The sidebar keeps the latest in and out activity nearby without taking over the dashboard.',
+          side: 'bottom',
+          align: 'start',
+        },
+        help: {
+          wikiSlug: 'operations/dashboard/sidebar-recent-activity',
         },
       },
       {
@@ -43,12 +126,26 @@ export const dashboardProcedureDefinitions: ProcedureDefinition[] = [
         },
       },
       {
+        id: 'dds-checklist',
+        target: '[data-help-id="nav.dashboard-dds-checklist"]',
+        popover: {
+          title: 'Open the DDS checklist',
+          description:
+            'The DDS Checklist opens the duty checklist drawer. The progress ring shows how much of today’s checklist is complete.',
+          side: 'bottom',
+          align: 'end',
+        },
+        help: {
+          wikiSlug: 'operations/dashboard/dds-checklist',
+        },
+      },
+      {
         id: 'help-button',
         target: '[data-help-id="nav.help"]',
         popover: {
-          title: 'Open contextual help',
+          title: 'Open Guided Tutorials',
           description:
-            'Use Help when you are unsure what to check next. During a guided step, this opens help for the active item.',
+            'On the Dashboard, Help opens Guided Tutorials. During a tutorial, use the Learn more control in the popover for deeper wiki help.',
           side: 'bottom',
           align: 'end',
         },
@@ -62,7 +159,7 @@ export const dashboardProcedureDefinitions: ProcedureDefinition[] = [
         popover: {
           title: 'Check system health',
           description:
-            'If data looks stale or an action fails, open System Status before retrying. It summarizes app, database, wiki, and network health.',
+            'If data looks stale or an action fails, open System Status before retrying. It summarizes services, connected systems, network recovery, and updates.',
           side: 'bottom',
           align: 'end',
         },
@@ -85,18 +182,35 @@ export const dashboardProcedureDefinitions: ProcedureDefinition[] = [
         },
       },
       {
+        id: 'recent-activity',
+        target: '[data-help-id="dashboard.recent-activity"]',
+        popover: {
+          title: 'Review recent activity',
+          description:
+            'Recent Activity shows the latest in and out activity. Some accounts can correct entries from here when history permissions allow it.',
+          side: 'right',
+          align: 'start',
+        },
+        help: {
+          wikiSlug: 'operations/dashboard/sidebar-recent-activity',
+        },
+        before: openRecentActivityDrawer,
+      },
+      {
         id: 'alerts-first',
-        target: '[data-help-id="dashboard.security-alerts"]',
+        target: '[data-help-id="dashboard.security-alerts-region"]',
         popover: {
           title: 'Handle alerts first',
           description:
-            'Security alerts sit above the dashboard status blocks. Review them before opening, transferring, or securing the building.',
+            'Security alerts appear above the status blocks when action is needed. If this area is empty, continue to status before making operational changes.',
           side: 'bottom',
           align: 'start',
         },
         help: {
           wikiSlug: 'operations/dashboard/security-alerts',
         },
+        before: showExampleSecurityAlert,
+        after: hideExampleSecurityAlert,
       },
       {
         id: 'status-panel',
@@ -104,7 +218,7 @@ export const dashboardProcedureDefinitions: ProcedureDefinition[] = [
         popover: {
           title: 'Read operational status',
           description:
-            'This panel answers the core questions: who is DDS, is Duty Watch covered, is the building open, and who holds lockup.',
+            'This panel answers the core status questions and exposes quick actions. Use Status Interpretation when you need more detail on what each state means.',
           side: 'top',
           align: 'center',
         },
@@ -113,12 +227,12 @@ export const dashboardProcedureDefinitions: ProcedureDefinition[] = [
         },
       },
       {
-        id: 'presence-grid',
+        id: 'presence-overview',
         target: '[data-help-id="dashboard.presence"]',
         popover: {
           title: 'Confirm who is on site',
           description:
-            'Presence shows checked-in members and visitors. After every important action, confirm the result here.',
+            'Presence includes filters, search, manual in/out, person cards, and member actions. Use Member Actions when you need to inspect card actions in detail.',
           side: 'top',
           align: 'center',
         },
@@ -126,24 +240,68 @@ export const dashboardProcedureDefinitions: ProcedureDefinition[] = [
           wikiSlug: 'operations/dashboard/presence-grid',
         },
       },
+      {
+        id: 'scanner-bar',
+        target: '[data-help-id="dashboard.scan-panel"], [data-help-id="dashboard.scan-panel.show"]',
+        popover: {
+          title: 'Scan badges from the bottom bar',
+          description:
+            'The scanner bar records badge scans and can be hidden or shown when you need more room on the dashboard.',
+          side: 'top',
+          align: 'center',
+        },
+        help: {
+          wikiSlug: 'operations/dashboard/scanner-bar',
+        },
+      },
+      {
+        id: 'next-tutorials',
+        target: '[data-help-id="dashboard.root"]',
+        popover: {
+          title: 'Choose the next tutorial',
+          description:
+            'For deeper training, run Status Interpretation, Member Actions, or DDS Routine tutorials from Guided Tutorials.',
+          side: 'top',
+          align: 'center',
+        },
+        help: {
+          wikiSlug: 'operations/dashboard/next-tutorials',
+        },
+      },
     ],
   },
   {
-    id: 'dashboard.admin.daily-start.v1',
-    version: 1,
-    title: 'Daily start routine',
+    id: 'dashboard.admin.daily-start.v2',
+    version: 2,
+    title: 'Daily Start Routine',
     summary: 'Follow the Admin checks to start the day with correct operational state.',
     route: '/dashboard',
     personas: ['admin'],
     guards: [(context) => adminGuard(context.accountLevel)],
     steps: [
       {
-        id: 'start-system-status',
+        id: 'alerts',
+        target: '[data-help-id="dashboard.security-alerts-region"]',
+        popover: {
+          title: 'Review alerts before action',
+          description:
+            'Start here. Review active alerts if this area shows them. If it is empty, continue to the DDS checks before changing operational state.',
+          side: 'bottom',
+          align: 'start',
+        },
+        help: {
+          wikiSlug: 'operations/dashboard/daily-start/security-alerts',
+        },
+        before: showExampleSecurityAlert,
+        after: hideExampleSecurityAlert,
+      },
+      {
+        id: 'system-health',
         target: '[data-help-id="nav.system-status"]',
         popover: {
           title: 'Start with system health',
           description:
-            'Confirm the pill is Healthy. If it is not, open the details and check database, backend, wiki, network, connected systems, and updates.',
+            'Confirm the pill is Healthy. If it is not, inspect service, connected-system, network, and update details before daily operations continue.',
           side: 'bottom',
           align: 'end',
         },
@@ -152,26 +310,26 @@ export const dashboardProcedureDefinitions: ProcedureDefinition[] = [
         },
       },
       {
-        id: 'start-alerts',
-        target: '[data-help-id="dashboard.security-alerts"]',
+        id: 'dds-checklist',
+        target: '[data-help-id="nav.dashboard-dds-checklist"]',
         popover: {
-          title: 'Review alerts before action',
+          title: 'Open the DDS checklist',
           description:
-            'Resolve or escalate active alerts before changing building state. Acknowledgement means action was taken, not simply seen.',
+            'Read DDS Checklist progress before daily operational checks. Open the drawer when checklist tasks need review.',
           side: 'bottom',
-          align: 'start',
+          align: 'end',
         },
         help: {
-          wikiSlug: 'operations/dashboard/daily-start/security-alerts',
+          wikiSlug: 'operations/dashboard/daily-start/dds-checklist',
         },
       },
       {
-        id: 'start-dds',
+        id: 'dds',
         target: '[data-help-id="dashboard.stat.dds"]',
         popover: {
           title: 'Confirm DDS',
           description:
-            'Verify Duty Day Staff is assigned and on site. Resolve missing DDS coverage before routine operations continue.',
+            'Confirm DDS is assigned, accepted or active, on site, and not blocked by a pending handover.',
           side: 'bottom',
           align: 'center',
         },
@@ -180,12 +338,28 @@ export const dashboardProcedureDefinitions: ProcedureDefinition[] = [
         },
       },
       {
-        id: 'start-duty-watch',
-        target: '[data-help-id="dashboard.stat.duty-watch"]',
+        id: 'dds-responsibility',
+        target:
+          '[data-help-id="dashboard.stat.dds.responsibility-action"], [data-help-id="dashboard.stat.dds"]',
+        popover: {
+          title: 'Accept DDS responsibility',
+          description:
+            'If you are the scheduled DDS and an Accept DDS or Complete Handover button appears here, use it after confirming you are supposed to take responsibility. If no button appears, continue once DDS status matches reality.',
+          side: 'bottom',
+          align: 'center',
+        },
+        help: {
+          wikiSlug: 'operations/dashboard/daily-start/dds-responsibility',
+        },
+      },
+      {
+        id: 'duty-watch',
+        target:
+          '[data-help-id="dashboard.stat.duty-watch"], [data-help-id="dashboard.status-stats"]',
         popover: {
           title: 'Check Duty Watch coverage',
           description:
-            'Look for uncovered or live-only positions. Gaps should be fixed or escalated before the watch window.',
+            'On Duty Watch nights, confirm coverage and look for uncovered or live-only positions. Duty Watch members are assigned on the Schedules page, available from the top navigation. If the card is absent, it may be a non-duty night or load issue.',
           side: 'bottom',
           align: 'center',
         },
@@ -194,7 +368,7 @@ export const dashboardProcedureDefinitions: ProcedureDefinition[] = [
         },
       },
       {
-        id: 'start-building-state',
+        id: 'building',
         target: '[data-help-id="dashboard.stat.building"]',
         popover: {
           title: 'Compare building state',
@@ -208,21 +382,36 @@ export const dashboardProcedureDefinitions: ProcedureDefinition[] = [
         },
       },
       {
-        id: 'start-presence-review',
-        target: '[data-help-id="dashboard.presence"]',
+        id: 'lockup-holder',
+        target:
+          '[data-help-id="dashboard.stat.lockup-holder"], [data-help-id="dashboard.stat.building"]',
         popover: {
-          title: 'Review who is present',
+          title: 'Confirm lockup holder',
           description:
-            'Look for expected staff, unexpected visitors, and missing duty members. Use filters and search before assuming someone is absent.',
+            'When the building is open, confirm the lockup holder is correct. When secured, the holder disappears because responsibility is complete.',
+          side: 'bottom',
+          align: 'center',
+        },
+        help: {
+          wikiSlug: 'operations/dashboard/daily-start/lockup-holder',
+        },
+      },
+      {
+        id: 'scanner-bar',
+        target: '[data-help-id="dashboard.scan-panel"], [data-help-id="dashboard.scan-panel.show"]',
+        popover: {
+          title: 'Confirm scanner readiness',
+          description:
+            'Only do this when the NFC scanner is plugged into the Server laptop. If badge scanning is handled by the Kiosk, continue. Otherwise, make sure the scanner bar is visible and ready.',
           side: 'top',
           align: 'center',
         },
         help: {
-          wikiSlug: 'operations/dashboard/daily-start/presence-review',
+          wikiSlug: 'operations/dashboard/daily-start/scanner-bar',
         },
       },
       {
-        id: 'start-escalation',
+        id: 'escalation',
         target: '[data-help-id="dashboard.root"]',
         popover: {
           title: 'Escalate unresolved gaps',
@@ -238,131 +427,287 @@ export const dashboardProcedureDefinitions: ProcedureDefinition[] = [
     ],
   },
   {
-    id: 'dashboard.admin.daily-end.v1',
+    id: 'dashboard.admin.normal-end-day-lockup.v1',
     version: 1,
-    title: 'End-of-day and lockup routine',
-    summary: 'Close the day by clearing alerts, checking Presence, and confirming lockup state.',
+    title: 'Normal End-of-Day Lockup',
+    summary: 'Close a normal work day when no Training Night or Admin Night follows.',
     route: '/dashboard',
     personas: ['admin'],
     guards: [(context) => adminGuard(context.accountLevel)],
     steps: [
       {
-        id: 'end-alerts',
-        target: '[data-help-id="dashboard.security-alerts"]',
+        id: 'review-person-cards',
+        target: '[data-help-id="dashboard.presence.cards"], [data-help-id="dashboard.presence"]',
         popover: {
-          title: 'Clear alert work',
+          title: 'Review who may still be inside',
           description:
-            'Review active alerts. Acknowledge only after the issue has been checked, corrected, or escalated with context.',
-          side: 'bottom',
-          align: 'start',
-        },
-        help: {
-          wikiSlug: 'operations/dashboard/daily-end/security-alerts',
-        },
-      },
-      {
-        id: 'end-presence',
-        target: '[data-help-id="dashboard.presence"]',
-        popover: {
-          title: 'Check remaining people',
-          description:
-            'Search for visitors and unexpected checked-in members. Confirm anyone left on site is supposed to remain.',
+            'At normal end of day, review the Dashboard person cards for anyone still shown on site. Confirm whether they are actually in the building or forgot to sign out.',
           side: 'top',
           align: 'center',
         },
         help: {
-          wikiSlug: 'operations/dashboard/daily-end/presence-review',
+          wikiSlug: 'operations/dashboard/daily-end/normal/person-card-review',
         },
       },
       {
-        id: 'end-duty-handoff',
-        target: '[data-help-id="dashboard.stat.duty-watch"]',
-        popover: {
-          title: 'Confirm watch handoff',
-          description:
-            'Check Duty Watch and DDS expectations for the evening before starting lockup or leaving the dashboard.',
-          side: 'bottom',
-          align: 'center',
-        },
-        help: {
-          wikiSlug: 'operations/dashboard/daily-end/duty-handoff',
-        },
-      },
-      {
-        id: 'end-lockup-holder',
-        target: '[data-help-id="dashboard.stat.lockup-holder"]',
-        popover: {
-          title: 'Verify lockup holder',
-          description:
-            'Confirm the holder identity and time held. Transfer lockup if the current holder is not the correct person.',
-          side: 'bottom',
-          align: 'center',
-        },
-        help: {
-          wikiSlug: 'operations/dashboard/daily-end/lockup-holder',
-        },
-      },
-      {
-        id: 'end-execute-lockup',
+        id: 'manual-sign-out-choice',
         target:
-          '[data-help-id="dashboard.quick-actions.execute-lockup"], [data-help-id="dashboard.quick-actions.open-building"]',
+          '[data-help-id="dashboard.presence.manual-in-out"], [data-help-id="dashboard.presence"]',
         popover: {
-          title: 'Use lockup only when ready',
+          title: 'Choose how to clear people',
           description:
-            'Execute lockup only when the building should be secured and Sentinel matches the real holder and building state.',
-          side: 'bottom',
-          align: 'start',
-        },
-        help: {
-          wikiSlug: 'operations/dashboard/daily-end/execute-lockup',
-        },
-      },
-      {
-        id: 'end-building-recheck',
-        target: '[data-help-id="dashboard.stat.building"]',
-        popover: {
-          title: 'Recheck secured state',
-          description:
-            'After lockup, confirm Building Status changed as expected. If it did not, stop and escalate.',
-          side: 'bottom',
-          align: 'center',
-        },
-        help: {
-          wikiSlug: 'operations/dashboard/daily-end/building-recheck',
-        },
-      },
-      {
-        id: 'end-note-escalate',
-        target: '[data-help-id="dashboard.root"]',
-        popover: {
-          title: 'Leave a clear trail',
-          description:
-            'If people counts, alerts, or status blocks do not match reality, record what you saw and escalate before signing out.',
+            'If someone has left, you can manually sign them out now. You can also leave remaining sign-outs for Execute Lockup when the DDS is ready to close the building.',
           side: 'top',
           align: 'center',
         },
         help: {
-          wikiSlug: 'operations/dashboard/daily-end/escalation-notes',
+          wikiSlug: 'operations/dashboard/daily-end/normal/manual-sign-out-choice',
+        },
+      },
+      {
+        id: 'dds-checklist',
+        target: '[data-help-id="nav.dashboard-dds-checklist"]',
+        popover: {
+          title: 'Finish the DDS checklist',
+          description:
+            'Review the DDS Checklist and confirm all required end-of-day tasks are complete before lockup.',
+          side: 'bottom',
+          align: 'end',
+        },
+        help: {
+          wikiSlug: 'operations/dashboard/daily-end/normal/dds-checklist',
+        },
+      },
+      {
+        id: 'execute-lockup',
+        target:
+          '[data-help-id="dashboard.quick-actions.execute-lockup"], [data-help-id="dashboard.stat.actions"]',
+        popover: {
+          title: 'Execute Lockup last',
+          description:
+            'Use Execute Lockup as the DDS’s last dashboard action before going to the front, arming the building, and leaving. This does not control the building system.',
+          side: 'bottom',
+          align: 'start',
+        },
+        help: {
+          wikiSlug: 'operations/dashboard/daily-end/normal/execute-lockup',
         },
       },
     ],
   },
   {
-    id: 'dashboard.admin.status.v2',
-    version: 2,
-    title: 'Status interpretation',
+    id: 'dashboard.admin.dds-lockup-handoff.v1',
+    version: 1,
+    title: 'DDS Evening Lockup Handoff',
+    summary:
+      'Transfer lockup at normal end-of-day to a member staying for Admin or Training Night.',
+    route: '/dashboard',
+    personas: ['admin'],
+    guards: [(context) => adminGuard(context.accountLevel)],
+    steps: [
+      {
+        id: 'confirm-dds',
+        target: '[data-help-id="dashboard.stat.dds"]',
+        popover: {
+          title: 'Confirm DDS responsibility',
+          description:
+            'Before leaving for the day, confirm the DDS state is correct and that lockup still needs to be handed over for the evening.',
+          side: 'bottom',
+          align: 'center',
+        },
+        help: {
+          wikiSlug: 'operations/dashboard/daily-end/dds-handoff/dds-status',
+        },
+      },
+      {
+        id: 'confirm-evening-holder-present',
+        target: '[data-help-id="dashboard.presence.search"], [data-help-id="dashboard.presence"]',
+        popover: {
+          title: 'Confirm the evening holder is present',
+          description:
+            'The person receiving lockup must be signed into the unit and staying for Admin Night or Training Night. This is usually around 4 PM, before Duty Watch arrives.',
+          side: 'top',
+          align: 'center',
+        },
+        help: {
+          wikiSlug: 'operations/dashboard/daily-end/dds-handoff/evening-holder-present',
+        },
+      },
+      {
+        id: 'transfer-lockup',
+        target:
+          '[data-help-id="dashboard.quick-actions.transfer-lockup"], [data-help-id="dashboard.stat.actions"]',
+        popover: {
+          title: 'Transfer lockup',
+          description:
+            'Use Transfer Lockup when DDS is leaving and a present member is staying at the unit to hold lockup until the SWK arrives.',
+          side: 'bottom',
+          align: 'end',
+        },
+        help: {
+          wikiSlug: 'operations/dashboard/daily-end/dds-handoff/transfer-lockup',
+        },
+      },
+      {
+        id: 'confirm-lockup-holder',
+        target:
+          '[data-help-id="dashboard.stat.lockup-holder"], [data-help-id="dashboard.stat.building"]',
+        popover: {
+          title: 'Confirm new lockup holder',
+          description:
+            'After transfer, confirm the lockup holder changed to the member staying for the evening. If it did not, stop and correct the handoff before leaving.',
+          side: 'bottom',
+          align: 'center',
+        },
+        help: {
+          wikiSlug: 'operations/dashboard/daily-end/dds-handoff/confirm-holder',
+        },
+      },
+      {
+        id: 'swk-transfer-reminder',
+        target: '[data-help-id="dashboard.root"]',
+        popover: {
+          title: 'Transfer again when SWK arrives',
+          description:
+            'When the SWK arrives for Duty Watch around 6:30 PM, the evening lockup holder must transfer lockup to the SWK.',
+          side: 'top',
+          align: 'center',
+        },
+        help: {
+          wikiSlug: 'operations/dashboard/daily-end/dds-handoff/swk-transfer-reminder',
+        },
+      },
+    ],
+  },
+  {
+    id: 'dashboard.admin.duty-watch-lockup.v1',
+    version: 1,
+    title: 'Duty Watch Lockup',
+    summary: 'Close the building at the end of Duty Watch as the SWK.',
+    route: '/dashboard',
+    personas: ['admin'],
+    guards: [(context) => adminGuard(context.accountLevel)],
+    steps: [
+      {
+        id: 'confirm-duty-watch',
+        target:
+          '[data-help-id="dashboard.stat.duty-watch"], [data-help-id="dashboard.status-stats"]',
+        popover: {
+          title: 'Confirm Duty Watch requirements',
+          description:
+            'At the end of Duty Watch, confirm the watch requirements are complete before the SWK starts lockup.',
+          side: 'bottom',
+          align: 'center',
+        },
+        help: {
+          wikiSlug: 'operations/dashboard/daily-end/duty-watch/requirements',
+        },
+      },
+      {
+        id: 'review-person-cards',
+        target: '[data-help-id="dashboard.presence.cards"], [data-help-id="dashboard.presence"]',
+        popover: {
+          title: 'Review who may still be inside',
+          description:
+            'Review the Dashboard person cards for anyone still shown on site. Confirm whether they are actually in the building or forgot to sign out.',
+          side: 'top',
+          align: 'center',
+        },
+        help: {
+          wikiSlug: 'operations/dashboard/daily-end/duty-watch/person-card-review',
+        },
+      },
+      {
+        id: 'manual-sign-out-choice',
+        target:
+          '[data-help-id="dashboard.presence.manual-in-out"], [data-help-id="dashboard.presence"]',
+        popover: {
+          title: 'Choose how to clear people',
+          description:
+            'If someone has left, manually sign them out now or let Execute Lockup clear remaining sign-outs when the SWK closes the building.',
+          side: 'top',
+          align: 'center',
+        },
+        help: {
+          wikiSlug: 'operations/dashboard/daily-end/duty-watch/manual-sign-out-choice',
+        },
+      },
+      {
+        id: 'confirm-lockup-holder',
+        target:
+          '[data-help-id="dashboard.stat.lockup-holder"], [data-help-id="dashboard.stat.building"]',
+        popover: {
+          title: 'Confirm SWK holds lockup',
+          description:
+            'Confirm the SWK is the current lockup holder before executing lockup. If the holder is wrong, transfer lockup before continuing.',
+          side: 'bottom',
+          align: 'center',
+        },
+        help: {
+          wikiSlug: 'operations/dashboard/daily-end/duty-watch/lockup-holder',
+        },
+      },
+      {
+        id: 'execute-lockup',
+        target:
+          '[data-help-id="dashboard.quick-actions.execute-lockup"], [data-help-id="dashboard.stat.actions"]',
+        popover: {
+          title: 'Execute Lockup last',
+          description:
+            'Use Execute Lockup as the SWK’s last dashboard action before securing the building. This does not control the building system.',
+          side: 'bottom',
+          align: 'start',
+        },
+        help: {
+          wikiSlug: 'operations/dashboard/daily-end/duty-watch/execute-lockup',
+        },
+      },
+      {
+        id: 'secured-recheck',
+        target: '[data-help-id="dashboard.stat.building"]',
+        popover: {
+          title: 'Recheck secured state',
+          description:
+            'After lockup, confirm Building Status changed to the expected secured state. If it did not, stop and escalate.',
+          side: 'bottom',
+          align: 'center',
+        },
+        help: {
+          wikiSlug: 'operations/dashboard/daily-end/duty-watch/building-recheck',
+        },
+      },
+    ],
+  },
+  {
+    id: 'dashboard.admin.status.v3',
+    version: 3,
+    title: 'Status Interpretation',
     summary: 'Understand each operational status block before taking action.',
     route: '/dashboard',
     personas: ['admin'],
     guards: [(context) => adminGuard(context.accountLevel)],
     steps: [
       {
+        id: 'status-overview',
+        target: '[data-help-id="dashboard.status-stats"]',
+        popover: {
+          title: 'Read status before actions',
+          description:
+            'The status panel is arranged status first and actions second. Confirm what Sentinel says before using any button that changes operational state.',
+          side: 'top',
+          align: 'center',
+        },
+        help: {
+          wikiSlug: 'operations/dashboard/status/status-overview',
+        },
+      },
+      {
         id: 'dds',
         target: '[data-help-id="dashboard.stat.dds"]',
         popover: {
           title: 'DDS status',
           description:
-            'DDS identifies the Duty Day Staff member responsible for the day. If DDS is absent or pending handover, resolve that first.',
+            'DDS can be unassigned, scheduled and awaiting acceptance, active on site, active off site, or pending handover. Read the state before escalating or changing DDS responsibility.',
           side: 'bottom',
           align: 'center',
         },
@@ -372,11 +717,12 @@ export const dashboardProcedureDefinitions: ProcedureDefinition[] = [
       },
       {
         id: 'duty-watch',
-        target: '[data-help-id="dashboard.stat.duty-watch"]',
+        target:
+          '[data-help-id="dashboard.stat.duty-watch"], [data-help-id="dashboard.status-stats"]',
         popover: {
           title: 'Duty Watch readiness',
           description:
-            'Use assigned, checked-in, uncovered, and live-only counts to find coverage problems before they become watch problems.',
+            'On Duty Watch nights, compare covered, uncovered, and live-only counts. If this card is absent, it may be a non-duty night or the schedule failed to load.',
           side: 'bottom',
           align: 'center',
         },
@@ -390,7 +736,7 @@ export const dashboardProcedureDefinitions: ProcedureDefinition[] = [
         popover: {
           title: 'Building state',
           description:
-            'Open and Secured decide which actions are valid. If Sentinel and the real building disagree, escalate before changing state.',
+            'Building state can be Open, Secured, or Locking Up. If Sentinel and the real building disagree, escalate the mismatch before changing state.',
           side: 'bottom',
           align: 'center',
         },
@@ -400,11 +746,12 @@ export const dashboardProcedureDefinitions: ProcedureDefinition[] = [
       },
       {
         id: 'lockup-holder',
-        target: '[data-help-id="dashboard.stat.lockup-holder"]',
+        target:
+          '[data-help-id="dashboard.stat.lockup-holder"], [data-help-id="dashboard.stat.building"]',
         popover: {
           title: 'Lockup holder',
           description:
-            'This is the person responsible for securing the building. Confirm identity and time held before transfer or lockup.',
+            'The lockup holder is the current person responsible for lockup. It may show no holder while open, and it disappears once the building is secured because the responsibility is complete.',
           side: 'bottom',
           align: 'center',
         },
@@ -418,7 +765,7 @@ export const dashboardProcedureDefinitions: ProcedureDefinition[] = [
         popover: {
           title: 'Actions reflect status',
           description:
-            'Quick actions change real operational responsibility. Disabled actions usually mean a required state or permission is missing.',
+            'Visible and enabled actions come from current status and your permissions. If an action is missing or disabled, confirm the status blocks before assuming a bug.',
           side: 'bottom',
           align: 'end',
         },
@@ -429,194 +776,207 @@ export const dashboardProcedureDefinitions: ProcedureDefinition[] = [
     ],
   },
   {
-    id: 'dashboard.admin.presence.v1',
-    version: 1,
-    title: 'Presence review',
-    summary: 'Use filters, search, person cards, and action panels to confirm who is on site.',
+    id: 'dashboard.admin.presence.v2',
+    version: 2,
+    title: 'Member Actions',
+    summary: 'Review the actions available from a member card.',
     route: '/dashboard',
     personas: ['admin'],
     guards: [(context) => adminGuard(context.accountLevel)],
     steps: [
       {
-        id: 'presence-filters',
-        target: '[data-help-id="dashboard.presence.filter-buttons"]',
+        id: 'open-member-actions',
+        target: '[data-help-id="dashboard.presence.person-card"]',
         popover: {
-          title: 'Filter by person type',
+          title: 'Open Member Actions',
           description:
-            'All, Members, and Visitors show live counts. Use them to narrow the list before investigating a person.',
-          side: 'bottom',
-          align: 'end',
+            'Click a checked-in member card to open Member Actions. These actions change or review that specific member only.',
+          side: 'top',
+          align: 'center',
         },
         help: {
-          wikiSlug: 'operations/dashboard/presence/filters',
+          wikiSlug: 'operations/dashboard/presence/member-actions/open-member-actions',
         },
+        after: openFirstMemberActionPanel,
       },
       {
-        id: 'presence-search',
-        target: '[data-help-id="dashboard.presence.search"]',
-        popover: {
-          title: 'Search before assuming absence',
-          description:
-            'Search by name, rank, division, or organization when a person is expected but not immediately visible.',
-          side: 'bottom',
-          align: 'end',
-        },
-        help: {
-          wikiSlug: 'operations/dashboard/presence/search',
-        },
-      },
-      {
-        id: 'presence-manual-in-out',
-        target: '[data-help-id="dashboard.presence.manual-in-out"]',
-        popover: {
-          title: 'Manual in/out corrections',
-          description:
-            'Use Manual in/out only when authorized to correct a missed scan or recorded attendance issue.',
-          side: 'bottom',
-          align: 'end',
-        },
-        help: {
-          wikiSlug: 'operations/dashboard/presence/manual-in-out',
-        },
-      },
-      {
-        id: 'presence-cards',
+        id: 'manual-checkout',
         target:
-          '[data-help-id="dashboard.presence.person-card"], [data-help-id="dashboard.presence.cards"]',
+          '[data-help-id="dashboard.presence.member-action.manual-checkout"], [data-help-id="dashboard.presence.member-action-panel"]',
         popover: {
-          title: 'Read person cards',
+          title: 'Manual Check Out',
           description:
-            'Cards show identity, role badges, duty position, visitor details, and last activity. They are your live attendance record.',
-          side: 'top',
-          align: 'center',
+            'Use Manual Check Out to record a corrective checkout when a member forgot to scan out. Add the reason before saving.',
+          side: 'left',
+          align: 'start',
         },
         help: {
-          wikiSlug: 'operations/dashboard/presence/person-cards',
+          wikiSlug: 'operations/dashboard/presence/member-actions/manual-checkout',
         },
+        before: openFirstMemberActionPanel,
       },
       {
-        id: 'presence-member-actions',
+        id: 'temporary-role',
         target:
-          '[data-help-id="dashboard.presence.member-action-panel"], [data-help-id="dashboard.presence.person-card"]',
+          '[data-help-id="dashboard.presence.member-action.temporary-role"], [data-help-id="dashboard.presence.member-action-panel"]',
         popover: {
-          title: 'Open member actions',
+          title: 'Temporary Role',
           description:
-            'Select a member card to review actions such as manual checkout, temporary role, lockup transfer, or recent history.',
-          side: 'top',
-          align: 'center',
+            'Use Temporary Role to assign or clear live Duty Watch coverage for this check-in without changing the weekly schedule.',
+          side: 'left',
+          align: 'start',
         },
         help: {
-          wikiSlug: 'operations/dashboard/presence/member-actions',
+          wikiSlug: 'operations/dashboard/presence/member-actions/temporary-role',
         },
+        before: openFirstMemberActionPanel,
       },
       {
-        id: 'presence-visitor-checkout',
-        target: '[data-help-id="dashboard.presence.visitor-checkout"]',
+        id: 'tonight-override',
+        target:
+          '[data-help-id="dashboard.presence.member-action.tonight-override"], [data-help-id="dashboard.presence.member-action-panel"]',
         popover: {
-          title: 'Sign out visitors',
+          title: 'Tonight Schedule Override',
           description:
-            'Visitor sign-out should match the real person leaving. If the button is not visible, use filters or History to verify state.',
-          side: 'top',
-          align: 'center',
+            'Use Tonight Schedule Override for a same-night Duty Watch replacement. It updates tonight’s operational roster, not the whole schedule.',
+          side: 'left',
+          align: 'start',
         },
         help: {
-          wikiSlug: 'operations/dashboard/presence/visitor-checkout',
+          wikiSlug: 'operations/dashboard/presence/member-actions/tonight-override',
         },
+        before: openFirstMemberActionPanel,
       },
       {
-        id: 'presence-empty-states',
-        target: '[data-help-id="dashboard.presence"]',
+        id: 'transfer-lockup',
+        target:
+          '[data-help-id="dashboard.presence.member-action.transfer-lockup"], [data-help-id="dashboard.presence.member-action-panel"]',
         popover: {
-          title: 'Understand empty results',
+          title: 'Transfer Lockup',
           description:
-            'No matches can mean filters are hiding people. No one checked in means Sentinel has no active presence records.',
-          side: 'top',
-          align: 'center',
+            'Transfer Lockup appears when the selected member holds lockup. Use it to move responsibility to another qualified checked-in member.',
+          side: 'left',
+          align: 'start',
         },
         help: {
-          wikiSlug: 'operations/dashboard/presence/empty-states',
+          wikiSlug: 'operations/dashboard/presence/member-actions/transfer-lockup',
         },
+        before: openFirstMemberActionPanel,
+      },
+      {
+        id: 'recent-history',
+        target:
+          '[data-help-id="dashboard.presence.member-action.history"], [data-help-id="dashboard.presence.member-action-panel"]',
+        popover: {
+          title: 'Recent Check-In History',
+          description:
+            'Use Recent Check-In History to review the latest check-in and checkout events for the selected member before taking corrective action.',
+          side: 'left',
+          align: 'start',
+        },
+        help: {
+          wikiSlug: 'operations/dashboard/presence/member-actions/recent-history',
+        },
+        before: openFirstMemberActionPanel,
       },
     ],
   },
   {
-    id: 'dashboard.admin.actions.v2',
-    version: 2,
-    title: 'Dashboard action safety',
-    summary: 'Use building, lockup, DDS, and manual attendance actions safely.',
+    id: 'dashboard.admin.dds-transfer.v1',
+    version: 1,
+    title: 'DDS Weekly Handover',
+    summary: 'Hand over Duty Day Staff responsibility to the next DDS for the week.',
     route: '/dashboard',
     personas: ['admin'],
     guards: [(context) => adminGuard(context.accountLevel)],
     steps: [
       {
-        id: 'action-block',
-        target: '[data-help-id="dashboard.stat.actions"]',
+        id: 'confirm-current-dds',
+        target: '[data-help-id="dashboard.stat.dds"]',
         popover: {
-          title: 'Actions are operational changes',
+          title: 'Confirm current DDS',
           description:
-            'Every button here changes responsibility or attendance. Check status blocks and real-world conditions before pressing one.',
+            'Start by confirming who Sentinel currently shows as DDS and whether the state is active, awaiting acceptance, or pending handover.',
           side: 'bottom',
-          align: 'end',
+          align: 'center',
         },
         help: {
-          wikiSlug: 'operations/dashboard/actions/action-block',
+          wikiSlug: 'operations/dashboard/dds-transfer/current-dds',
         },
+        after: showExampleDdsTransferButton,
       },
       {
-        id: 'open-or-lockup',
+        id: 'open-transfer-dds',
         target:
-          '[data-help-id="dashboard.quick-actions.open-building"], [data-help-id="dashboard.quick-actions.execute-lockup"]',
+          '[data-help-id="dashboard.stat.dds.handover-example"], [data-help-id="dashboard.stat.dds"]',
         popover: {
-          title: 'Open or secure the building',
+          title: 'Find Complete Handover',
           description:
-            'Open Building starts building responsibility. Execute Lockup secures it. Use the action that matches the real building state.',
+            'Use Complete Handover when DDS responsibility for the week is being passed to the oncoming DDS.',
           side: 'bottom',
           align: 'start',
         },
         help: {
-          wikiSlug: 'operations/dashboard/actions/open-or-lockup',
+          wikiSlug: 'operations/dashboard/dds-transfer/open-transfer',
+        },
+        after: showExampleDdsTransferModal,
+      },
+      {
+        id: 'handover-confirmation',
+        target: '[data-help-id="dashboard.stat.dds.handover-modal-example"]',
+        popover: {
+          title: 'Review the handover',
+          description:
+            'The confirmation panel shows the outgoing DDS, the oncoming DDS, and the final Complete handover action before responsibility changes.',
+          side: 'right',
+          align: 'center',
+        },
+        help: {
+          wikiSlug: 'operations/dashboard/dds-transfer/confirmation-panel',
+        },
+        after: hideExampleDdsTransferModal,
+      },
+      {
+        id: 'handover-pending',
+        target: '[data-help-id="dashboard.stat.dds"]',
+        popover: {
+          title: 'Watch for pending handover',
+          description:
+            'After transfer starts, Sentinel keeps the outgoing DDS live until the oncoming DDS accepts or completes the handover.',
+          side: 'bottom',
+          align: 'center',
+        },
+        help: {
+          wikiSlug: 'operations/dashboard/dds-transfer/pending-handover',
         },
       },
       {
-        id: 'transfer-dds',
-        target: '[data-help-id="dashboard.quick-actions.transfer-dds"]',
+        id: 'accept-or-complete-handover',
+        target:
+          '[data-help-id="dashboard.stat.dds.responsibility-action"], [data-help-id="dashboard.stat.dds"]',
         popover: {
-          title: 'Transfer DDS carefully',
+          title: 'Incoming DDS accepts responsibility',
           description:
-            'Transfer or complete DDS handover only after confirming the incoming Duty Day Staff member and current duty expectations.',
+            'The oncoming DDS uses Accept DDS or Complete Handover when they are ready to take responsibility. Do not leave the handover pending.',
           side: 'bottom',
-          align: 'start',
+          align: 'center',
         },
         help: {
-          wikiSlug: 'operations/dashboard/actions/transfer-dds',
+          wikiSlug: 'operations/dashboard/dds-transfer/accept-responsibility',
         },
       },
       {
-        id: 'transfer-lockup',
-        target: '[data-help-id="dashboard.quick-actions.transfer-lockup"]',
+        id: 'confirm-new-dds',
+        target: '[data-help-id="dashboard.stat.dds"]',
         popover: {
-          title: 'Transfer lockup',
+          title: 'Confirm the new DDS',
           description:
-            'Move lockup responsibility only to the verified, qualified person who is actually accepting the handoff.',
+            'Finish by confirming the DDS status block shows the correct person and that responsibility matches the real handoff.',
           side: 'bottom',
-          align: 'start',
+          align: 'center',
         },
         help: {
-          wikiSlug: 'operations/dashboard/actions/transfer-lockup',
-        },
-      },
-      {
-        id: 'manual-in-out',
-        target: '[data-help-id="dashboard.presence.manual-in-out"]',
-        popover: {
-          title: 'Correct attendance deliberately',
-          description:
-            'Manual in/out is for authorized corrections, not convenience. Record enough context for the correction to be understood later.',
-          side: 'bottom',
-          align: 'end',
-        },
-        help: {
-          wikiSlug: 'operations/dashboard/actions/manual-in-out',
+          wikiSlug: 'operations/dashboard/dds-transfer/confirm-new-dds',
         },
       },
     ],

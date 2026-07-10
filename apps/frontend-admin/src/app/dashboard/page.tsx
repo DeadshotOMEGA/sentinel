@@ -3,15 +3,17 @@ import { PersonCardGrid } from '@/components/dashboard/person-card-grid'
 import { DashboardDdsChecklistDrawer } from '@/components/dashboard/dashboard-dds-checklist-drawer'
 import { DashboardHelpLauncher } from '@/components/help/dashboard-help-launcher'
 import { SecurityAlertsBar } from '@/components/dashboard/security-alerts-bar'
-import { DashboardScanPanel } from '@/components/dashboard/dashboard-scan-panel'
+import { DashboardPageShell } from '@/components/dashboard/dashboard-page-shell'
 
 export default function DashboardPage() {
   return (
     <DashboardDdsChecklistDrawer>
-      <main className="mx-auto w-full max-w-[1760px] space-y-6 pb-44" data-help-id="dashboard.root">
+      <DashboardPageShell>
         <h1 className="sr-only">Dashboard</h1>
 
-        <SecurityAlertsBar />
+        <section data-help-id="dashboard.security-alerts-region">
+          <SecurityAlertsBar />
+        </section>
 
         <section>
           <StatusStats />
@@ -21,8 +23,7 @@ export default function DashboardPage() {
         </section>
 
         <DashboardHelpLauncher />
-      </main>
-      <DashboardScanPanel />
+      </DashboardPageShell>
     </DashboardDdsChecklistDrawer>
   )
 }

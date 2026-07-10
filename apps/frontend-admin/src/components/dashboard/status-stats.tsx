@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState, useSyncExternalStore } from 'react'
+import { useEffect, useMemo, useState, useSyncExternalStore } from 'react'
 import type { ReactNode } from 'react'
 import {
   Users,
@@ -31,11 +31,34 @@ import type { ChipColor, ChipVariant } from '@/components/ui/chip'
 import { MotionButton } from '@/components/ui/motion-button'
 import { TID } from '@/lib/test-ids'
 import { getDutyWatchCoverageSummary } from '@/lib/dashboard-member-actions'
+import { subscribeDashboardDdsTransferExample } from '@/help/dashboard-dds-transfer-example'
+import {
+  getActiveHelpStep,
+  subscribeActiveHelpStep,
+  type ActiveHelpStepDetail,
+} from '@/help/help-events'
 
 const DUTY_WATCH_POSITION_ORDER = ['SWK', 'DSWK', 'QM', 'BM', 'APS'] as const
 const DUTY_WATCH_POSITION_ORDER_INDEX = new Map<string, number>(
   DUTY_WATCH_POSITION_ORDER.map((code, index) => [code, index])
 )
+const DDS_TRANSFER_EXAMPLE_PROCEDURE_ID = 'dashboard.admin.dds-transfer.v1'
+const DDS_TRANSFER_BUTTON_EXAMPLE_STEP_ID = 'open-transfer-dds'
+const DDS_TRANSFER_MODAL_EXAMPLE_STEP_ID = 'handover-confirmation'
+
+function isDdsTransferButtonExampleStep(detail: ActiveHelpStepDetail | null): boolean {
+  return (
+    detail?.procedureId === DDS_TRANSFER_EXAMPLE_PROCEDURE_ID &&
+    detail.stepId === DDS_TRANSFER_BUTTON_EXAMPLE_STEP_ID
+  )
+}
+
+function isDdsTransferModalExampleStep(detail: ActiveHelpStepDetail | null): boolean {
+  return (
+    detail?.procedureId === DDS_TRANSFER_EXAMPLE_PROCEDURE_ID &&
+    detail.stepId === DDS_TRANSFER_MODAL_EXAMPLE_STEP_ID
+  )
+}
 
 function subscribeToAuthHydration(onStoreChange: () => void): () => void {
   const unsubscribe = useAuthStore.persist.onFinishHydration(onStoreChange)
@@ -152,6 +175,32 @@ function DdsStat({
   onResolvePendingDds: () => void
 }) {
   const { data: ddsStatus, isLoading } = useDdsStatus()
+  const [isTransferExampleRequested, setIsTransferExampleRequested] = useState(false)
+  const [isTransferModalExampleRequested, setIsTransferModalExampleRequested] = useState(false)
+  const [activeHelpStep, setActiveHelpStep] = useState<ActiveHelpStepDetail | null>(() =>
+    getActiveHelpStep()
+  )
+
+  useEffect(() => {
+    return subscribeDashboardDdsTransferExample((detail) => {
+      setIsTransferExampleRequested(detail.visible)
+      setIsTransferModalExampleRequested(detail.modalVisible ?? false)
+    })
+  }, [])
+
+  useEffect(() => {
+    return subscribeActiveHelpStep((detail) => {
+      setActiveHelpStep(detail)
+
+      if (!isDdsTransferButtonExampleStep(detail)) {
+        setIsTransferExampleRequested(false)
+      }
+
+      if (!isDdsTransferModalExampleStep(detail)) {
+        setIsTransferModalExampleRequested(false)
+      }
+    })
+  }, [])
 
   const formatNextDds = (nextDds: { rank: string; lastName: string; firstName: string } | null) => {
     if (!nextDds) return null
@@ -200,6 +249,12 @@ function DdsStat({
   const onSite = ddsStatus.isDdsOnSite
   const isAccepted = assignmentStatus === 'active'
   const isPendingDds = assignmentStatus === 'pending'
+  const shouldShowTransferDdsExample =
+    isAccepted &&
+    !isHandoverPending &&
+    (isTransferExampleRequested || isDdsTransferButtonExampleStep(activeHelpStep))
+  const shouldShowTransferDdsModalExample =
+    isTransferModalExampleRequested || isDdsTransferModalExampleStep(activeHelpStep)
   const accentColor = isHandoverPending
     ? 'warning'
     : isAccepted
@@ -245,10 +300,23 @@ function DdsStat({
                 className="btn btn-xs border font-medium transition-all duration-200 shadow-sm hover:shadow-md btn-action stats-action-button stats-action-success"
                 disabled={!isAdmin}
                 onClick={onResolvePendingDds}
+                data-help-id="dashboard.stat.dds.responsibility-action"
               >
                 {isHandoverPending ? 'Complete Handover' : 'Accept DDS'}
               </MotionButton>
             </div>
+          )}
+          {shouldShowTransferDdsExample && (
+            <button
+              type="button"
+              className="btn btn-xs pointer-events-none border font-medium transition-all duration-200 shadow-sm hover:shadow-md btn-action stats-action-button stats-action-success"
+              aria-disabled="true"
+              tabIndex={-1}
+              title="Tutorial example only"
+              data-help-id="dashboard.stat.dds.handover-example"
+            >
+              Complete Handover
+            </button>
           )}
         </div>
         {isHandoverPending && (
@@ -262,7 +330,81 @@ function DdsStat({
           </div>
         )}
       </div>
+      {shouldShowTransferDdsModalExample && <DdsHandoverExampleModal />}
     </StatContainer>
+  )
+}
+
+function DdsHandoverExampleModal() {
+  return (
+    <section
+      className="pointer-events-none fixed top-1/2 left-1/2 z-(--z-popover) w-[min(44rem,calc(100vw-var(--space-12)))] -translate-x-1/2 -translate-y-1/2 border border-base-300 bg-base-100 shadow-2xl"
+      aria-label="DDS handover confirmation example"
+      data-help-id="dashboard.stat.dds.handover-modal-example"
+    >
+      <header className="flex items-center gap-[var(--space-2)] border-b border-base-300 px-[var(--space-4)] py-[var(--space-3)]">
+        <ShieldCheck className="size-5 text-base-content" />
+        <h2 className="text-base font-semibold text-base-content">Complete weekly DDS handover</h2>
+      </header>
+
+      <div className="space-y-[var(--space-3)] p-[var(--space-4)]">
+        <div className="grid gap-[var(--space-3)] sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:items-center">
+          <div className="rounded-box border border-base-300 bg-base-100 p-[var(--space-3)]">
+            <p className="text-xs font-medium tracking-wide text-base-content/60 uppercase">
+              Current live DDS
+            </p>
+            <p className="mt-[var(--space-1)] text-sm font-semibold text-base-content">
+              S1 Alolor Marian
+            </p>
+          </div>
+
+          <div className="flex justify-center">
+            <ArrowRightLeft className="size-5 text-base-content/60" />
+          </div>
+
+          <div className="rounded-box border border-base-300 bg-primary-fadded p-[var(--space-3)] text-primary-fadded-content">
+            <p className="text-xs font-medium tracking-wide uppercase opacity-75">
+              Transfer target
+            </p>
+            <p className="mt-[var(--space-1)] text-sm font-semibold">Oncoming DDS</p>
+          </div>
+        </div>
+
+        <div className="rounded-box border border-base-300 bg-base-100">
+          <div className="flex items-start justify-between gap-[var(--space-3)] px-[var(--space-4)] py-[var(--space-3)]">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-base-content">Oncoming DDS</p>
+              <p className="text-xs text-base-content/65">
+                Checked in and ready to take weekly DDS responsibility.
+              </p>
+            </div>
+            <div className="flex shrink-0 flex-wrap justify-end gap-[var(--space-2)]">
+              <AppBadge status="info" size="sm">
+                Recommended
+              </AppBadge>
+              <AppBadge status="success" size="sm">
+                Checked in
+              </AppBadge>
+            </div>
+          </div>
+        </div>
+
+        <details className="rounded-box border border-base-300 bg-base-100">
+          <summary className="px-[var(--space-4)] py-[var(--space-3)] text-sm font-medium text-base-content">
+            Optional details (3 checks met)
+          </summary>
+        </details>
+      </div>
+
+      <footer className="flex items-center justify-end gap-[var(--space-2)] border-t border-base-300 px-[var(--space-4)] py-[var(--space-3)]">
+        <button type="button" className="btn" aria-disabled="true" tabIndex={-1}>
+          Cancel
+        </button>
+        <button type="button" className="btn btn-success" aria-disabled="true" tabIndex={-1}>
+          Complete handover
+        </button>
+      </footer>
+    </section>
   )
 }
 
@@ -498,6 +640,7 @@ function DutyWatchStat() {
           <div
             tabIndex={0}
             role="button"
+            data-help-id="dashboard.stat.duty-watch.detail-trigger"
             className="inline-flex cursor-help items-center"
             aria-label="View tonight's Duty Watch team"
           >

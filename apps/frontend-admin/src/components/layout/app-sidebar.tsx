@@ -124,7 +124,10 @@ export function AppSidebar({ drawerId }: AppSidebarProps) {
   const [editingId, setEditingId] = useState<string | null>(null)
 
   return (
-    <div className="flex min-h-full w-72.5 flex-col bg-base-300 p-4">
+    <div
+      className="flex min-h-full w-72.5 flex-col bg-base-300 p-4"
+      data-help-id="dashboard.recent-activity"
+    >
       {/* Header */}
       <div className="mb-4 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">

@@ -10,7 +10,6 @@ fi
 SESSION_NAME="$1"
 LABEL="$2"
 SUBDIR="${3:-ad-hoc}"
-PLAYWRIGHT_CLI_CONFIG="${PLAYWRIGHT_CLI_CONFIG:-.playwright-cli/cli.config.json}"
 RUN_DATE="$(date +%F)"
 STAMP="$(date +%Y%m%d-%H%M%S)"
 ARTIFACT_DIR=".playwright-cli/runs/${SUBDIR}/${RUN_DATE}/${STAMP}-${LABEL}"
@@ -22,7 +21,7 @@ mkdir -p "$ARTIFACT_DIR"
 mkdir -p "$LOG_DIR"
 
 playwright_cli() {
-  playwright-cli --config="$PLAYWRIGHT_CLI_CONFIG" "$@"
+  playwright-cli "$@"
 }
 
 list_root_artifacts() {
